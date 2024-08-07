@@ -1,0 +1,170 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #ddd;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.user {
+    display: flex;
+    align-items: center;
+}
+
+.user img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 25%;
+    padding: 20px;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar h2 {
+    margin-bottom: 10px;
+}
+
+.search-bar {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px 0 0 5px;
+}
+
+.search-bar button {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-left: 0;
+    background-color: #ddd;
+    border-radius: 0 5px 5px 0;
+}
+
+.ingredient-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.ingredient-list label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.search-recipe {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.no-recipes {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: none;
+}
+
+.message {
+    text-align: center;
+}
+
+.message p {
+    margin-bottom: 20px;
+}
+
+.large-text {
+    font-size: x-large;
+    font-weight: bold;
+}
+
+.search-ideas {
+    padding: 10px 20px;
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.recipes {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    /* display: none;  */
+}
+
+.recipe {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.recipe-name {
+    font-weight: bold;
+}
+
+.recipe-details {
+    display: flex;
+    gap: 20px;
+}
+
+footer {
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-top: 1px solid #ddd;
+    text-align: center;
+}
+
+.footer-logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+

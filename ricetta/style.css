@@ -1,0 +1,139 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #ddd;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+main {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; 
+}
+
+.recipe-details {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.recipe-details h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.recipe-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.recipe-description {
+    margin-bottom: 20px;
+    font-size: 18px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.recipe-instructions {
+    margin-bottom: 20px;
+}
+
+.recipe-instructions h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.ingredients {
+    border: 1px solid #ddd;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.ingredients ul {
+    list-style-type: disc; 
+    padding-left: 20px;
+    margin: 0;
+}
+
+.ingredients li {
+    margin-bottom: 10px;
+    font-size: 18px;
+    position: relative; 
+    padding-right: 30px; 
+}
+
+.ingredients .checkmark {
+    position: absolute; 
+    top: 0;
+    font-size: 20px;
+    color: green;
+    padding-left: 20px;
+}
+
+.possessed .checkmark {
+    display: inline;
+}
+
+.possessed {
+    color: black; 
+}
+
+.to-buy {
+    color: black; 
+}
+
+.steps ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.steps li {
+    margin-bottom: 10px;
+    font-size: 18px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+footer {
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-top: 1px solid #ddd;
+    text-align: center;
+}
+
+.footer-logo {
+    font-size: 24px;
+    font-weight: bold;
+}
