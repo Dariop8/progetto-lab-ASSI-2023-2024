@@ -137,3 +137,63 @@ footer {
     font-size: 24px;
     font-weight: bold;
 }
+
+/* parte commenti */
+.commenti {
+    width: 100%;
+    max-width: 800px;
+    margin: 5% auto;
+}
+
+.commenti h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
+.comment-list {
+    margin-bottom: 20px;
+}
+
+.comment {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.comment p {
+    margin: 0;
+}
+
+.comment-form {
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+}
+
+.comment-form h3 {
+    margin-bottom: 10px;
+}
+
+.comment-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.comment-form input,
+.comment-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+.comment-form button {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.comment-form button:hover {
+    background-color: #45a049;
+}
