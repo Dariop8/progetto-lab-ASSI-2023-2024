@@ -1,22 +1,19 @@
+{% extends 'header.html' %}
+{% block contenttop %}
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ricette</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
 </head>
 <body>
+    {% endblock %}
+    {% block contentdown %}
     <div class="container">
-        <header>
-            <div class="logo">LOGO</div>
-            <div class="user">
-                <a href="account/account.html">
-                <img src="user_icon.png" alt="User Icon">
-                <span>Nome</span>
-                </a>
-            </div>
-        </header>
+
         <main>
             <div class="sidebar">
                 <h2>Cosa hai in frigo?</h2>
@@ -192,3 +189,4 @@
     </div>
 </body>
 </html>
+{% endblock %}

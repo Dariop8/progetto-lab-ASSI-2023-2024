@@ -1,27 +1,31 @@
+{% extends 'header.html' %}
+{% block contenttop %}
+
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Nome Sito</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css')}}">
 </head>
 <body>
+    {% endblock %}
+    {% block contentdown %}
     <div class="container">
-        <header>
-            <div class="site-name">NOME SITO</div>
-        </header>
+
         <main>
             <div class="login-box">
                 <h2>Login</h2>
-                <form>
+                <form method="POST">
                     <div class="input-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required>
+                        <label for="username_input">Username o Email</label>
+                        <input type="text" id="username_input" name="username_input" required>
                     </div>
                     <div class="input-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
+                        <label for="password_input">Password</label>
+                        <input type="password" id="password_input" name="password_input" required>
                     </div>
                     <button type="submit">Accedi</button>
                 </form>
@@ -32,10 +36,11 @@
                         <button class="facebook-login">f</button>
                         <button class="twitter-login">😺</button>
                     </div>
-                    <p><a href="../registrazione/registrazione.html">Registrati</a></p>
+                    <p><a href="/registrazione">Registrati</a></p>
                 </div>
             </div>
         </main>
     </div>
 </body>
 </html>
+{% endblock %}

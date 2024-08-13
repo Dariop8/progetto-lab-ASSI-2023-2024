@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dettaglio Ricetta</title>
-    <link rel="stylesheet" href="ricetta.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ricetta.css')}}">
 </head>
 <body>
     <div class="container">
-        <header>
-            <div class="logo"><a href="../index.html">LOGO</a></div> 
-        </header>
+
         <main>
             <div class="recipe-details">
                 <h1>Nome Ricetta: Lasagna alla Bolognese</h1>

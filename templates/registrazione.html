@@ -1,0 +1,94 @@
+{% extends 'header.html' %}
+{% block contenttop %}
+
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrazione - Nome Sito</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='registrazione.css')}}">
+</head>
+<body>
+    {% endblock %}
+    {% block contentdown %}
+    <div class="container">
+ 
+        <main>
+            <div class="registration-box">
+                <h2>Registrazione</h2>
+                <form method="POST">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="birthdate">Data di nascita</label>
+                        <input type="date" id="birthdate" name="birthdate" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password_conf">Conferma Password</label>
+                        <input type="password" id="password_conf" name="password_conf" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Diete particolari</label>
+                        <div>
+                            <label for="vegetariana">Vegetariana</label>
+
+                            <input type="checkbox" id="vegetariana" name="diete" value="vegetariana">
+                        </div>
+                        <div>
+                            <label for="vegana">Vegana</label>
+                            <input type="checkbox" id="vegana" name="diete" value="vegana">
+                        </div>
+                        <div>
+                            <label for="senza-glutine">Senza glutine</label>
+                            <input type="checkbox" id="senza-glutine" name="diete" value="senza-glutine">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Intolleranze</label>
+                        <div>
+                            <label for="giacomo_barcellona">giacomo barcellona</label>
+                            <input type="checkbox" id="giacomo_barcellona" name="intolleranze" value="giacomo_barcellona">
+                        </div>
+                        <div>
+                            <label for="lattosio">Lattosio</label>
+                            <input type="checkbox" id="lattosio" name="intolleranze" value="lattosio">
+                        </div>
+                        <div>
+                            <label for="glutine">Glutine</label>
+                            <input type="checkbox" id="glutine" name="intolleranze" value="glutine">
+                        </div>
+                        <div>
+                            <label for="frutta-secca">Frutta secca</label>
+                            <input type="checkbox" id="frutta-secca" name="intolleranze" value="frutta-secca">
+                        </div>
+                    </div>
+                    <button type="submit">Registrati</button>
+                </form>
+                <div class="registration-options">
+                    <p>Registrati con</p>
+                    <div class="social-login">
+                        <button class="google-login">G</button>
+                        <button class="facebook-login">f</button>
+                        <button class="twitter-login">😺</button>
+                    </div>
+                </div>
+                <p>Hai già un account? <a href="/login">Accedi</a></p>
+
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+{% endblock %}
