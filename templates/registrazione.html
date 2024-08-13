@@ -18,7 +18,7 @@
         <main>
             <div class="registration-box">
                 <h2>Registrazione</h2>
-                <form>
+                <form method="POST">
                     <div class="input-group">
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username" required>
@@ -34,6 +34,10 @@
                     <div class="input-group">
                         <label for="password">Password</label>
                         <input type="password" id="password" name="password" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password_conf">Conferma Password</label>
+                        <input type="password" id="password_conf" name="password_conf" required>
                     </div>
                     
                     <div class="input-group">

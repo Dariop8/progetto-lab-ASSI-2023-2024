@@ -1,3 +1,7 @@
+{% extends 'header.html' %}
+{% block contenttop %}
+
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -7,6 +11,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='ricetta.css')}}">
 </head>
 <body>
+    {% endblock %}
+    {% block contentdown %}
     <div class="container">
 
         <main>
@@ -87,3 +93,4 @@
     <script src="../static/ricetta.js"></script>
 </body>
 </html>
+{% endblock %}

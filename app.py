@@ -210,13 +210,39 @@ def github_login():
 
     return redirect(url_for("main_route"))
 
-# @app.route('/<something>')
-# def goto(something):
-#     return redirect(url_for('main_route'))
+@app.route('/<something>')
+def goto(something):
+    return redirect(url_for('main_route'))
 
 @app.route("/account")
 def account():
-    return render_template("account.html")
+    if 'id' in session:
+        user_id = session['id']
+        user = Users.query.get(user_id)
+        
+        if user:
+            return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze)
+    
+    return redirect(url_for("login"))
+
+@app.route('/update_preferences', methods=['POST'])
+def update_preferences():
+    if 'id' in session:
+        user_id = session['id']
+        user = Users.query.get(user_id)
+
+        # Aggiorna le diete
+        selected_diets = request.form.getlist('diet')
+        user.diete = selected_diets
+
+        # Aggiorna le intolleranze
+        selected_allergies = request.form.getlist('allergies')
+        user.intolleranze = selected_allergies
+
+        db.session.commit()
+        return redirect(url_for('account'))
+
+    return redirect(url_for('login'))
 
 @app.route("/ricetta")
 def ricetta():

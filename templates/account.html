@@ -1,3 +1,7 @@
+{% extends 'header.html' %}
+{% block contenttop %}
+
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -5,45 +9,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Il Tuo Account</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='account.css')}}">
+    <script src="../static/account.js"></script>
+
 </head>
 <body>
+    {% endblock %}
+    {% block contentdown %}
     <div class="container">
 
         <main>
             <div class="account-box">
                 <h2>IL TUO ACCOUNT</h2>
                 <div class="account-details">
-                    <p>Username: <span class="user-info">username</span></p>
-                    <p>Email: <span class="user-info">email</span></p>
-                    <p>Data di nascita: <span class="user-info">data nascita</span></p>
-                    <div class="editable-info">
-                        <p>Diete particolari:</p>
-                        <div class="item-list">
-                            <div class="item">
-                                <span class="item-text">Vegetariana</span>
-                                <button class="remove-item">✖</button>
+                    
+                    <p>Username: <span class="user-info">{{ username }}</span></p>
+                    <p>Email: <span class="user-info">{{ email }}</span></p>
+                    <p>Data di nascita: <span class="user-info">{{ data_nascita }}</span></p>
+                    <form id="preferences-form" method="POST" action="/update_preferences">
+                        <div class="editable-info">
+                            <p>Diete particolari:</p>
+                            <div class="checkbox-group">
+                                <label>
+                                    <input type="checkbox" id="diet-vegetariana" name="diet" value="vegetariana" {% if 'vegetariana' in diete %} checked {% endif %}> Vegetariana
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="diet-vegana" name="diet" value="vegana" {% if 'vegana' in diete %} checked {% endif %}> Vegana
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="diet-senza-glutine" name="diet" value="senza-glutine" {% if 'senza-glutine' in diete %} checked {% endif %}> Senza glutine
+                                </label>
                             </div>
-                            <button class="add-item">+</button>
                         </div>
-                    </div>
-                    <div class="editable-info">
-                        <p>Intolleranze / Allergie:</p>
-                        <div class="item-list">
-                            <div class="item">
-                                <span class="item-text">Glutine</span>
-                                <button class="remove-item">✖</button>
+                    
+                        <div class="editable-info">
+                            <p>Intolleranze / Allergie:</p>
+                            <div class="checkbox-group">
+                                <label>
+                                    <input type="checkbox" id="allergy-lattosio" name="allergies" value="lattosio" {% if 'lattosio' in intolleranze %} checked {% endif %}> Lattosio
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="allergy-glutine" name="allergies" value="glutine" {% if 'glutine' in intolleranze %} checked {% endif %}> Glutine
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="allergy-frutta-secca" name="allergies" value="frutta-secca" {% if 'frutta-secca' in intolleranze %} checked {% endif %}> Frutta secca
+                                </label>
                             </div>
-                            <div class="item">
-                                <span class="item-text">Lattosio</span>
-                                <button class="remove-item">✖</button>
-                            </div>
-                            <button class="add-item">+</button>
                         </div>
-                    </div>
+                    
+                        <button type="submit" id="save-button" disabled>Salva modifiche</button>
+                    </form>
+                    
+
                 </div>
-                <button class="logout-button">LOGOUT</button>
+                <a href="{{ url_for('logout') }}"><button class="logout-button">LOGOUT</button></a>
             </div>
         </main>
     </div>
 </body>
 </html>
+{% endblock %}
