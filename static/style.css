@@ -52,6 +52,7 @@ main {
     border-left: 0;
     background-color: #ddd;
     border-radius: 0 5px 5px 0;
+    cursor: pointer;
 }
 
 .ingredient-list {
@@ -80,7 +81,6 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    display: none;
 }
 
 .message {
@@ -109,7 +109,7 @@ main {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
-    /* display: none;  */
+    display: none; 
 }
 
 .recipe {

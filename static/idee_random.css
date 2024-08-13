@@ -127,7 +127,7 @@ main {
 .recipes {
     flex: 1;
     padding: 20px;
-    overflow-y: auto;
+    overflow-y: auto; 
 }
 
 .recipes h1 {
@@ -143,6 +143,12 @@ main {
     margin-bottom: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.recipe:hover {
+    background-color: #f0f0f0;
 }
 
 .recipe-name {

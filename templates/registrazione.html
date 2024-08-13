@@ -18,7 +18,7 @@
         <main>
             <div class="registration-box">
                 <h2>Registrazione</h2>
-                <form method="POST">
+                <form>
                     <div class="input-group">
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username" required>
@@ -35,45 +35,25 @@
                         <label for="password">Password</label>
                         <input type="password" id="password" name="password" required>
                     </div>
+                    
                     <div class="input-group">
-                        <label for="password_conf">Conferma Password</label>
-                        <input type="password" id="password_conf" name="password_conf" required>
+                        <label for="diet">Diete particolari</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="diet" value="vegetariana"> Vegetariana</label><br>
+                            <label><input type="checkbox" name="diet" value="vegana"> Vegana</label><br>
+                            <label><input type="checkbox" name="diet" value="senza-glutine"> Senza glutine</label>
+                        </div>
                     </div>
+                    
                     <div class="input-group">
-                        <label>Diete particolari</label>
-                        <div>
-                            <label for="vegetariana">Vegetariana</label>
+                        <label for="allergies">Intolleranze / Allergie</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="allergies" value="lattosio"> Lattosio</label><br>
+                            <label><input type="checkbox" name="allergies" value="glutine"> Glutine</label><br>
+                            <label><input type="checkbox" name="allergies" value="frutta-secca"> Frutta secca</label>
+                        </div>
+                    </div>                    
 
-                            <input type="checkbox" id="vegetariana" name="diete" value="vegetariana">
-                        </div>
-                        <div>
-                            <label for="vegana">Vegana</label>
-                            <input type="checkbox" id="vegana" name="diete" value="vegana">
-                        </div>
-                        <div>
-                            <label for="senza-glutine">Senza glutine</label>
-                            <input type="checkbox" id="senza-glutine" name="diete" value="senza-glutine">
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Intolleranze</label>
-                        <div>
-                            <label for="giacomo_barcellona">giacomo barcellona</label>
-                            <input type="checkbox" id="giacomo_barcellona" name="intolleranze" value="giacomo_barcellona">
-                        </div>
-                        <div>
-                            <label for="lattosio">Lattosio</label>
-                            <input type="checkbox" id="lattosio" name="intolleranze" value="lattosio">
-                        </div>
-                        <div>
-                            <label for="glutine">Glutine</label>
-                            <input type="checkbox" id="glutine" name="intolleranze" value="glutine">
-                        </div>
-                        <div>
-                            <label for="frutta-secca">Frutta secca</label>
-                            <input type="checkbox" id="frutta-secca" name="intolleranze" value="frutta-secca">
-                        </div>
-                    </div>
                     <button type="submit">Registrati</button>
                 </form>
                 <div class="registration-options">

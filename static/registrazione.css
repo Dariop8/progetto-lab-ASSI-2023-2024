@@ -7,15 +7,16 @@
 body, html {
     height: 100%;
     font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    overflow-y: scroll;
 }
 
 .container {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    justify-content: center;
+    min-height: 100vh;
+    justify-content: flex-start;
     align-items: center;
-    background-color: #f0f0f0;
 }
 
 header {
@@ -24,6 +25,9 @@ header {
     background-color: #fff;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .site-name {
@@ -33,10 +37,11 @@ header {
 
 main {
     flex: 1;
+    width: 100%;
     display: flex;
     justify-content: center;
-    align-items: center;
-    width: 100%;
+    align-items: flex-start; 
+    padding: 20px 0;
 }
 
 .registration-box {
@@ -72,6 +77,22 @@ main {
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 16px;
+}
+
+/* CSS per le checkbox */
+.checkbox-group {
+    text-align: left;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.checkbox-group label {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
 }
 
 button[type="submit"] {

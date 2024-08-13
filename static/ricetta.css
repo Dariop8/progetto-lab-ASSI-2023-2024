@@ -60,6 +60,19 @@ main {
     font-size: 18px;
 }
 
+.recipe-image {
+    margin-bottom: 20px;
+    text-align: center; 
+}
+
+.recipe-image img {
+    width: 100%;
+    max-width: 800px; 
+    height: auto; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+
 .recipe-description {
     margin-bottom: 20px;
     font-size: 18px;

@@ -8,7 +8,9 @@ import os
 from sqlalchemy.types import Date
 from sqlalchemy.dialects.postgresql import JSON
 
-
+from flask_dance.contrib.github import make_github_blueprint, github
+import secrets
+import string
 
 app = Flask(__name__)
 
@@ -22,6 +24,15 @@ db = SQLAlchemy()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+# configuro il blueprint di GitHub
+github_blueprint = make_github_blueprint(
+    client_id="Ov23liBdiIHtl6sEma1M",
+    client_secret="95e77207bb3717a810dcbc478caab519a5a8131a",
+    scope="user:email",
+    redirect_to="github_login"
+)
+app.register_blueprint(github_blueprint, url_prefix="/github_login")
 
 class Users(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -148,9 +159,60 @@ def logout():
 
     return redirect(url_for("main_route"))
 
-@app.route('/<something>')
-def goto(something):
-    return redirect(url_for('main_route'))
+# route per gestire il callback del login di GitHub
+@app.route("/github_login")
+def github_login():
+    if not github.authorized:
+        return redirect(url_for("github.login"))
+
+    resp = github.get("/user")
+    assert resp.ok, resp.text
+    info = resp.json()
+    
+    username = info["login"]
+    # se l'email è pubblica viene recuperata in questo modo
+    email = info.get("email")
+
+    if email is None:
+        # se il metodo precedente è fallito passiamo al secondo
+        resp_email = github.get("/user/emails")
+        if resp_email.status_code == 404:
+            print("problema con l'endpoint per l'email")
+            return redirect(url_for("login"))
+
+        assert resp_email.ok, resp_email.text
+        emails = resp_email.json()
+        for email_info in emails:
+            if email_info["primary"] and email_info["verified"]:
+                email = email_info["email"]
+                break
+
+    if email is None:
+        return redirect(url_for("login"))  
+    print("User:", username, "con email:", email)
+    
+    user = Users.query.filter_by(email=email).first()
+    
+    if user is None:
+        # genero una password casuale
+        alphabet = string.ascii_letters + string.digits
+        password = ''.join(secrets.choice(alphabet) for i in range(12))
+
+        user = Users(username=username, password=password, email=email, 
+                     data_di_nascita=None, diete=None, intolleranze=None)
+        db.session.add(user)
+        db.session.commit()
+
+    session.permanent = True
+    session['username'] = username
+    session['password'] = password
+    session['id'] = user.id
+
+    return redirect(url_for("main_route"))
+
+# @app.route('/<something>')
+# def goto(something):
+#     return redirect(url_for('main_route'))
 
 @app.route("/account")
 def account():
@@ -171,3 +233,6 @@ def favicon():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
