@@ -8,7 +8,7 @@ body, html {
     height: 100%;
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
-    overflow-y: scroll;
+    /* overflow-y: scroll; */
 }
 
 .container {
@@ -19,21 +19,6 @@ body, html {
     align-items: center;
 }
 
-header {
-    width: 100%;
-    padding: 20px;
-    background-color: #fff;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.site-name {
-    font-size: 28px;
-    font-weight: bold;
-}
 
 main {
     flex: 1;
@@ -67,7 +52,7 @@ main {
 .input-group label {
     display: block;
     margin-bottom: 5px;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .input-group input, .input-group select {
@@ -87,12 +72,13 @@ main {
 }
 
 .checkbox-group label {
-    font-size: 16px;
+    font-size: 14px;
     margin-bottom: 5px;
 }
 
 .checkbox-group input[type="checkbox"] {
     margin-right: 10px;
+    width: 10px;
 }
 
 button[type="submit"] {

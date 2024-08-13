@@ -8,8 +8,10 @@
     {% if session %}
     <div class="user">
         <a href="account">
-        <img src="../static/images/deafault_profile_img.png" alt="User Icon">
-        <p>{{ session['username'] }}</p>
+            <div class="acc">
+                <img src="../static/images/deafault_profile_img.png" alt="User Icon">
+                <p>{{ session['username'] }}</p>
+            </div>
         </a>
         <a href="/logout">LOGOUT</a>
 

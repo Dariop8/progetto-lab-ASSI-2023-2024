@@ -18,18 +18,8 @@ body, html {
     background-color: #f0f0f0;
 }
 
-header {
-    width: 100%;
-    padding: 20px;
-    background-color: #fff;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
 
-.site-name {
-    font-size: 28px;
-    font-weight: bold;
-}
+
 
 main {
     flex: 1;
@@ -45,7 +35,7 @@ main {
     border: 1px solid #ddd;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
+    width: 500px;
 }
 
 .login-box h2 {
