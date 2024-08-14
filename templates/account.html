@@ -62,6 +62,19 @@
 
                 </div>
                 <a href="{{ url_for('logout') }}"><button class="logout-button">LOGOUT</button></a>
+
+                <button type="button" class="delete-account-button" id="openDeleteModal">Elimina account</button>
+
+                <div id="deleteModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p>Sei sicuro di voler eliminare il tuo account? Questa azione è irreversibile.</p>
+                    <form id="deleteAccountForm" action="{{ url_for('delete_account') }}" method="POST">
+                        <button type="submit" class="confirm-delete">Si, elimina</button>
+                        <button type="button" class="cancel-delete">Annulla</button>
+                    </form>
+                </div>
+                </div>
             </div>
         </main>
     </div>

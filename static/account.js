@@ -25,3 +25,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
     checkChanges();
 });
+
+// per il modale
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById("deleteModal");
+
+        var btn = document.getElementById("openDeleteModal");
+        
+        var span = document.getElementsByClassName("close")[0];
+        
+        var cancelBtn = document.getElementsByClassName("cancel-delete")[0];
+        
+        btn.onclick = function() {
+          modal.style.display = "block";
+        }
+        
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        
+        cancelBtn.onclick = function() {
+          modal.style.display = "none";
+        }
+        
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+});

@@ -1,18 +1,20 @@
+import bcrypt
 from flask import Flask,render_template, url_for, redirect, request, session, jsonify, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from requests import Session
-from sqlalchemy import func, desc, or_
-from flask_login import LoginManager, UserMixin, login_user, logout_user
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from datetime import timedelta, datetime
 import os
 from sqlalchemy.types import Date
 from sqlalchemy.dialects.postgresql import JSON
-
 from flask_dance.contrib.github import make_github_blueprint, github
 import secrets
 import string
+import utils
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
 app.config["SECRET_KEY"] = "ASSI2024"
@@ -73,6 +75,7 @@ def loader_user(user_id):
 def main_route():
     return render_template("index.html")
 
+
 @app.route('/registrazione', methods=["GET", "POST"])
 def registrazione():
     if request.method == "POST":
@@ -82,8 +85,8 @@ def registrazione():
         password_verify = request.form.get("password_conf")
         data_di_nascita_str = request.form.get('birthdate')
         
-        diete = request.form.getlist('diete')  
-        intolleranze = request.form.getlist('intolleranze')  
+        diete = request.form.getlist('diete')
+        intolleranze = request.form.getlist('intolleranze')
 
         # Si potrebbe evitare sta cose soprattutto se la data non viene usata
         if data_di_nascita_str:
@@ -94,23 +97,24 @@ def registrazione():
         else:
             data_di_nascita = None
 
-        password_ok = True  # Implementare qualcosa con regex per vedere se psw è complessa
+        password_ok = utils.is_valid_password(password)
         user = Users.query.filter_by(username=username).first()
 
         if user:
             return render_template("registrazione.html", user_alive=True)
 
         if password == password_verify and password_ok:
-            user = Users(username=username, password=password, email=email, 
-                         data_di_nascita=data_di_nascita, diete=diete, intolleranze=intolleranze)
+
+            hashed_password = bcrypt.generate_password_hash(password)
+
+            user = Users(username=username, password=hashed_password, email=email, data_di_nascita=data_di_nascita, diete=diete, intolleranze=intolleranze)
             db.session.add(user)
             db.session.commit()
 
             session.permanent = True
-            
             session['username'] = username
-            session['password'] = password
             session['id'] = user.id
+
 
             return redirect(url_for("main_route"))
         else:
@@ -122,16 +126,18 @@ def registrazione():
         return render_template("registrazione.html")
 
 
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username_or_email = request.form.get("username_input")
         password_verify = request.form.get("password_input")
         
-        # Cerca per username o email
+        #cerca per username o email
         user = Users.query.filter((Users.username == username_or_email) | (Users.email == username_or_email)).first()
 
-        if user and user.password == password_verify:
+        if user and bcrypt.check_password_hash(user.password, password_verify):
             login_user(user)
             session.permanent = True
             session['username'] = user.username
@@ -151,6 +157,8 @@ def login():
     
     else:
         return render_template("login.html", something_failed=False)
+
+
 
 @app.route("/logout")
 def logout():
@@ -198,17 +206,41 @@ def github_login():
         alphabet = string.ascii_letters + string.digits
         password = ''.join(secrets.choice(alphabet) for i in range(12))
 
-        user = Users(username=username, password=password, email=email, 
+        hashed_password = bcrypt.generate_password_hash(password)
+
+
+        user = Users(username=username, password=hashed_password, email=email, 
                      data_di_nascita=None, diete=None, intolleranze=None)
         db.session.add(user)
         db.session.commit()
 
     session.permanent = True
-    session['username'] = username
-    session['password'] = password
+    session['username'] = user.username
+    session['password'] = user.password
     session['id'] = user.id
 
     return redirect(url_for("main_route"))
+
+
+@app.route("/delete_account", methods=["POST"])
+def delete_account():
+    if 'id' in session:
+        user_id = session['id']
+        user = Users.query.get(user_id)
+        
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            
+            session.clear()
+            logout_user()
+            
+            return redirect(url_for("logout"))
+        
+        return redirect(url_for("account"))
+    
+    return redirect(url_for("login"))
+
 
 @app.route('/<something>')
 def goto(something):
@@ -255,7 +287,7 @@ def idee_rand():
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
-        'favicon.ico',mimetype='image/vnd.microsoft.icon')
+        'fav.ico',mimetype='image/vnd.microsoft.icon')
 
 if __name__ == '__main__':
     app.run(debug=True)
