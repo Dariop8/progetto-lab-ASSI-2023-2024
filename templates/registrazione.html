@@ -28,10 +28,6 @@
                         <input type="email" id="email" name="email" required>
                     </div>
                     <div class="input-group">
-                        <label for="password">Aggiorna Password</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                    <div class="input-group">
                         <label for="birthdate">Data di nascita</label>
                         <input type="date" id="birthdate" name="birthdate" required>
                     </div>
@@ -65,11 +61,11 @@
                     <button type="submit">Registrati</button>
                 </form>
                 <div class="registration-options">
-                    <p>Registrati con</p>
+                    <p>Oppure egistrati con</p>
                     <div class="social-login">
-                        <button class="google-login">G</button>
-                        <button class="facebook-login">f</button>
-                        <button class="twitter-login">😺</button>
+                        <button id="google-button" class="google-login">G</button>
+                        <button id="facebook-button" class="facebook-login">f</button>
+                        <button id="github-button" class="github-login">😺</button>
                     </div>
                 </div>
                 <p>Hai già un account? <a href="/login">Accedi</a></p>
@@ -77,6 +73,8 @@
             </div>
         </main>
     </div>
+    <script src="../static/login.js"></script>
+
 </body>
 </html>
 {% endblock %}

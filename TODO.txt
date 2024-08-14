@@ -1,0 +1,6 @@
+[ ] notifiche di errore in login e registrazione (psw è debole o non sono uguali, se l'account gia esiste ecc)
+[ ] consiglia in automatico psw forti
+[ ] dice in real time se la psw è debole, ottima ecc
+[ ] spaghetti che passano dopo la registrazione
+[ ] possibilità di modificare la psw
+[ ] come gestiamo la modifica di password dopo l'accesso con google/github?

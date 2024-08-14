@@ -8,10 +8,14 @@ import os
 from sqlalchemy.types import Date
 from sqlalchemy.dialects.postgresql import JSON
 from flask_dance.contrib.github import make_github_blueprint, github
+from flask_dance.contrib.google import make_google_blueprint, google
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 import secrets
 import string
 import utils
 from flask_bcrypt import Bcrypt
+import chiavi
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -27,14 +31,26 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+google_blueprint = make_google_blueprint(
+    client_id=chiavi.google_client_id,
+    client_secret=chiavi.google_client_secret,
+    scope=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+    redirect_to="google_login"
+)
+
 # configuro il blueprint di GitHub
 github_blueprint = make_github_blueprint(
-    client_id="Ov23liBdiIHtl6sEma1M",
-    client_secret="95e77207bb3717a810dcbc478caab519a5a8131a",
+    client_id=chiavi.github_client_id,
+    client_secret=chiavi.github_client_secret,
     scope="user:email",
     redirect_to="github_login"
 )
+
+#importo blueprint di google e metto il listener in login.js
 app.register_blueprint(github_blueprint, url_prefix="/github_login")
+app.register_blueprint(google_blueprint, url_prefix="/google_login")
+
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1" 
 
 class Users(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -167,6 +183,57 @@ def logout():
 
     return redirect(url_for("main_route"))
 
+#callback login con google
+@app.route("/google_login")
+def google_login():
+    if not google.authorized:
+        return redirect(url_for("google.login"))
+
+    token = google.token['access_token']
+    credentials = Credentials(token=token)
+    service = build('people', 'v1', credentials=credentials)
+
+    try:
+        profile = service.people().get(resourceName='people/me', personFields='names,emailAddresses').execute()
+    except Exception as e:
+        print(f'An error occurred: {e}')
+        return redirect(url_for("login"))
+
+    email = None
+    username = None
+
+    if 'emailAddresses' in profile:
+        email = profile['emailAddresses'][0]['value']
+        print("ENAIL-   ")
+    if 'names' in profile:
+        print("USERMANE- ")
+        username = profile['names'][0]['displayName']
+
+    if email is None:
+        return redirect(url_for("login"))
+
+    user = Users.query.filter_by(email=email).first()
+
+    if user is None:
+        #password casuale come per github
+        alphabet = string.ascii_letters + string.digits
+        password = ''.join(secrets.choice(alphabet) for i in range(12))
+
+        hashed_password = bcrypt.generate_password_hash(password)
+
+        user = Users(username=username, password=hashed_password, email=email, 
+                     data_di_nascita=None, diete=[], intolleranze=[])
+        db.session.add(user)
+        db.session.commit()
+
+    session.permanent = True
+    session['username'] = user.username
+    session['password'] = user.password 
+    session['id'] = user.id
+
+    return redirect(url_for("main_route"))
+
+
 # route per gestire il callback del login di GitHub
 @app.route("/github_login")
 def github_login():
@@ -257,17 +324,68 @@ def account():
     
     return redirect(url_for("login"))
 
+@app.route('/update_password', methods=['POST'])
+def update_password():
+    if 'id' in session:
+        user_id = session['id']
+        user = Users.query.get(user_id)
+
+        old_password = request.form.get('old_password')
+        new_password = request.form.get('new_password')
+        confirm_new_password = request.form.get('confirm_new_password')
+
+        if not bcrypt.check_password_hash(user.password, old_password):
+            flash('Old password is incorrect', 'error')
+            return redirect(url_for('account'))
+
+        if new_password != confirm_new_password:
+            flash('New passwords do not match', 'error')
+            return redirect(url_for('account'))
+
+        if not utils.is_valid_password(new_password):
+            flash('New password is too simple', 'error')
+            return redirect(url_for('account'))
+
+        hashed_new_password = bcrypt.generate_password_hash(new_password)
+        user.password = hashed_new_password
+        db.session.commit()
+
+        flash('Password updated successfully', 'success')
+        return redirect(url_for('account'))
+
+    flash('You need to log in to update your password', 'error')
+    return redirect(url_for('login'))
+
+@app.route('/update_birthdate', methods=['POST'])
+def update_birthdate():
+    if 'id' in session:
+        user_id = session['id']
+        user = Users.query.get(user_id)
+
+        new_birthdate_str = request.form.get('birthdate')
+
+        try:
+            new_birthdate = datetime.strptime(new_birthdate_str, '%Y-%m-%d').date()
+            user.data_di_nascita = new_birthdate
+            db.session.commit()
+            flash('Data di nascita aggiornata con successo', 'success')
+        except ValueError:
+            flash('Formato data non valido', 'error')
+
+        return redirect(url_for('account'))
+
+    flash('Devi effettuare il login per aggiornare la data di nascita', 'error')
+    return redirect(url_for('login'))
+
 @app.route('/update_preferences', methods=['POST'])
 def update_preferences():
     if 'id' in session:
         user_id = session['id']
         user = Users.query.get(user_id)
 
-        # Aggiorna le diete
         selected_diets = request.form.getlist('diet')
         user.diete = selected_diets
 
-        # Aggiorna le intolleranze
         selected_allergies = request.form.getlist('allergies')
         user.intolleranze = selected_allergies
 
@@ -291,6 +409,3 @@ def favicon():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-

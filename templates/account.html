@@ -24,7 +24,42 @@
                     
                     <p>Username: <span class="user-info">{{ username }}</span></p>
                     <p>Email: <span class="user-info">{{ email }}</span></p>
-                    <p>Data di nascita: <span class="user-info">{{ data_nascita }}</span></p>
+                    <button class="btn" id="changePasswordBtn">Cambia Password</button>
+
+                    <div id="changePasswordModal" class="modal">
+                        <div class="modal-content">
+                            <span class="close">&times;</span>
+                            <h3>Cambia Password</h3>
+                            <form id="password-form" method="POST" action="{{ url_for('update_password') }}">
+                                <label for="old_password">Vecchia Password:</label>
+                                <input type="password" id="old_password" name="old_password" required><br>
+                                <label for="new_password">Nuova Password:</label>
+                                <input type="password" id="new_password" name="new_password" required><br>
+                                <label for="confirm_new_password">Conferma Password:</label>
+                                <input type="password" id="confirm_new_password" name="confirm_new_password" required><br>
+                                <button type="submit" id="save-password-button">Salva Password</button>
+                            </form>
+                        </div>
+                    </div>
+
+
+                    
+
+                    <form id="birthdate-form" method="POST" action="{{ url_for('update_birthdate') }}">
+                        <p>Data di nascita: 
+                            <input type="date" name="birthdate" id="birthdate" class="user-info" value="{{ data_nascita }}">
+                        </p>
+                        <button class="btn" type="submit" id="save-birthdate-button">Aggiorna Data di Nascita</button>
+                    </form>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <ul class="flashes">
+                                {% for category, message in messages %}
+                                    <li class="{{ category }}">{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endwith %}
                     <form id="preferences-form" method="POST" action="/update_preferences">
                         <div class="editable-info">
                             <p>Diete particolari:</p>
@@ -56,7 +91,7 @@
                             </div>
                         </div>
                     
-                        <button type="submit" id="save-button" disabled>Salva modifiche</button>
+                        <button class="btn" type="submit" id="save-button" disabled>Salva modifiche</button>
                     </form>
                     
 
@@ -79,5 +114,11 @@
         </main>
     </div>
 </body>
+<script>
+    // Script to handle birthdate editing and saving
+    document.getElementById('birthdate').addEventListener('change', function() {
+        document.getElementById('save-birthdate-button').disabled = false;
+    });
+</script>
 </html>
 {% endblock %}

@@ -6,4 +6,8 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('facebook-button').addEventListener("click", function() {
         window.location.href = "/login/facebook";
     });
+
+    document.getElementById('google-button').addEventListener("click", function() {
+        window.location.href = "/google_login";
+    });
 });

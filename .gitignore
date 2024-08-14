@@ -1,2 +1,4 @@
 instance/db.sqlite
+chiavi.py
 __pycache__/
+client_secret.json
