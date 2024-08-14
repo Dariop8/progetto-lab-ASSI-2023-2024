@@ -39,5 +39,9 @@ function populateRecipesList(recipes) {
         `;
 
         recipeListDiv.appendChild(recipeElement);
+
+        recipeElement.addEventListener('click', function() {
+            window.location.href = `/ricetta?id=${recipe.id}`;
+        });
     });
 }

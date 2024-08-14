@@ -92,13 +92,32 @@ main {
 .filter-section label {
     display: block;
     margin-bottom: 5px;
+    font-weight: bold;
 }
 
-.filter-section select {
-    width: 100%;
+#toggle-origine {
+    margin-bottom: 10px;
     padding: 8px;
-    border: 1px solid #ccc;
+    background-color: #5cb85c;
+    color: white;
+    border: none;
     border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.checkbox-group {
+    display: none;
+    flex-direction: column;
+}
+
+.checkbox-group label {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.checkbox-group input {
+    margin-right: 10px;
 }
 
 .filter-section select {

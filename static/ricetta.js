@@ -2,7 +2,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     recipeId = urlParams.get('id');
     const ingredientsUrl = urlParams.get('ingredients');
-    const ingredientsArray = ingredientsUrl.split(',');
+    let ingredientsArray;
+    if (ingredientsUrl != null) {
+        ingredientsArray = ingredientsUrl.split(',');
+    } else {
+        ingredientsArray = [];
+    }
 
     const settings = {
         async: true,
@@ -15,14 +20,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
-    $.ajax(settings).done(function (response) {
-        //console.log(response); 
-        populateRecipePage(response); 
+    $.ajax(settings).done(function (response1) {
+        //console.log(response1);
+        const settings = {
+            async: true,
+            crossDomain: true,
+            url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/${recipeId}/analyzedInstructions?stepBreakdown=true`,
+            method: 'GET',
+            headers: {
+                'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
+                'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
+            }
+        };
+        
+        $.ajax(settings).done(function (response2) {
+            //console.log(response2);
+            populateRecipePage(response1, response2); 
+        });
     }).fail(function (error) {
         console.error('Error fetching the recipe:', error);
     });
 
-    function populateRecipePage(recipe) {
+    function populateRecipePage(recipe, instructions) {
         const recipeDetailsDiv = document.querySelector('.recipe-details');
     
         let recipeHTML = `
@@ -47,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const recipeIngredients = recipe.extendedIngredients;
         recipeIngredients.forEach(ingredient => {
-            if (ingredientsArray.includes(ingredient.name)){
+            if (ingredientsArray.some(ingredientItem => ingredient.name.includes(ingredientItem))) {
                 recipeHTML += `
                     <li class="possessed">
                         ${ingredient.name}
@@ -58,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 recipeHTML += `
                     <li class="to-buy">${ingredient.name}</li>
                 `;
-            }
+            }            
         });
 
         recipeHTML += `
@@ -66,13 +85,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="steps">
                     <ul>
-                        <li>Step 1: Preparare il ragù alla bolognese cuocendo carne macinata, cipolla, carota e sedano in una pentola con olio d'oliva. Aggiungere passata di pomodoro, vino rosso e cuocere a fuoco lento per almeno 2 ore.</li>
-                        <li>Step 2: Preparare la besciamella sciogliendo burro in una casseruola, aggiungere farina e mescolare fino a ottenere un roux. Aggiungere latte caldo poco alla volta, mescolando continuamente fino a ottenere una salsa liscia e densa. Condire con sale, pepe e noce moscata.</li>
-                        <li>Step 3: Cuocere la pasta all'uovo per lasagna in abbondante acqua salata per qualche minuto, quindi scolarla e stenderla su un canovaccio per farla asciugare.</li>
-                        <li>Step 4: Preriscaldare il forno a 180°C. Iniziare a comporre la lasagna in una teglia, alternando strati di pasta, ragù, besciamella e parmigiano. Ripetere fino a esaurire gli ingredienti, terminando con uno strato di besciamella e una generosa spolverata di parmigiano.</li>
-                        <li>Step 5: Coprire la teglia con un foglio di alluminio e cuocere in forno per 30 minuti. Rimuovere il foglio di alluminio e cuocere per altri 10-15 minuti, o fino a quando la superficie sarà dorata e croccante.</li>
-                        <li>Step 6: Lasciare riposare la lasagna per qualche minuto prima di tagliarla e servirla. Questo permetterà ai sapori di amalgamarsi e renderà più facile il taglio.</li>
-                        <li>Step 7: Servire la lasagna calda, accompagnata da un'insalata verde o da un bicchiere di vino rosso.</li>
+        `;
+
+        if (instructions.length > 0) {
+            const firstStepGroup = instructions[0];
+            firstStepGroup.steps.forEach(step => {
+                recipeHTML += `
+                    <li>
+                        <strong>Step ${step.number}:</strong> ${step.step}
+                    </li>`;
+            });
+        } else {
+            recipeHTML += `
+                <li class="no-steps">
+                    <div class="no-steps-content">
+                        <p class="no-steps-title">Nessuna istruzione disponibile</p>
+                        <p>Siamo spiacenti, ma non ci sono istruzioni disponibili per questa ricetta.</p>
+                    </div>
+                </li>`;
+        }
+
+        recipeHTML += `
                     </ul>
                 </div>
             </div>

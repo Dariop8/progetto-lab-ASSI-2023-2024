@@ -28,22 +28,51 @@
                         <label for="type">Tipo</label>
                         <select id="type">
                             <option value="">-- Seleziona Tipo --</option>
-                            <option value="tipo1">Tipo 1</option>
-                            <option value="tipo2">Tipo 2</option>
-                            <option value="tipo3">Tipo 3</option>
+                            <option value="tipo1">main course</option>
+                            <option value="tipo2">side dish</option>
+                            <option value="tipo3">dessert</option>
+                            <option value="tipo2">appetizer</option>
+                            <option value="tipo3">salad</option>
+                            <option value="tipo2">bread</option>
+                            <option value="tipo3">breakfast</option>
+                            <option value="tipo2">soup</option>
+                            <option value="tipo3">beverage</option>
+                            <option value="tipo3">sauce</option>
+                            <option value="tipo2">drink</option>
                         </select>
                     </div>
                     <div class="filter-section">
-                        <label for="origin">Origine</label>
-                        <select id="origin">
-                            <option value="">-- Seleziona Origine --</option>
-                            <option value="origine1">Origine 1</option>
-                            <option value="origine2">Origine 2</option>
-                            <option value="origine3">Origine 3</option>
-                        </select>
+                        <label style="display: inline-block;">Origine</label>
+                        <button id="toggle-origine" style="display: inline-block;">↓</button>
+                        <div class="checkbox-group" id="origine-options">
+                            <label><input type="checkbox" value="african"> African</label>
+                            <label><input type="checkbox" value="chinese"> Chinese</label>
+                            <label><input type="checkbox" value="japanese"> Japanese</label>
+                            <label><input type="checkbox" value="korean"> Korean</label>
+                            <label><input type="checkbox" value="vietnamese"> Vietnamese</label>
+                            <label><input type="checkbox" value="thai"> Thai</label>
+                            <label><input type="checkbox" value="indian"> Indian</label>
+                            <label><input type="checkbox" value="british"> British</label>
+                            <label><input type="checkbox" value="irish"> Irish</label>
+                            <label><input type="checkbox" value="french"> French</label>
+                            <label><input type="checkbox" value="italian"> Italian</label>
+                            <label><input type="checkbox" value="mexican"> Mexican</label>
+                            <label><input type="checkbox" value="spanish"> Spanish</label>
+                            <label><input type="checkbox" value="middle eastern"> Middle Eastern</label>
+                            <label><input type="checkbox" value="jewish"> Jewish</label>
+                            <label><input type="checkbox" value="american"> American</label>
+                            <label><input type="checkbox" value="cajun"> Cajun</label>
+                            <label><input type="checkbox" value="southern"> Southern</label>
+                            <label><input type="checkbox" value="greek"> Greek</label>
+                            <label><input type="checkbox" value="german"> German</label>
+                            <label><input type="checkbox" value="nordic"> Nordic</label>
+                            <label><input type="checkbox" value="eastern european"> Eastern European</label>
+                            <label><input type="checkbox" value="caribbean"> Caribbean</label>
+                            <label><input type="checkbox" value="latin american"> Latin American</label>
+                        </div>
                     </div>
                     <div class="filter-section">
-                        <label for="max-time">Max Time</label>
+                        <label for="max-time">Max Tempo</label>
                         <select id="max-time">
                             <option value="">-- Seleziona Tempo Max --</option>
                             <option value="30">30 minuti</option>
@@ -52,7 +81,7 @@
                         </select>
                     </div>
                     <div class="filter-section">
-                        <label for="max-cal">Max Cal</label>
+                        <label for="max-cal">Max Calorie</label>
                         <select id="max-cal">
                             <option value="">-- Seleziona Calorie Max --</option>
                             <option value="200">200 kcal</option>
@@ -72,8 +101,21 @@
         </footer>
     </div>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="../static/idee_random.js"></script>
+    <script>
+        document.getElementById('toggle-origine').addEventListener('click', function() {
+            const origineOptions = document.getElementById('origine-options');
+            if (origineOptions.style.display === 'none' || origineOptions.style.display === '') {
+                origineOptions.style.display = 'block';
+                this.textContent = '↑';
+            } else {
+                origineOptions.style.display = 'none';
+                this.textContent = '↓';
+            }
+        });
+    </script>
+
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="../static/idee_random.js"></script> -->
 </body>
 </html>
 {% endblock %}
