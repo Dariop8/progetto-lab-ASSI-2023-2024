@@ -9,6 +9,7 @@ from sqlalchemy.types import Date
 from sqlalchemy.dialects.postgresql import JSON
 from flask_dance.contrib.github import make_github_blueprint, github
 from flask_dance.contrib.google import make_google_blueprint, google
+from flask_dance.contrib.facebook import make_facebook_blueprint, facebook
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 import secrets
@@ -31,6 +32,14 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+
+facebook_blueprint = make_facebook_blueprint(
+    client_id='your_facebook_client_id',
+    client_secret='your_facebook_client_secret',
+    scope=['email', 'public_profile'],  
+    redirect_to="facebook_login"
+)
+
 google_blueprint = make_google_blueprint(
     client_id=chiavi.google_client_id,
     client_secret=chiavi.google_client_secret,
@@ -49,6 +58,7 @@ github_blueprint = make_github_blueprint(
 #importo blueprint di google e metto il listener in login.js
 app.register_blueprint(github_blueprint, url_prefix="/github_login")
 app.register_blueprint(google_blueprint, url_prefix="/google_login")
+app.register_blueprint(facebook_blueprint, url_prefix="/facebook_login")
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1" 
 
@@ -274,6 +284,43 @@ def github_login():
 
         hashed_password = bcrypt.generate_password_hash(password)
 
+
+        user = Users(username=username, password=hashed_password, email=email, 
+                     data_di_nascita=None, diete=None, intolleranze=None)
+        db.session.add(user)
+        db.session.commit()
+
+    session.permanent = True
+    session['username'] = user.username
+    session['password'] = user.password
+    session['id'] = user.id
+
+    return redirect(url_for("main_route"))
+
+@app.route("/facebook_login")
+def facebook_login():
+    if not facebook.authorized:
+        return redirect(url_for("facebook.login"))
+
+    resp = facebook.get("/me?fields=id,email,name")
+    assert resp.ok, resp.text
+    info = resp.json()
+
+    username = info.get("name")  
+    email = info.get("email")    
+
+    if email is None:
+        return redirect(url_for("login"))  
+    
+    print("User:", username, "con email:", email)
+    
+    user = Users.query.filter_by(email=email).first()
+    
+    if user is None:
+        alphabet = string.ascii_letters + string.digits
+        password = ''.join(secrets.choice(alphabet) for _ in range(12))
+
+        hashed_password = bcrypt.generate_password_hash(password)
 
         user = Users(username=username, password=hashed_password, email=email, 
                      data_di_nascita=None, diete=None, intolleranze=None)
