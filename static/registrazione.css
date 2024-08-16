@@ -125,18 +125,35 @@ button[type="submit"]:hover {
     background-color: #fff;
 }
 
-.social-login button:hover {
+.social-login img:hover {
     background-color: #f0f0f0;
+    opacity: 0.5;
 }
 
-.social-login .google-login {
+/* .social-login .google-login {
     color: #db4437;
 }
 
 .social-login .facebook-login {
     color: #3b5998;
+} */
+
+.social-login  img {
+    /* width: 50px; */
+    height: 50px;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-.social-login .twitter-login {
-    color: #1da1f2;
+.password-strength {
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+.password-strength.weak {
+    color: red;
+}
+
+.password-strength.strong {
+    color: green;
 }

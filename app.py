@@ -21,10 +21,10 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
-app.config["SECRET_KEY"] = "ASSI2024"
+app.config["SECRET_KEY"] = chiavi.config_secret_key
 
 
-app.permanent_session_lifetime = timedelta(minutes=40)
+app.permanent_session_lifetime = timedelta(minutes=20) #dopo 20 minuti fa automaticamente logout
 
 db = SQLAlchemy()
 
@@ -108,6 +108,7 @@ def registrazione():
         if data_di_nascita_str:
             try:
                 data_di_nascita = datetime.strptime(data_di_nascita_str, '%Y-%m-%d').date()
+                #qua criptare data di nascita
             except ValueError:
                 data_di_nascita = None
         else:
@@ -204,9 +205,7 @@ def google_login():
 
     if 'emailAddresses' in profile:
         email = profile['emailAddresses'][0]['value']
-        print("ENAIL-   ")
     if 'names' in profile:
-        print("USERMANE- ")
         username = profile['names'][0]['displayName']
 
     if email is None:

@@ -9,6 +9,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrazione - Nome Sito</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='registrazione.css')}}">
+    <script src="{{ url_for('static', filename='registrazione.js') }}"></script>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/fav.ico') }}">
+
 </head>
 <body>
     {% endblock %}
@@ -34,6 +37,8 @@
                     <div class="input-group">
                         <label for="password">Password</label>
                         <input type="password" id="password" name="password" required>
+                        <p id="password-strength" class="password-strength"></p>
+
                     </div>
                     <div class="input-group">
                         <label for="password_conf">Conferma Password</label>
@@ -63,9 +68,9 @@
                 <div class="registration-options">
                     <p>Oppure egistrati con</p>
                     <div class="social-login">
-                        <button id="google-button" class="google-login">G</button>
-                        <button id="facebook-button" class="facebook-login">f</button>
-                        <button id="github-button" class="github-login">😺</button>
+                        <img id="google-button" class="google-login" src="../static/images/google.png">                      
+                        <img id="facebook-button" class="facebook-login" src="../static/images/facebook.png">
+                        <img id="github-button" class="github-login" src="../static/images/git.png">
                     </div>
                 </div>
                 <p>Hai già un account? <a href="/login">Accedi</a></p>
