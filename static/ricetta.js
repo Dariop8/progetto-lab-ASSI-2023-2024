@@ -48,8 +48,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <h1>Nome Ricetta: ${recipe.title}</h1>
             <div class="recipe-info">
                 <span>Tempo: ${recipe.readyInMinutes} minuti</span>
-                <span>Tipo: ${recipe.dishTypes ? recipe.dishTypes.join(', ') : 'Non specificato'}</span>
-                <span>Calorie: ${recipe.aggregateLikes ? recipe.aggregateLikes * 10 : 'Non disponibile'} kcal</span>
+                <span>Tipo: ${recipe.dishTypes ? recipe.dishTypes.join(', ') : 'non specificato'}</span>
+                <span>Calorie: ${recipe.nutrition.nutrients[0].amount} kcal</span>
             </div>
             <div class="recipe-image">
                 <img src="${recipe.image}" alt="Immagine della Ricetta">

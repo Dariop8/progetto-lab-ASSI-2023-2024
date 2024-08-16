@@ -19,8 +19,7 @@
             <div class="sidebar">
                 <h2>Cerca per nome</h2>
                 <div class="search-bar">
-                    <input type="text" placeholder="ricette">
-                    <button>Cerca</button>
+                    <input id="selected-recipe" type="text" placeholder="ricette">
                 </div>
                 <h2>Filtri</h2>
                 <div class="filters">
@@ -90,7 +89,7 @@
                         </select>
                     </div>
                 </div>
-                <button class="search-recipe">Cerca Ricetta</button>
+                <button id="search-recipe-button" class="search-recipe">Cerca Ricetta</button>
             </div>
             <div class="recipes">
                 <h1>RICETTE RANDOM</h1>
@@ -114,8 +113,8 @@
         });
     </script>
 
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="../static/idee_random.js"></script> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="../static/idee_random.js"></script> 
 </body>
 </html>
 {% endblock %}
