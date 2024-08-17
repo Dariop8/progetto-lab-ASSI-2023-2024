@@ -1,7 +1,6 @@
 import re
 import bcrypt
 import base64
-from cryptography.fernet import Fernet
 
 # La password deve contenere almeno 10 caratteri.
 # Deve contenere almeno una lettera maiuscola.

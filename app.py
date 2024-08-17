@@ -62,6 +62,21 @@ app.register_blueprint(facebook_blueprint, url_prefix="/facebook_login")
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1" 
 
+class Comments(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)
+    recipe_id = db.Column(db.Integer, nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    username = db.Column(db.String(30), nullable=False)
+    comment = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __init__(self, recipe_id, email, username, comment):
+        self.recipe_id = recipe_id
+        self.email = email
+        self.username = username
+        self.comment = comment
+
 class Users(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -97,7 +112,7 @@ with app.app_context():
 @login_manager.user_loader
 def loader_user(user_id):
     # return Session.get(user_id) 
-    Users.query.get(user_id)
+    return Users.query.get(int(user_id))
 
 
 @app.route("/")
@@ -503,6 +518,52 @@ def idee_rand():
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
         'fav.ico',mimetype='image/vnd.microsoft.icon')
+
+@app.route('/get-comments/<int:recipe_id>', methods=['GET'])
+def get_comments(recipe_id):
+    comments = Comments.query.filter_by(recipe_id=recipe_id).all()
+    comments_list = [{'username': c.username, 'comment': c.comment, 'timestamp': c.timestamp.strftime('%Y-%m-%d %H:%M:%S')} for c in comments]
+    return jsonify(comments_list)
+
+@app.route('/submit-comment', methods=['POST'])
+def submit_comment():
+
+    if 'id' in session:
+        user_id = session['id']
+        user = Users.query.get(user_id)
+
+        print(user.email)
+        print(user.username)
+
+        recipe_id = request.form.get('recipe_id') 
+        comment_text = request.form.get('comment')
+        
+        print(recipe_id)
+        print(comment_text)
+
+        if not recipe_id or not comment_text:
+            return jsonify({'status': 'error', 'message': 'Dati mancanti'}), 400
+        
+        print(f"prima de new comment")
+
+        new_comment = Comments(
+            recipe_id=recipe_id,
+            email=user.email,
+            username=user.username,
+            comment=comment_text
+        )
+
+        print(f"dopo de new comment")
+
+        db.session.add(new_comment)
+
+        print(f"dopo add")
+
+        db.session.commit()
+
+        print(f"dopo commit")
+    
+    return redirect(url_for("main_route"))
 
 if __name__ == '__main__':
     app.run(debug=True)
