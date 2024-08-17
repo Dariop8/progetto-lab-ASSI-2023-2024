@@ -209,8 +209,11 @@ with app.app_context():
 
 @login_manager.user_loader
 def loader_user(user_id):
-    # return Session.get(user_id) 
-    return Users.query.get(int(user_id))
+    return db.session.get(Users, user_id)
+# def loader_user(user_id):
+#     # return Session.get(user_id) 
+#     Users.query.get(user_id)
+
 
 
 @app.route("/")
@@ -455,7 +458,7 @@ def facebook_login():
 def delete_account():
     if 'id' in session:
         user_id = session['id']
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
         
         if user:
             db.session.delete(user)
@@ -479,7 +482,7 @@ def goto(something):
 def account():
     if 'id' in session:
         user_id = session['id']
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
         
         if user:
             return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze)
@@ -490,7 +493,7 @@ def account():
 def update_password():
     if 'id' in session:
         user_id = session['id']
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
 
         old_password = request.form.get('old_password')
         new_password = request.form.get('new_password')
@@ -522,7 +525,7 @@ def update_password():
 def update_birthdate():
     if 'id' in session:
         user_id = session['id']
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
 
         new_birthdate_str = request.form.get('birthdate')
 
@@ -543,7 +546,7 @@ def update_birthdate():
 def update_preferences():
     if 'id' in session:
         user_id = session['id']
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
 
         selected_diets = request.form.getlist('diet')
         user.diete = selected_diets
@@ -558,13 +561,15 @@ def update_preferences():
 
 @app.route("/ricetta")
 def ricetta():
-    return render_template("ricetta.html")
+    if 'id' in session:
+        return render_template("ricetta.html")
+    return redirect(url_for('login'))
 
 @app.route('/update_shopping_list', methods=['POST'])
 def update_shopping_list():
     if 'id' in session:
         user_id = session['id']
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
 
         ingredient = request.form.get('ingredient')
 
@@ -583,7 +588,7 @@ def update_shopping_list():
 def lista_spesa():
     if 'id' in session:
         user_id = session['id']
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
 
         user.lista_spesa
         return render_template("lista_spesa.html", lista=user.lista_spesa)
@@ -593,7 +598,7 @@ def lista_spesa():
 def remove_from_shopping_list():
     if 'id' in session:
         user_id = session['id']
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
 
         data = request.get_json()
         ingredient = data.get('ingredient')
@@ -628,7 +633,7 @@ def submit_comment():
 
     if 'id' in session:
         user_id = session['id']
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
 
         print(user.email)
         print(user.username)
