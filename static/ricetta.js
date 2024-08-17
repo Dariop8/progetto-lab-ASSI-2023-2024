@@ -63,30 +63,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p><strong>Ingredienti:</strong></p>
                     <ul class="ingredientsUl"> 
         `;
-
+    
         const recipeIngredients = recipe.extendedIngredients;
         recipeIngredients.forEach(ingredient => {
             if (ingredientsArray.some(ingredientItem => ingredient.name.includes(ingredientItem))) {
                 recipeHTML += `
                     <li class="possessed">
                         ${ingredient.name}
-                        <span class="checkmark">✔</span> 
-                    </li>
+                        <span class="checkmark">✔</span>
+                        <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Aggiungi alla lista della spesa</button></li>
+    
+                    
                 `;
             } else {
                 recipeHTML += `
-                    <li class="to-buy">${ingredient.name}</li>
+                    <li class="to-buy">${ingredient.name}
+                    <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Aggiungi alla lista della spesa</button></li>
                 `;
-            }            
+            }      
         });
-
+        
         recipeHTML += `
                     </ul>
                 </div>
                 <div class="steps">
                     <ul>
         `;
-
+    
         if (instructions.length > 0) {
             const firstStepGroup = instructions[0];
             firstStepGroup.steps.forEach(step => {
@@ -104,14 +107,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </li>`;
         }
-
+    
         recipeHTML += `
                     </ul>
                 </div>
             </div>
         `;
-
+    
         recipeDetailsDiv.innerHTML = recipeHTML;
+    
+        document.querySelectorAll('.add-to-shopping-list').forEach(button => {
+            button.addEventListener('click', function() {
+                const ingredient = this.getAttribute('data-ingredient');
+                addToShoppingList(ingredient);
+            });
+        });
+    }
+    
+    function addToShoppingList(ingredient) {
+        $.ajax({
+            type: 'POST',
+            url: '/update_shopping_list',
+            data: { ingredient: ingredient },
+            success: function(response) {
+                const button = document.querySelector(`button[data-ingredient="${ingredient}"]`);
+                button.textContent = "Aggiunto";
+                
+                button.disabled = true;
+
+            },
+            error: function() {
+                alert('Errore durante l\'aggiunta dell\'ingrediente alla lista della spesa.\n UN MESSAGGIO COSI FA CAGARE, FARE IN MODO DIVERSO');
+            }
+        });
     }
 });
 

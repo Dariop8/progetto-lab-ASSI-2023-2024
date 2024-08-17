@@ -72,14 +72,17 @@ class Users(UserMixin, db.Model):
     data_di_nascita = db.Column(Date, nullable=True) #non so se Date è valido
     diete = db.Column(JSON, nullable=True) #non so se JSON è valido
     intolleranze = db.Column(JSON, nullable=True)  
+    lista_spesa = db.Column(JSON, nullable=True)
 
-    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None):
+    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, lista_spesa=None):
         self.username = username
         self.password = password
         self.email = email
         self.data_di_nascita = data_di_nascita
         self.diete = diete if diete is not None else []
         self.intolleranze = intolleranze if intolleranze is not None else []
+        self.lista_spesa = lista_spesa if lista_spesa is not None else []
+
 
 
     def __repr__(self):
@@ -443,6 +446,54 @@ def update_preferences():
 @app.route("/ricetta")
 def ricetta():
     return render_template("ricetta.html")
+
+@app.route('/update_shopping_list', methods=['POST'])
+def update_shopping_list():
+    if 'id' in session:
+        user_id = session['id']
+        user = Users.query.get(user_id)
+
+        ingredient = request.form.get('ingredient')
+
+        if ingredient:
+            updated_lista_spesa = user.lista_spesa.copy() if user.lista_spesa else []
+            if ingredient not in updated_lista_spesa:
+                updated_lista_spesa.append(ingredient)
+                user.lista_spesa = updated_lista_spesa
+                db.session.commit()
+
+            return jsonify({'message': f'{ingredient} aggiunto alla lista della spesa!'}), 200
+
+    return jsonify({'message': 'Errore durante l\'aggiunta alla lista della spesa.'}), 400
+
+@app.route("/lista_spesa")
+def lista_spesa():
+    if 'id' in session:
+        user_id = session['id']
+        user = Users.query.get(user_id)
+
+        user.lista_spesa
+        return render_template("lista_spesa.html", lista=user.lista_spesa)
+    return redirect(url_for('login'))
+
+@app.route('/remove_from_shopping_list', methods=['POST'])
+def remove_from_shopping_list():
+    if 'id' in session:
+        user_id = session['id']
+        user = Users.query.get(user_id)
+
+        data = request.get_json()
+        ingredient = data.get('ingredient')
+
+        if ingredient and ingredient in user.lista_spesa:
+            updated_lista_spesa = user.lista_spesa.copy()
+            updated_lista_spesa.remove(ingredient)
+            user.lista_spesa = updated_lista_spesa
+            db.session.commit()
+
+            return jsonify({'message': 'success'}), 200
+
+    return jsonify({'message': 'error'}), 400
 
 @app.route("/idee_rand")
 def idee_rand():

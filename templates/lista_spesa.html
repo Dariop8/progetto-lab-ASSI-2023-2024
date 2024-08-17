@@ -1,0 +1,45 @@
+{% extends 'header.html' %}
+{% block contenttop %}
+
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La tua lista della spesa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='lista_spesa.css')}}">
+
+    <script src="../static/lista_spesa.js"></script>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/fav.ico') }}">
+
+</head>
+<body>
+    {% endblock %}
+    {% block contentdown %}
+    <div class="container">
+
+        <main>
+            <div class="item-box">
+                {% if lista==[] %}
+                    <h2>La tua LISTA della SPESA è VUOTA!</h2>
+                {% else %}
+                <h2>LA TUA LISTA DELLA SPESA:</h2>
+                <div class="item-details">
+                    <ul>
+                        {% for el in lista %}
+                            <li>
+                                <p>- {{ el }}</p>
+                                <button class="remove-item" data-ingredient="{{ el }}">X</button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </div>
+                
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+{% endblock %}

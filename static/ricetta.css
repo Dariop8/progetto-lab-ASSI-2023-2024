@@ -73,6 +73,28 @@ main {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 }
 
+li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.add-to-shopping-list {
+    display: block;
+    margin-left: auto;
+    margin-right: 0;
+    padding: 10px 15px;
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: right;
+    margin-right: 100px;
+}
+
 .recipe-description {
     margin-bottom: 20px;
     font-size: 18px;
@@ -117,7 +139,7 @@ main {
     top: 0;
     font-size: 20px;
     color: green;
-    padding-left: 20px;
+    margin-left: 20%;
 }
 
 .possessed .checkmark {
