@@ -16,6 +16,8 @@ import secrets
 import string
 import utils
 from flask_bcrypt import Bcrypt
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from flask_mail import Mail, Message
 import chiavi
 
 app = Flask(__name__)
@@ -24,6 +26,16 @@ bcrypt = Bcrypt(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
 app.config["SECRET_KEY"] = chiavi.config_secret_key
 
+# configuro flask mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com' 
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'assispoonacularproject10@gmail.com'  
+app.config['MAIL_PASSWORD'] = 'xwrm guvz cpjk qism'  
+
+mail = Mail(app)
+# configuro itsdangerous
+s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 app.permanent_session_lifetime = timedelta(minutes=20) #dopo 20 minuti fa automaticamente logout
 
@@ -61,6 +73,92 @@ app.register_blueprint(google_blueprint, url_prefix="/google_login")
 app.register_blueprint(facebook_blueprint, url_prefix="/facebook_login")
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1" 
+
+
+
+def generate_reset_token(email):
+    return s.dumps(email, salt='password-reset-salt')
+
+def verify_reset_token(token, expiration=3600):
+    try:
+        email = s.loads(token, salt='password-reset-salt', max_age=expiration)
+    except (SignatureExpired, BadSignature):
+        return None
+    return email
+
+def send_reset_email(to_email, token):
+    with app.app_context():
+        msg = Message(
+            'Reset Your Password',
+            sender='assispoonacularproject10@gmail.com',
+            recipients=[to_email]
+        )
+        msg.body = f'''Per resettare la tua password, usa il seguente token:
+{token}
+
+Se non hai richiesto il reset della password, ignora questa email.
+'''
+        mail.send(msg)
+
+from flask import jsonify
+
+@app.route('/reset_password_request', methods=['POST'])
+def reset_password_request():
+    if 'id' in session:
+        user_id = session['id']
+        user = db.session.get(Users, user_id)
+        if user:
+            try:
+                token = generate_reset_token(user.email)
+                send_reset_email(user.email, token)
+
+
+                return jsonify({'success': True, 'message': 'Un token per il reset della password è stato inviato al tuo indirizzo email.'})
+            except Exception as e:
+                # Logga l'errore per debug
+                print(f"Errore durante il reset della password: {str(e)}")
+                return jsonify({'success': False, 'message': 'Errore durante l\'invio dell\'email.'}), 500
+        else:
+            return jsonify({'success': False, 'message': 'Utente non trovato.'}), 404
+    else:
+        return jsonify({'success': False, 'message': 'Non sei autenticato.'}), 403
+
+
+@app.route('/reset_password', methods=['POST'])
+def reset_password():
+    token = request.form.get('token')
+    new_password = request.form.get('new_password')
+    confirm_new_password = request.form.get('confirm_new_password')
+
+    email = verify_reset_token(token)
+    if email is None:
+        flash('Token non valido o scaduto.', 'error')
+        return redirect(url_for('login'))
+    print(f"LEZGOZGHI")
+
+    user = Users.query.filter_by(email=email).first()
+    if user:
+        if new_password == confirm_new_password:
+            if utils.is_valid_password(new_password):
+                hashed_password = bcrypt.generate_password_hash(new_password)
+                user.password = hashed_password
+                db.session.commit()
+                print(f"DAJEE")
+                flash('La tua password è stata aggiornata con successo.', 'success')
+                return redirect(url_for('account'))
+            else:
+                print(f"NON VALIDE")
+                flash('Le password non coincidono o non sono valide.', 'error')
+        else:
+            print(f"NON COINCIDONO")
+            flash('Le password non coincidono o non sono valide.', 'error')
+    else:
+        flash('Errore utente.', 'error')
+
+    return redirect(url_for('login'))
+
+
+
 
 class Comments(db.Model):
     __tablename__ = 'comments'

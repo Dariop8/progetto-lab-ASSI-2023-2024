@@ -83,4 +83,42 @@ document.addEventListener('DOMContentLoaded', function() {
       const confirmNewPassword = document.getElementById('confirm_new_password').value;
       document.getElementById('save-password-button').disabled = newPassword !== confirmNewPassword;
   }
+
+
+  var resetTokenModal = document.getElementById("resetTokenModal");
+  var resetTokenSpan = document.getElementsByClassName("close")[0];
+
+  document.getElementById('resetPasswordLink').onclick = function() {
+      resetTokenModal.style.display = "block";
+      changePasswordModal.style.display = "none";
+  
+      fetch('/reset_password_request', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          credentials: 'same-origin'  
+      })
+      .then(response => response.json())
+      .then(data => {
+          console.log(data);  // Stampa i dati per il debug
+          if (data.success) {
+              alert(data.message); // Se tutto va bene
+          } else {
+              alert(data.message); // Messaggio di errore
+          }
+      })
+      .catch(error => console.error('Errore:', error));
+  };
+
+  resetTokenSpan.onclick = function() {
+      resetTokenModal.style.display = "none";
+  };
+
+  window.onclick = function(event) {
+      if (event.target == resetTokenModal) {
+          resetTokenModal.style.display = "none";
+      }
+  };
+
 });

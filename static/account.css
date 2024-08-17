@@ -193,6 +193,12 @@ main {
     max-width: 400px;
 }
 
+.modal-content a {
+    cursor: pointer;
+    margin-left: 23%;
+    margin-top: 20px;
+}
+
 .close {
     color: #aaa;
     float: right;
