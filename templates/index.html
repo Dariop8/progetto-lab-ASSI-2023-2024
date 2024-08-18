@@ -15,7 +15,6 @@
     {% endblock %}
     {% block contentdown %}
     <div class="container">
-
         <main>
             <div class="sidebar">
                 <h2>Cosa hai in frigo?</h2>
@@ -45,6 +44,9 @@
             <div class="footer-logo">LOGO</div>
         </footer>
     </div>
+
+    <h1 id="user-diet" style="display: none;">{{ diet|tojson|safe }}</h1>
+    <h1 id="user-intolerances" style="display: none;">{{ intolerances|tojson|safe }}</h1> 
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../static/script.js"></script>

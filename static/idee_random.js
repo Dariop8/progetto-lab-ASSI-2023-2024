@@ -1,22 +1,44 @@
-// document.addEventListener('DOMContentLoaded', function() {
-//     const settings = {
-//         async: true,
-//         crossDomain: true,
-//         url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/random?number=2`,
-//         method: 'GET',
-//         headers: {
-//             'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
-//             'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
-//         }
-//     };
+const dietValue = document.getElementById('user-diet').textContent;
+const intolerancesValue = document.getElementById('user-intolerances').textContent;
 
-//     $.ajax(settings).done(function (response) {
-//         console.log(response); 
-//         populateRecipesList(response.recipes); 
-//     }).fail(function (error) {
-//         console.error('Error fetching ingredients:', error);
-//     });
-// });
+let dietArray = JSON.parse(dietValue);
+let intolerancesArray = JSON.parse(intolerancesValue);
+
+function cleanArray(arr) {
+    if (arr.length === 0 || (arr.length === 1 && arr[0] === "")) {
+        return [];
+    }
+    return arr;
+}
+
+dietArray = cleanArray(dietArray);
+intolerancesArray = cleanArray(intolerancesArray);
+// console.log(dietArray);
+// console.log(intolerancesArray);
+
+const dietString = dietArray.length ? `diet=${dietArray[0]}&` : '';
+const intolerancesString = intolerancesArray.length ? `intolerances=${intolerancesArray.join('%2C%20')}&` : '';
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const settings = {
+        async: true,
+        crossDomain: true,
+        url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/complexSearch?${dietString}${intolerancesString}instructionsRequired=true&fillIngredients=false&addRecipeInformation=false&addRecipeInstructions=false&addRecipeNutrition=false&ignorePantry=false&sort=max-used-ingredients&offset=0&number=20`,
+        method: 'GET',
+        headers: {
+            'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
+            'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
+        }
+    };
+
+    $.ajax(settings).done(function (response) {
+        //console.log(response);
+        populateRecipesList(response.results); 
+    }).fail(function (error) {
+        console.error('Error fetching recipes:', error);
+    });
+});
 
 document.getElementById('search-recipe-button').addEventListener('click', function() {
     let stringType = document.getElementById('type').value;
@@ -67,7 +89,7 @@ document.getElementById('search-recipe-button').addEventListener('click', functi
     const settings = {
         async: true,
         crossDomain: true,
-        url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/complexSearch?${query}${selectedType}${selectedCuisines}${selectedMaxTime}${selectedMaxCalories}&instructionsRequired=true&fillIngredients=false&addRecipeInformation=false&addRecipeInstructions=false&addRecipeNutrition=false&ignorePantry=true&offset=0&number=20`,
+        url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/complexSearch?${query}${selectedCuisines}${dietString}${intolerancesString}${selectedType}instructionsRequired=true&fillIngredients=false&addRecipeInformation=false&addRecipeInstructions=false&addRecipeNutrition=false&${selectedMaxTime}ignorePantry=false&sort=max-used-ingredients&${selectedMaxCalories}offset=0&number=20`,
         method: 'GET',
         headers: {
             'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',

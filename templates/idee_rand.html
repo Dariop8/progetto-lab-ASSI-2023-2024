@@ -27,17 +27,17 @@
                         <label for="type">Tipo</label>
                         <select id="type">
                             <option value="">-- Seleziona Tipo --</option>
-                            <option value="tipo1">main course</option>
-                            <option value="tipo2">side dish</option>
-                            <option value="tipo3">dessert</option>
-                            <option value="tipo2">appetizer</option>
-                            <option value="tipo3">salad</option>
-                            <option value="tipo2">bread</option>
-                            <option value="tipo3">breakfast</option>
-                            <option value="tipo2">soup</option>
-                            <option value="tipo3">beverage</option>
-                            <option value="tipo3">sauce</option>
-                            <option value="tipo2">drink</option>
+                            <option value="main course">main course</option>
+                            <option value="side dish">side dish</option>
+                            <option value="dessert">dessert</option>
+                            <option value="appetizer">appetizer</option>
+                            <option value="salad">salad</option>
+                            <option value="bread">bread</option>
+                            <option value="breakfast">breakfast</option>
+                            <option value="soup">soup</option>
+                            <option value="beverage">beverage</option>
+                            <option value="sauce">sauce</option>
+                            <option value="drink">drink</option>
                         </select>
                     </div>
                     <div class="filter-section">
@@ -83,6 +83,7 @@
                         <label for="max-cal">Max Calorie</label>
                         <select id="max-cal">
                             <option value="">-- Seleziona Calorie Max --</option>
+                            <option value="100">200 kcal</option>
                             <option value="200">200 kcal</option>
                             <option value="500">500 kcal</option>
                             <option value="1000">1000 kcal</option>
@@ -99,6 +100,8 @@
             <div class="footer-logo">LOGO</div>
         </footer>
     </div>
+    <h1 id="user-diet" style="display: none;">{{ diet|tojson|safe }}</h1>
+    <h1 id="user-intolerances" style="display: none;">{{ intolerances|tojson|safe }}</h1> 
 
     <script>
         document.getElementById('toggle-origine').addEventListener('click', function() {

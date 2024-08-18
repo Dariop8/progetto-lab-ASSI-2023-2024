@@ -46,23 +46,44 @@ document.getElementById('search-recipe-button').addEventListener('click', functi
         document.querySelector('.recipes').style.display = 'block';
         document.querySelector('.no-recipes').style.display = 'none';
 
-        // converto l'array nella stringa adeguata
         const ingredients = labelsForSearch.map(encodeURIComponent).join('%2C');
+
+        const dietValue = document.getElementById('user-diet').textContent;
+        const intolerancesValue = document.getElementById('user-intolerances').textContent;
+        
+        let dietArray = JSON.parse(dietValue);
+        let intolerancesArray = JSON.parse(intolerancesValue);
+        
+        function cleanArray(arr) {
+            if (arr.length === 0 || (arr.length === 1 && arr[0] === "")) {
+                return [];
+            }
+            return arr;
+        }
+
+        dietArray = cleanArray(dietArray);
+        intolerancesArray = cleanArray(intolerancesArray);
+        // console.log(dietArray);
+        // console.log(intolerancesArray);
+
+        const dietString = dietArray.length ? `diet=${dietArray[0]}&` : '';
+        const intolerancesString = intolerancesArray.length ? `intolerances=${intolerancesArray.join('%2C%20')}&` : '';
 
         const settings = {
             async: true,
             crossDomain: true,
-            url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/findByIngredients?ingredients=${ingredients}&number=20&ignorePantry=false&ranking=1`,
+            url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/complexSearch?${dietString}${intolerancesString}includeIngredients=${ingredients}&instructionsRequired=true&fillIngredients=false&addRecipeInformation=false&addRecipeInstructions=false&addRecipeNutrition=false&ignorePantry=false&sort=max-used-ingredients&offset=0&number=20`,
             method: 'GET',
             headers: {
                 'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
                 'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
             }
         };
+        
 
         $.ajax(settings).done(function (response) {
             //console.log(response);
-            populateRecipesList(response, labelsForSearch); 
+            populateRecipesList(response.results, labelsForSearch); 
         }).fail(function (error) {
             console.error('Error fetching recipes:', error);
         });

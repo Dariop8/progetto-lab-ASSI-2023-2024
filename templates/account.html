@@ -81,14 +81,29 @@
                             <p>Diete particolari:</p>
                             <div class="checkbox-group">
                                 <label>
-                                    <input type="checkbox" id="diet-vegetariana" name="diet" value="vegetariana" {% if 'vegetariana' in diete %} checked {% endif %}> Vegetariana
+                                    <input type="radio" id="diet-none" name="diet" value="" {% if not diete %} checked {% endif %}> Nessuna
                                 </label><br>
                                 <label>
-                                    <input type="checkbox" id="diet-vegana" name="diet" value="vegana" {% if 'vegana' in diete %} checked {% endif %}> Vegana
+                                    <input type="radio" id="diet-vegetarian" name="diet" value="vegetarian" {% if 'vegetarian' in diete %} checked {% endif %}> Vegetarian
+                                </label><br> 
+                                <label>
+                                    <input type="radio" id="diet-vegan" name="diet" value="vegan" {% if 'vegan' in diete %} checked {% endif %}> Vegan
                                 </label><br>
                                 <label>
-                                    <input type="checkbox" id="diet-senza-glutine" name="diet" value="senza-glutine" {% if 'senza-glutine' in diete %} checked {% endif %}> Senza glutine
-                                </label>
+                                    <input type="radio" id="diet-pescetarian" name="diet" value="pescetarian" {% if 'pescetarian' in diete %} checked {% endif %}> Pescetarian
+                                </label><br>
+                                <label>
+                                    <input type="radio" id="diet-lacto-vegetarian" name="diet" value="lacto vegetarian" {% if 'lacto vegetarian' in diete %} checked {% endif %}> Lacto Vegetarian
+                                </label><br>
+                                <label>
+                                    <input type="radio" id="diet-ovo-vegetarian" name="diet" value="ovo vegetarian" {% if 'ovo vegetarian' in diete %} checked {% endif %}> Ovo Vegetarian
+                                </label><br>
+                                <label>
+                                    <input type="radio" id="diet-paleo" name="diet" value="paleo" {% if 'paleo' in diete %} checked {% endif %}> Paleo
+                                </label><br>
+                                <label>
+                                    <input type="radio" id="diet-primal" name="diet" value="primal" {% if 'primal' in diete %} checked {% endif %}> Primal
+                                </label>              
                             </div>
                         </div>
                     
@@ -96,14 +111,38 @@
                             <p>Intolleranze / Allergie:</p>
                             <div class="checkbox-group">
                                 <label>
-                                    <input type="checkbox" id="allergy-lattosio" name="allergies" value="lattosio" {% if 'lattosio' in intolleranze %} checked {% endif %}> Lattosio
+                                    <input type="checkbox" id="allergy-dairy" name="allergies" value="dairy" {% if 'dairy' in intolleranze %} checked {% endif %}> Dairy
                                 </label><br>
                                 <label>
-                                    <input type="checkbox" id="allergy-glutine" name="allergies" value="glutine" {% if 'glutine' in intolleranze %} checked {% endif %}> Glutine
+                                    <input type="checkbox" id="allergy-egg" name="allergies" value="egg" {% if 'egg' in intolleranze %} checked {% endif %}> Egg
                                 </label><br>
                                 <label>
-                                    <input type="checkbox" id="allergy-frutta-secca" name="allergies" value="frutta-secca" {% if 'frutta-secca' in intolleranze %} checked {% endif %}> Frutta secca
-                                </label>
+                                    <input type="checkbox" id="allergy-gluten" name="allergies" value="gluten" {% if 'gluten' in intolleranze %} checked {% endif %}> Gluten
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="allergy-peanut" name="allergies" value="peanut" {% if 'peanut' in intolleranze %} checked {% endif %}> Peanut
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="allergy-sesame" name="allergies" value="sesame" {% if 'sesame' in intolleranze %} checked {% endif %}> Sesame
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="allergy-seafood" name="allergies" value="seafood" {% if 'seafood' in intolleranze %} checked {% endif %}> Seafood
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="allergy-shellfish" name="allergies" value="shellfish" {% if 'shellfish' in intolleranze %} checked {% endif %}> Shellfish
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="allergy-soy" name="allergies" value="soy" {% if 'soy' in intolleranze %} checked {% endif %}> Soy
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="allergy-sulfite" name="allergies" value="sulfite" {% if 'sulfite' in intolleranze %} checked {% endif %}> Sulfite
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="allergy-tree-nut" name="allergies" value="tree nut" {% if 'tree nut' in intolleranze %} checked {% endif %}> Tree Nut
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" id="allergy-wheat" name="allergies" value="wheat" {% if 'wheat' in intolleranze %} checked {% endif %}> Wheat
+                                </label>                                
                             </div>
                         </div>
                     

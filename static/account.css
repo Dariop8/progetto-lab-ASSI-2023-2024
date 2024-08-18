@@ -233,3 +233,30 @@ main {
 #save-button, #save-birthdate-button {
     margin: 0;
 }
+
+.checkbox-group {
+    max-height: 110px; 
+    overflow-y: auto;  
+    padding-right: 10px; 
+    border: 1px solid #ddd; 
+    border-radius: 5px; 
+    margin-bottom: 15px; 
+}
+
+.checkbox-group::-webkit-scrollbar {
+    width: 8px;
+}
+
+.checkbox-group::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+    border-radius: 5px;
+}
+
+.checkbox-group::-webkit-scrollbar-thumb {
+    background: #888; 
+    border-radius: 5px;
+}
+
+.checkbox-group::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+}

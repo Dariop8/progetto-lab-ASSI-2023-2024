@@ -236,7 +236,15 @@ def loader_user(user_id):
 
 @app.route("/")
 def main_route():
-    return render_template("index.html")
+    if 'id' in session:
+        user_id = session['id']
+        user = Users.query.get(user_id)
+        diet = user.diete
+        intolerances = user.intolleranze
+    else:
+        diet = []
+        intolerances = []
+    return render_template("index.html", diet=diet, intolerances=intolerances)
 
 
 @app.route('/registrazione', methods=["GET", "POST"])
@@ -633,7 +641,15 @@ def remove_from_shopping_list():
 
 @app.route("/idee_rand")
 def idee_rand():
-    return render_template("idee_rand.html")
+    if 'id' in session:
+        user_id = session['id']
+        user = Users.query.get(user_id)
+        diet = user.diete
+        intolerances = user.intolleranze
+    else:
+        diet = []
+        intolerances = []
+    return render_template("idee_rand.html", diet=diet, intolerances=intolerances)
 
 @app.route("/recupera_psw")
 def recupera_psw():
