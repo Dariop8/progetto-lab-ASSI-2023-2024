@@ -269,8 +269,8 @@ def registrazione():
         password_verify = request.form.get("password_conf")
         data_di_nascita_str = request.form.get('birthdate')
         
-        diete = request.form.getlist('diete')
-        intolleranze = request.form.getlist('intolleranze')
+        diete = request.form.getlist('diet')
+        intolleranze = request.form.getlist('allergies')
 
         # Si potrebbe evitare sta cose soprattutto se la data non viene usata
         if data_di_nascita_str:

@@ -71,9 +71,54 @@ main {
     margin: 0 auto;
 }
 
+.checkbox-group {
+    max-height: 200px; 
+    overflow-y: auto;  
+    padding-right: 10px; 
+    border: 1px solid #ddd; 
+    border-radius: 5px; 
+    margin-bottom: 15px; 
+}
+
+.checkbox-group input {
+    margin: 5px 0;
+}
+
+.checkbox-group::-webkit-scrollbar {
+    width: 8px;
+}
+
+.checkbox-group::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+    border-radius: 5px;
+}
+
+.checkbox-group::-webkit-scrollbar-thumb {
+    background: #888; 
+    border-radius: 5px;
+}
+
+.checkbox-group::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+}
+
 .checkbox-group label {
+    display: flex;
+    align-items: center;
     font-size: 14px;
     margin-bottom: 5px;
+}
+
+.checkbox-group input[type="radio"],
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+    width: 15px;
+    height: 15px;
+}
+
+.checkbox-group input[type="radio"] {
+    margin-right: 10px; 
+    cursor: pointer;
 }
 
 .checkbox-group input[type="checkbox"] {
@@ -91,7 +136,7 @@ button[type="submit"] {
     border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
-    margin-bottom: 20px;
+    margin: 5% 0;
 }
 
 button[type="submit"]:hover {
@@ -157,3 +202,6 @@ button[type="submit"]:hover {
 .password-strength.strong {
     color: green;
 }
+
+
+
