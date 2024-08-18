@@ -1,0 +1,38 @@
+{% extends 'header.html' %}
+{% block contenttop %}
+
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le tue ricette Preferite</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='fav.css')}}">
+
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/fav.ico') }}">
+    
+</head>
+<body>
+    {% endblock %}
+    {% block contentdown %}
+    <div class="container">
+
+        <main>
+            <div class="recipes">
+                 {% if lista==[] %}
+                    <h2>Non hai nessuna ricetta salvata!</h2>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <input type="hidden" id="recipe-ids" value="{{ lista | tojson }}">       
+    <script src="../static/fav.js"></script> 
+
+
+
+</body>
+</html>
+{% endblock %}

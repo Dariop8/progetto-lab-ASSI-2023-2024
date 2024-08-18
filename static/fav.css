@@ -1,0 +1,76 @@
+/* QUESTO è COPIATO PARO PARO DA idee_rand.css DA CUI HO LEVATO QUELLO CHE NON MI SERVE */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+
+
+main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.recipes {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.recipes h1 {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.recipe {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: 0.3s;
+    cursor: pointer;
+    position: relative;
+}
+
+.recipe:hover {
+    background-color: #f0f0f0;
+}
+
+.recipe-name {
+    font-weight: bold;
+}
+
+.recipe-details {
+    display: flex;
+    gap: 20px;
+}
+
+.recipe-image {
+    height: 60px;
+    object-fit: cover;
+    margin-left: auto;
+    margin-right: 0;
+    border-radius: 5px;
+}
+
+.recipe-info {
+    display: flex;
+    flex-direction: column;
+}

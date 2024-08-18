@@ -193,6 +193,19 @@ class Comments(db.Model):
         self.username = username
         self.comment = comment
 
+
+class Favourite(db.Model):
+    __tablename__ = 'favourite'
+
+    id = db.Column(db.Integer, primary_key=True)
+    recipe_id = db.Column(db.Integer, nullable=False, unique=True)
+    email = db.Column(db.String(120), nullable=False)
+
+    def __init__(self, recipe_id=None, email=None):
+        self.recipe_id = recipe_id
+        self.email = email
+
+
 class Users(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -608,7 +621,92 @@ def update_shopping_list():
 
             return jsonify({'message': f'{ingredient} aggiunto alla lista della spesa!'}), 200
 
-    return jsonify({'message': 'Errore durante l\'aggiunta alla lista della spesa.'}), 400
+    return redirect(url_for('login'))
+
+
+@app.route('/get_shopping_list', methods=['GET'])
+def get_shopping_list():
+    if 'id' in session:
+        user_id = session['id']
+        user = db.session.get(Users, user_id)
+        if user:
+            return jsonify({'lista_spesa': user.lista_spesa}), 200
+    return redirect(url_for('login'))
+
+
+
+
+@app.route('/add_to_favourites', methods=['POST'])
+def add_to_favourites():
+    if 'id' in session:
+
+        user_id = session['id']
+        user_email = db.session.get(Users, user_id).email
+        recipe_id = request.json.get('recipe_id')
+
+        if not recipe_id:
+            return jsonify({'error': 'Missing recipe_id'}), 400
+        
+        existing_favourite = Favourite.query.filter_by(recipe_id=recipe_id, email=user_email).first()
+        if existing_favourite:
+            return jsonify({'error': 'Recipe is already in favourites'}), 409
+
+        favourite = Favourite(recipe_id=recipe_id, email=user_email)
+        db.session.add(favourite)
+        db.session.commit()
+
+        return jsonify({'success': 'Recipe added to favourites'}), 200
+    return redirect(url_for('login'))
+
+@app.route('/remove_from_favourites', methods=['POST'])
+def remove_from_favourites():
+    if 'id' in session:
+        user_id = session['id']
+        user_email = db.session.get(Users, user_id).email
+        recipe_id = request.json.get('recipe_id')
+
+        if not recipe_id:
+            return jsonify({'error': 'Missing recipe_id'}), 400
+
+        existing_favourite = Favourite.query.filter_by(recipe_id=recipe_id, email=user_email).first()
+        if existing_favourite:
+            db.session.delete(existing_favourite)
+            db.session.commit()
+            return jsonify({'success': 'Recipe removed from favourites'}), 200
+        else:
+            return jsonify({'error': 'Recipe not found in favourites'}), 404
+
+    return redirect(url_for('login'))
+
+
+@app.route('/check_favourite', methods=['GET'])
+def check_favourite():
+    if 'id' in session:
+        user_id = session['id']
+        user_email = db.session.get(Users, user_id).email
+        recipe_id = request.args.get('recipe_id')
+
+        if not recipe_id:
+            return jsonify({'error': 'Missing recipe_id'}), 400
+
+        favourite = Favourite.query.filter_by(recipe_id=recipe_id, email=user_email).first()
+
+        return jsonify({'is_favourite': favourite is not None})
+
+    return jsonify({'is_favourite': False})
+
+
+@app.route("/fav")
+def fav():
+    if 'id' in session:
+        user_id = session['id']
+        user_email = db.session.get(Users, user_id).email
+        favourites = Favourite.query.filter_by(email=user_email).all()
+        recipe_ids = [fav.recipe_id for fav in favourites]
+        print(recipe_ids)
+        return render_template("fav.html", lista=recipe_ids)
+    return redirect(url_for('login'))
+
 
 @app.route("/lista_spesa")
 def lista_spesa():

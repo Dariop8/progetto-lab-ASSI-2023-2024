@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         ingredientsArray = [];
     }
+    
 
     const settings = {
         async: true,
@@ -152,18 +153,87 @@ document.addEventListener('DOMContentLoaded', function() {
                 addToShoppingList(ingredient);
             });
         });
+        //controllo se è gia aggiunto a preferito
+        if (recipeId) {
+            checkIfFavourite(recipeId);
+        }
+
+
+        function checkIfFavourite(recipeId) {
+            fetch(`/check_favourite?recipe_id=${recipeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const starElement = document.querySelector('.favorite-star .star');
+                    if (data.is_favourite) {
+                        starElement.classList.remove('inactive');
+                        starElement.classList.add('active');
+                        starElement.innerHTML = '&#9733;';
+                    } else {
+                        starElement.classList.remove('active');
+                        starElement.classList.add('inactive');
+                        starElement.innerHTML = '&#9734;';
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore durante il controllo dei preferiti:', error);
+                });
+        }
+    
 
         document.querySelector('.favorite-star .star').addEventListener('click', function() {
-            if (this.classList.contains('inactive')) {
-                this.classList.remove('inactive');
-                this.classList.add('active');
-                this.innerHTML = '&#9733;';
-            } else {
-                this.classList.remove('active');
-                this.classList.add('inactive');
-                this.innerHTML = '&#9734;';
+            const starElement = this;
+    
+            if (starElement.classList.contains('inactive')) {
+                // Aggiungi ai preferiti
+                fetch('/add_to_favourites', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ recipe_id: recipeId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        starElement.classList.remove('inactive');
+                        starElement.classList.add('active');
+                        starElement.innerHTML = '&#9733;';
+                        console.log('Ricetta aggiunta ai preferiti con successo');
+                    } else {
+                        console.error('Errore nell\'aggiungere la ricetta ai preferiti:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore nella richiesta:', error);
+                });
+    
+            } else if (starElement.classList.contains('active')) {
+                // Rimuovi dai preferiti
+                fetch('/remove_from_favourites', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ recipe_id: recipeId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        starElement.classList.remove('active');
+                        starElement.classList.add('inactive');
+                        starElement.innerHTML = '&#9734;';
+                        console.log('Ricetta rimossa dai preferiti con successo');
+                    } else {
+                        console.error('Errore nel rimuovere la ricetta dai preferiti:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore nella richiesta:', error);
+                });
             }
-        });   
+        });
+    
+
     }
     
     function addToShoppingList(ingredient) {
