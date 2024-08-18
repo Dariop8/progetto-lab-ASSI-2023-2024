@@ -102,6 +102,26 @@ Se non hai richiesto il reset della password, ignora questa email.
 
 from flask import jsonify
 
+@app.route('/recupero_password_request', methods=['POST'])
+def recupero_password_request():
+    email = request.form.get('email_input')
+
+    user = Users.query.filter_by(email=email).first()
+    if user:
+        try:
+            token = generate_reset_token(email)
+            send_reset_email(email, token)
+
+            return redirect(url_for('recupera_psw', token_sended=True))
+        except Exception as e:
+            print(f"Errore durante il reset della password: {str(e)}")
+            return jsonify({'success': False, 'message': 'Errore durante l\'invio dell\'email.'}), 500
+    else:
+        redirect(url_for('recupera_psw'))
+        return jsonify({'success': False, 'message': 'Utente non trovato.'}), 404
+
+
+
 @app.route('/reset_password_request', methods=['POST'])
 def reset_password_request():
     if 'id' in session:
@@ -112,10 +132,8 @@ def reset_password_request():
                 token = generate_reset_token(user.email)
                 send_reset_email(user.email, token)
 
-
                 return jsonify({'success': True, 'message': 'Un token per il reset della password è stato inviato al tuo indirizzo email.'})
             except Exception as e:
-                # Logga l'errore per debug
                 print(f"Errore durante il reset della password: {str(e)}")
                 return jsonify({'success': False, 'message': 'Errore durante l\'invio dell\'email.'}), 500
         else:
@@ -617,6 +635,10 @@ def remove_from_shopping_list():
 def idee_rand():
     return render_template("idee_rand.html")
 
+@app.route("/recupera_psw")
+def recupera_psw():
+    return render_template("recupera_psw.html")
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
@@ -638,35 +660,4 @@ def submit_comment():
         print(user.email)
         print(user.username)
 
-        recipe_id = request.form.get('recipe_id') 
-        comment_text = request.form.get('comment')
-        
-        print(recipe_id)
-        print(comment_text)
-
-        if not recipe_id or not comment_text:
-            return jsonify({'status': 'error', 'message': 'Dati mancanti'}), 400
-        
-        print(f"prima de new comment")
-
-        new_comment = Comments(
-            recipe_id=recipe_id,
-            email=user.email,
-            username=user.username,
-            comment=comment_text
-        )
-
-        print(f"dopo de new comment")
-
-        db.session.add(new_comment)
-
-        print(f"dopo add")
-
-        db.session.commit()
-
-        print(f"dopo commit")
-    
-    return redirect(url_for("main_route"))
-
-if __name__ == '__main__':
-    app.run(debug=True)
+   
