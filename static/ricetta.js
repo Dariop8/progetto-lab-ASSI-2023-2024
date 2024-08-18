@@ -46,6 +46,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
         let recipeHTML = `
             <h1>Nome Ricetta: ${recipe.title}</h1>
+            <div class="recipe-actions">
+                <button id="share-button" class="share-button">Condividi</button>
+                <div class="favorite-star">
+                    <span class="star inactive">&#9734;</span> 
+                </div>
+            </div>
             <div class="recipe-info">
                 <span>Tempo: ${recipe.readyInMinutes} minuti</span>
                 <span>Tipo: ${recipe.dishTypes ? recipe.dishTypes.join(', ') : 'non specificato'}</span>
@@ -115,6 +121,30 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     
         recipeDetailsDiv.innerHTML = recipeHTML;
+
+        let formattedTitle = recipe.title.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '-');           
+        let recipeLink = `https://spoonacular.com/recipes/${formattedTitle}-${recipe.id}`;
+
+        document.getElementById('share-button').addEventListener('click', async () => {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: `Link alla ricetta:${recipe.title}`,
+                        text: `Link alla ricetta:${recipe.title} sul sito Spoonacular, link destinato alla condivisione`,
+                        url: recipeLink, 
+                    });
+                    console.log('Link condiviso con successo');
+                } catch (error) {
+                    console.error('Errore nella condivisione', error);
+                }
+            } else {
+                navigator.clipboard.writeText(recipeLink).then(() => {
+                    alert('Link copiato negli appunti!');
+                }, (err) => {
+                    console.error('Errore durante la copia del link: ', err);
+                });
+            }
+        });
     
         document.querySelectorAll('.add-to-shopping-list').forEach(button => {
             button.addEventListener('click', function() {
@@ -122,6 +152,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 addToShoppingList(ingredient);
             });
         });
+
+        document.querySelector('.favorite-star .star').addEventListener('click', function() {
+            if (this.classList.contains('inactive')) {
+                this.classList.remove('inactive');
+                this.classList.add('active');
+                this.innerHTML = '&#9733;';
+            } else {
+                this.classList.remove('active');
+                this.classList.add('inactive');
+                this.innerHTML = '&#9734;';
+            }
+        });   
     }
     
     function addToShoppingList(ingredient) {
@@ -150,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <label for="comment">Commento:</label>
             <textarea id="comment" name="comment" rows="4" required></textarea>
             <button type="submit">Invia</button>
-        </form>`;
+        </form>`;      
 });
 
 
@@ -162,54 +204,4 @@ document.addEventListener('DOMContentLoaded', function() {
         loadComments(recipeId);
     }
 
-    function loadComments(recipeId) {
-        $.ajax({
-            url: `/get-comments/${recipeId}`,
-            method: 'GET',
-            success: function(comments) {
-                const commentListDiv = document.querySelector('.comment-list');
-                commentListDiv.innerHTML = ''; // Clear existing comments
-
-                if (comments.length > 0) {
-                    comments.forEach(comment => {
-                        const commentDiv = document.createElement('div');
-                        commentDiv.classList.add('comment');
-                        commentDiv.innerHTML = `<p><strong>${comment.username}:</strong> ${comment.comment}</p><p>${comment.timestamp}</p>`;
-                        commentListDiv.appendChild(commentDiv);
-                    });
-                } else {
-                    commentListDiv.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
-                }
-            },
-            error: function(error) {
-                console.error('Error loading comments:', error);
-            }
-        });
-    }
-});
-
-
-// document.getElementById('commentForm').addEventListener('submit', function(e) {
-//     e.preventDefault();
-
-//     const formData = $(this).serialize();
-
-//     $.ajax({
-//         url: '/submit-comment',
-//         method: 'POST',
-//         data: formData,
-//         xhrFields: {
-//             withCredentials: true // Includo i cookie di sessione
-//         },
-//         success: function(response) {
-//             alert(response.message);
-//             loadComments(recipeId); // Ricarico i commenti dopo l'invio
-//             document.getElementById('comment').value = ''; // Pulisco il form
-//         },
-//         error: function(error) {
-//             console.error('Error submitting comment:', error);
-//             alert('Errore durante l\'invio del commento.'); // messaggio di errore
-//         }
-//     });
-// });
-
+    function lo

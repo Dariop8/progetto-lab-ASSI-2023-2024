@@ -154,18 +154,6 @@ li {
     color: black; 
 }
 
-/* .steps ul {
-    list-style-type: none;
-    padding-left: 0;
-}
-
-.steps li {
-    margin-bottom: 10px;
-    font-size: 18px;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 10px;
-} */
-
 footer {
     padding: 20px;
     background-color: #f8f8f8;
@@ -178,7 +166,46 @@ footer {
     font-weight: bold;
 }
 
-/* parte commenti */
+.recipe-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.share-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 20px;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.share-button:hover {
+    background-color: #0056b3;
+}
+
+.favorite-star {
+    cursor: pointer;
+    font-size: 32px;
+    color: #ffcc00;
+    transition: color 0.3s;
+}
+
+.favorite-star .star.inactive {
+    color: #cccccc; 
+    content: '\2606';
+}
+
+.favorite-star .star.active {
+    color: #ffcc00; 
+    content: '\2605'; 
+}
+
 .commenti {
     width: 100%;
     max-width: 800px;
