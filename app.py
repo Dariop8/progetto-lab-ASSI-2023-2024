@@ -660,4 +660,35 @@ def submit_comment():
         print(user.email)
         print(user.username)
 
-   
+        recipe_id = request.form.get('recipe_id') 
+        comment_text = request.form.get('comment')
+        
+        print(recipe_id)
+        print(comment_text)
+
+        if not recipe_id or not comment_text:
+            return jsonify({'status': 'error', 'message': 'Dati mancanti'}), 400
+        
+        print(f"prima de new comment")
+
+        new_comment = Comments(
+            recipe_id=recipe_id,
+            email=user.email,
+            username=user.username,
+            comment=comment_text
+        )
+
+        print(f"dopo de new comment")
+
+        db.session.add(new_comment)
+
+        print(f"dopo add")
+
+        db.session.commit()
+
+        print(f"dopo commit")
+    
+    return redirect(url_for("main_route"))
+
+if __name__ == '__main__':
+    app.run(debug=True)
