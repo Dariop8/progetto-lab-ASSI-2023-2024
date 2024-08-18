@@ -204,4 +204,54 @@ document.addEventListener('DOMContentLoaded', function() {
         loadComments(recipeId);
     }
 
-    function lo
+    function loadComments(recipeId) {
+        $.ajax({
+            url: `/get-comments/${recipeId}`,
+            method: 'GET',
+            success: function(comments) {
+                const commentListDiv = document.querySelector('.comment-list');
+                commentListDiv.innerHTML = ''; // Clear existing comments
+
+                if (comments.length > 0) {
+                    comments.forEach(comment => {
+                        const commentDiv = document.createElement('div');
+                        commentDiv.classList.add('comment');
+                        commentDiv.innerHTML = `<p><strong>${comment.username}:</strong> ${comment.comment}</p><p>${comment.timestamp}</p>`;
+                        commentListDiv.appendChild(commentDiv);
+                    });
+                } else {
+                    commentListDiv.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
+                }
+            },
+            error: function(error) {
+                console.error('Error loading comments:', error);
+            }
+        });
+    }
+});
+
+
+// document.getElementById('commentForm').addEventListener('submit', function(e) {
+//     e.preventDefault();
+
+//     const formData = $(this).serialize();
+
+//     $.ajax({
+//         url: '/submit-comment',
+//         method: 'POST',
+//         data: formData,
+//         xhrFields: {
+//             withCredentials: true // Includo i cookie di sessione
+//         },
+//         success: function(response) {
+//             alert(response.message);
+//             loadComments(recipeId); // Ricarico i commenti dopo l'invio
+//             document.getElementById('comment').value = ''; // Pulisco il form
+//         },
+//         error: function(error) {
+//             console.error('Error submitting comment:', error);
+//             alert('Errore durante l\'invio del commento.'); // messaggio di errore
+//         }
+//     });
+// });
+
