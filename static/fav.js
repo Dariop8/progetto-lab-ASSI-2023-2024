@@ -43,6 +43,10 @@ function populateRecipesList(recipeIds) {
                         </div>
                     </div>
                 </div> 
+                <div class="recipe-note">
+                    <textarea id="note-${recipe.id}" placeholder="Aggiungi una nota..."></textarea>
+                    <button onclick="saveNote('${recipe.id}')">Salva Nota</button>
+                </div>
             `;
 
             if (recipe.image !== "") {
@@ -55,11 +59,68 @@ function populateRecipesList(recipeIds) {
             recipeElement.addEventListener('click', function() {
                 window.location.href = `/ricetta?id=${recipe.id}`;
             });
+            //blocca l'event listener sulle note
+            const recipeNote = recipeElement.querySelector('.recipe-note');
+            if (recipeNote) {
+                recipeNote.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                });
+            }
+
+            loadNoteForRecipe(recipe.id);
         }).fail(function(error) {
             console.error('Error fetching the recipe:', error);
         });
     });
 }
+
+function saveNote(recipeId) {
+    const el = document.getElementById(`note-${recipeId}`)
+    const note = document.getElementById(`note-${recipeId}`).value;
+
+    $.ajax({
+        type: 'POST',
+        url: '/update_note',
+        data: {
+            recipe_id: recipeId,
+            note: note
+        },
+        success: function(response) {
+            el.style.border = "2px solid green";
+            // alert('Nota salvata con successo!');
+        },
+        error: function(xhr, status, error) {
+            // alert('Errore durante il salvataggio della nota.');
+            el.style.border = "2px solid green";
+        }
+    });
+}
+
+function loadNoteForRecipe(recipeId) {
+    $.ajax({
+        type: 'POST',
+        url: '/get_note',
+        contentType: 'application/json',
+        data: JSON.stringify({ recipe_id: recipeId }),
+        success: function(response) {
+            const textarea = document.getElementById(`note-${response.recipe_id}`);
+            if (textarea) {
+                textarea.value = response.note;
+            }
+        },
+        error: function(xhr, status, error) {
+            // console.error('Error loading note:', error);
+            const textarea = document.getElementById(`note-${response.recipe_id}`);
+            if (textarea) {
+                textarea.value = "Errore nel caricamento della nota";
+            }
+        }
+    });
+}
+
+
+
+
 
 $(document).ready(function() {
     const recipeIdsInput = document.getElementById('recipe-ids');

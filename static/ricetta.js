@@ -300,6 +300,60 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// timer
+document.addEventListener('DOMContentLoaded', function() {
+    let timer;
+    let minutes = 0;
+    let seconds = 0;
+
+    const minutesElement = document.getElementById('minutes');
+    const secondsElement = document.getElementById('seconds');
+    const playButton = document.getElementById('play-button');
+    const stopButton = document.getElementById('stop-button');
+    const resetButton = document.getElementById('reset-button');
+
+    function updateTimerDisplay() {
+        minutesElement.textContent = minutes < 10 ? '0' + minutes : minutes;
+        secondsElement.textContent = seconds < 10 ? '0' + seconds : seconds;
+    }
+
+    function startTimer() {
+        timer = setInterval(function() {
+            seconds++;
+            if (seconds === 60) {
+                seconds = 0;
+                minutes++;
+            }
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timer);
+    }
+
+    function resetTimer() {
+        stopTimer();
+        minutes = 0;
+        seconds = 0;
+        updateTimerDisplay();
+    }
+
+    playButton.addEventListener('click', function() {
+        startTimer();
+    });
+
+    stopButton.addEventListener('click', function() {
+        stopTimer();
+    });
+
+    resetButton.addEventListener('click', function() {
+        resetTimer();
+    });
+});
+
+
+
 
 // document.getElementById('commentForm').addEventListener('submit', function(e) {
 //     e.preventDefault();

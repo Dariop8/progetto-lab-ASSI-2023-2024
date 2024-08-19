@@ -11,3 +11,5 @@
 [ ] far funzionare i commenti
 [ ] parlare di quali e come gestire i ruoli (MAC, DAC, RBAC ecc)
 [ ] quando per via dei filti non vengono trovate ricette allora far comparire qualche messaggio
+[ ] semplificare e suddividere app.py
+[ ] aggiungere immagine stilizzata in homepage

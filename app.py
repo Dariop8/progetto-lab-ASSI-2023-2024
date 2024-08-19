@@ -200,10 +200,12 @@ class Favourite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     recipe_id = db.Column(db.Integer, nullable=False, unique=True)
     email = db.Column(db.String(120), nullable=False)
+    note = db.Column(db.String(300), nullable=False, default="")
 
     def __init__(self, recipe_id=None, email=None):
         self.recipe_id = recipe_id
         self.email = email
+        self.note=""
 
 
 class Users(UserMixin, db.Model):
@@ -251,7 +253,7 @@ def loader_user(user_id):
 def main_route():
     if 'id' in session:
         user_id = session['id']
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
         diet = user.diete
         intolerances = user.intolleranze
     else:
@@ -703,8 +705,39 @@ def fav():
         user_email = db.session.get(Users, user_id).email
         favourites = Favourite.query.filter_by(email=user_email).all()
         recipe_ids = [fav.recipe_id for fav in favourites]
-        print(recipe_ids)
         return render_template("fav.html", lista=recipe_ids)
+    return redirect(url_for('login'))
+
+@app.route('/update_note', methods=['POST'])
+def update_note():
+    if 'id' in session:
+        user_id = session['id']
+        user_email = db.session.get(Users, user_id).email
+        recipe_id = request.form.get('recipe_id')
+        note = request.form.get('note')
+        
+        favourite = Favourite.query.filter_by(email=user_email, recipe_id=recipe_id).first()
+        if favourite:
+            favourite.note = note
+            db.session.commit()
+            return jsonify({"message": "Note updated successfully!"}), 200
+        return jsonify({"message": "Favourite not found!"}), 404
+    return redirect(url_for('login'))
+
+
+@app.route('/get_note', methods=['POST'])
+def get_note():
+    if 'id' in session:
+        user_id = session['id']
+        user_email = db.session.get(Users, user_id).email
+        recipe_id = request.json.get('recipe_id')
+
+        if not recipe_id:
+            return jsonify({"error": "Recipe ID is required"}), 400
+
+        favourite = Favourite.query.filter_by(email=user_email, recipe_id=recipe_id).first()
+        note = favourite.note if favourite and favourite.note else ""
+        return jsonify({"recipe_id": recipe_id, "note": note}), 200
     return redirect(url_for('login'))
 
 
@@ -741,7 +774,7 @@ def remove_from_shopping_list():
 def idee_rand():
     if 'id' in session:
         user_id = session['id']
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
         diet = user.diete
         intolerances = user.intolleranze
     else:
