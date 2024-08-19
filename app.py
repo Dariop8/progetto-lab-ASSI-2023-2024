@@ -30,8 +30,8 @@ app.config["SECRET_KEY"] = chiavi.config_secret_key
 app.config['MAIL_SERVER'] = 'smtp.gmail.com' 
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'assispoonacularproject10@gmail.com'  
-app.config['MAIL_PASSWORD'] = 'xwrm guvz cpjk qism'  
+app.config['MAIL_USERNAME'] = chiavi.email_gmail
+app.config['MAIL_PASSWORD'] = chiavi.password_gmail
 
 mail = Mail(app)
 # configuro itsdangerous
@@ -90,7 +90,7 @@ def send_reset_email(to_email, token):
     with app.app_context():
         msg = Message(
             'Reset Your Password',
-            sender='assispoonacularproject10@gmail.com',
+            sender=chiavi.email_gmail,
             recipients=[to_email]
         )
         msg.body = f'''Per resettare la tua password, usa il seguente token:

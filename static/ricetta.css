@@ -40,6 +40,7 @@ main {
     display: flex;
     flex-direction: column;
     overflow-y: auto; 
+    position: relative;
 }
 
 .recipe-details {
@@ -327,13 +328,11 @@ footer {
 }
 
 
-/* Stile per il container del timer */
 .timer-container {
     position: absolute;
+    top: 300px;
+    right: 25px;
     text-align: center;
-    /* margin-top: 20px; */
-    bottom: 40%;
-    right: 100px;
 }
 
 #timer-screen {
@@ -357,4 +356,3 @@ footer {
     color: white;
     cursor: pointer;
 }
-
