@@ -328,11 +328,13 @@ footer {
 }
 
 
+/* Stile per il container del timer */
 .timer-container {
-    position: absolute;
-    top: 300px;
-    right: 25px;
+    position: fixed;
     text-align: center;
+    /* margin-top: 20px; */
+    bottom: 45%;
+    right: 100px;
 }
 
 #timer-screen {

@@ -21,4 +21,43 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Errore:', error));
         });
     });
+
+    document.getElementById('download-btn').addEventListener('click', () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+    
+        const header = "LA TUA LISTA DELLA SPESA:";
+        const headerFontSize = 16;
+        const normalFontSize = 14;
+        
+        doc.setFontSize(headerFontSize);
+        doc.text(header, 15, 15);
+        let y = 15 + headerFontSize + 5;
+    
+        doc.setFontSize(normalFontSize);
+    
+        const itemBox = document.querySelector('.item-box');
+        const clone = itemBox.cloneNode(true);
+        clone.querySelectorAll('.remove-item').forEach(button => button.remove());
+        clone.querySelectorAll('.download').forEach(button => button.remove());
+    
+        const itemList = clone.querySelector('.item-details').innerText;
+        const lines = itemList.split('\n');
+        const margin = -15;
+        const lineHeight = 2;
+        const pageHeight = 280;
+    
+        lines.forEach(line => {
+            if (y + lineHeight > pageHeight) {
+                doc.addPage();
+                doc.setFontSize(normalFontSize);
+                y = margin;
+            }
+            doc.text(line, margin, y);
+            y += lineHeight;
+        });
+    
+        doc.save('lista_della_spesa.pdf');
+    });
+    
 });

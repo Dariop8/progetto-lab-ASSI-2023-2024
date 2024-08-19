@@ -14,12 +14,14 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 import secrets
 import string
-import utils
+from utils import generate_reset_token, verify_reset_token, send_reset_email, is_valid_password
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_mail import Mail, Message
 import chiavi
 
+
+#CONFIGURAZIONE APP FLASK, DB E MAIL
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
@@ -76,29 +78,29 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
 
-def generate_reset_token(email):
-    return s.dumps(email, salt='password-reset-salt')
+# def generate_reset_token(email):
+#     return s.dumps(email, salt='password-reset-salt')
 
-def verify_reset_token(token, expiration=3600):
-    try:
-        email = s.loads(token, salt='password-reset-salt', max_age=expiration)
-    except (SignatureExpired, BadSignature):
-        return None
-    return email
+# def verify_reset_token(token, expiration=3600):
+#     try:
+#         email = s.loads(token, salt='password-reset-salt', max_age=expiration)
+#     except (SignatureExpired, BadSignature):
+#         return None
+#     return email
 
-def send_reset_email(to_email, token):
-    with app.app_context():
-        msg = Message(
-            'Reset Your Password',
-            sender=chiavi.email_gmail,
-            recipients=[to_email]
-        )
-        msg.body = f'''Per resettare la tua password, usa il seguente token:
-{token}
+# def send_reset_email(to_email, token):
+#     with app.app_context():
+#         msg = Message(
+#             'Reset Your Password',
+#             sender=chiavi.email_gmail,
+#             recipients=[to_email]
+#         )
+#         msg.body = f'''Per resettare la tua password, usa il seguente token:
+# {token}
 
-Se non hai richiesto il reset della password, ignora questa email.
-'''
-        mail.send(msg)
+# Se non hai richiesto il reset della password, ignora questa email.
+# '''
+#         mail.send(msg)
 
 from flask import jsonify
 
@@ -157,7 +159,7 @@ def reset_password():
     user = Users.query.filter_by(email=email).first()
     if user:
         if new_password == confirm_new_password:
-            if utils.is_valid_password(new_password):
+            if is_valid_password(new_password):
                 hashed_password = bcrypt.generate_password_hash(new_password)
                 user.password = hashed_password
                 db.session.commit()
@@ -248,7 +250,7 @@ def loader_user(user_id):
 #     Users.query.get(user_id)
 
 
-
+#HOMEPAGE
 @app.route("/")
 def main_route():
     if 'id' in session:
@@ -261,7 +263,7 @@ def main_route():
         intolerances = []
     return render_template("index.html", diet=diet, intolerances=intolerances)
 
-
+#SIGNUP E LOGIN
 @app.route('/registrazione', methods=["GET", "POST"])
 def registrazione():
     if request.method == "POST":
@@ -284,7 +286,7 @@ def registrazione():
         else:
             data_di_nascita = None
 
-        password_ok = utils.is_valid_password(password)
+        password_ok = is_valid_password(password)
         user = Users.query.filter_by(username=username).first()
 
         if user:
@@ -495,6 +497,20 @@ def facebook_login():
     return redirect(url_for("main_route"))
 
 
+
+#IMPOSTAZIONI E MODIFICA ACCOUNT
+
+@app.route("/account")
+def account():
+    if 'id' in session:
+        user_id = session['id']
+        user = db.session.get(Users, user_id)
+        
+        if user:
+            return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze)
+    
+    return redirect(url_for("login"))
+
 @app.route("/delete_account", methods=["POST"])
 def delete_account():
     if 'id' in session:
@@ -511,22 +527,6 @@ def delete_account():
             return redirect(url_for("logout"))
         
         return redirect(url_for("account"))
-    
-    return redirect(url_for("login"))
-
-
-@app.route('/<something>')
-def goto(something):
-    return redirect(url_for('main_route'))
-
-@app.route("/account")
-def account():
-    if 'id' in session:
-        user_id = session['id']
-        user = db.session.get(Users, user_id)
-        
-        if user:
-            return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze)
     
     return redirect(url_for("login"))
 
@@ -548,7 +548,7 @@ def update_password():
             flash('New passwords do not match', 'error')
             return redirect(url_for('account'))
 
-        if not utils.is_valid_password(new_password):
+        if not is_valid_password(new_password):
             flash('New password is too simple', 'error')
             return redirect(url_for('account'))
 
@@ -600,43 +600,20 @@ def update_preferences():
 
     return redirect(url_for('login'))
 
+@app.route("/recupera_psw")
+def recupera_psw():
+    return render_template("recupera_psw.html")
+
+#PAGINA RICETTA
+
 @app.route("/ricetta")
 def ricetta():
     if 'id' in session:
         return render_template("ricetta.html")
     return redirect(url_for('login'))
 
-@app.route('/update_shopping_list', methods=['POST'])
-def update_shopping_list():
-    if 'id' in session:
-        user_id = session['id']
-        user = db.session.get(Users, user_id)
 
-        ingredient = request.form.get('ingredient')
-
-        if ingredient:
-            updated_lista_spesa = user.lista_spesa.copy() if user.lista_spesa else []
-            if ingredient not in updated_lista_spesa:
-                updated_lista_spesa.append(ingredient)
-                user.lista_spesa = updated_lista_spesa
-                db.session.commit()
-
-            return jsonify({'message': f'{ingredient} aggiunto alla lista della spesa!'}), 200
-
-    return redirect(url_for('login'))
-
-
-@app.route('/get_shopping_list', methods=['GET'])
-def get_shopping_list():
-    if 'id' in session:
-        user_id = session['id']
-        user = db.session.get(Users, user_id)
-        if user:
-            return jsonify({'lista_spesa': user.lista_spesa}), 200
-    return redirect(url_for('login'))
-
-
-
+#GESTIONE RICETTE PREFERITE
 
 @app.route('/add_to_favourites', methods=['POST'])
 def add_to_favourites():
@@ -741,6 +718,8 @@ def get_note():
     return redirect(url_for('login'))
 
 
+#GESTIONE LISTA DELLA SPESA
+
 @app.route("/lista_spesa")
 def lista_spesa():
     if 'id' in session:
@@ -749,6 +728,36 @@ def lista_spesa():
 
         user.lista_spesa
         return render_template("lista_spesa.html", lista=user.lista_spesa)
+    return redirect(url_for('login'))
+
+
+@app.route('/update_shopping_list', methods=['POST'])
+def update_shopping_list():
+    if 'id' in session:
+        user_id = session['id']
+        user = db.session.get(Users, user_id)
+
+        ingredient = request.form.get('ingredient')
+
+        if ingredient:
+            updated_lista_spesa = user.lista_spesa.copy() if user.lista_spesa else []
+            if ingredient not in updated_lista_spesa:
+                updated_lista_spesa.append(ingredient)
+                user.lista_spesa = updated_lista_spesa
+                db.session.commit()
+
+            return jsonify({'message': f'{ingredient} aggiunto alla lista della spesa!'}), 200
+
+    return redirect(url_for('login'))
+
+
+@app.route('/get_shopping_list', methods=['GET'])
+def get_shopping_list():
+    if 'id' in session:
+        user_id = session['id']
+        user = db.session.get(Users, user_id)
+        if user:
+            return jsonify({'lista_spesa': user.lista_spesa}), 200
     return redirect(url_for('login'))
 
 @app.route('/remove_from_shopping_list', methods=['POST'])
@@ -770,6 +779,23 @@ def remove_from_shopping_list():
 
     return jsonify({'message': 'error'}), 400
 
+@app.route('/check_lista', methods=['GET'])
+def check_lista():
+    if 'id' in session:
+        user_id = session['id']
+        user = db.session.get(Users, user_id)
+        ingredient = request.args.get('ingredient')
+
+        if not ingredient:
+            return jsonify({'error': 'Missing ingredient'}), 400
+        is_in_list = ingredient in user.lista_spesa if user.lista_spesa else False
+        return jsonify({'in_in_list': is_in_list}), 200
+
+    return jsonify({'in_in_list': False})
+
+
+#IDEE RANDOM
+
 @app.route("/idee_rand")
 def idee_rand():
     if 'id' in session:
@@ -782,9 +808,7 @@ def idee_rand():
         intolerances = []
     return render_template("idee_rand.html", diet=diet, intolerances=intolerances)
 
-@app.route("/recupera_psw")
-def recupera_psw():
-    return render_template("recupera_psw.html")
+
 
 @app.route('/favicon.ico')
 def favicon():
@@ -836,6 +860,10 @@ def submit_comment():
         print(f"dopo commit")
     
     return redirect(url_for("main_route"))
+
+@app.route('/<something>')
+def goto(something):
+    return redirect(url_for('main_route'))
 
 if __name__ == '__main__':
     app.run(debug=True)

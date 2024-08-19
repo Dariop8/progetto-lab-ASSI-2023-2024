@@ -42,7 +42,20 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Error fetching the recipe:', error);
     });
 
-    function populateRecipePage(recipe, instructions) {
+
+    function isInList(ingredientName) {
+        return fetch(`/check_lista?ingredient=${encodeURIComponent(ingredientName)}`)
+            .then(response => response.json())
+            .then(data => {
+                return data.in_in_list;
+            })
+            .catch(error => {
+                console.error('Errore durante la verifica dell\'ingrediente nella lista:', error);
+                return false;
+            });
+    }
+
+    async function populateRecipePage(recipe, instructions) {
         const recipeDetailsDiv = document.querySelector('.recipe-details');
     
         let recipeHTML = `
@@ -72,23 +85,48 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     
         const recipeIngredients = recipe.extendedIngredients;
-        recipeIngredients.forEach(ingredient => {
+
+        const ingredientPromises = recipeIngredients.map(async ingredient => {
+            const isIngredientInList = await isInList(ingredient.name);
             if (ingredientsArray.some(ingredientItem => ingredient.name.includes(ingredientItem))) {
-                recipeHTML += `
-                    <li class="possessed">
-                        ${ingredient.name}
-                        <span class="checkmark">✔</span>
-                        <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Aggiungi alla lista della spesa</button></li>
-    
-                    
-                `;
+                if (isIngredientInList) {
+                    return `
+                        <li class="possessed">
+                            ${ingredient.name}
+                            <span class="checkmark">✔</span>
+                            <button class="add-to-shopping-list" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Aggiunto</button>
+                        </li>
+                    `;
+                } else {
+                    return `
+                        <li class="possessed">
+                            ${ingredient.name}
+                            <span class="checkmark">✔</span>
+                            <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Aggiungi alla lista della spesa</button>
+                        </li>
+                    `;
+                }
             } else {
-                recipeHTML += `
-                    <li class="to-buy">${ingredient.name}
-                    <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Aggiungi alla lista della spesa</button></li>
-                `;
-            }      
+                if (isIngredientInList) {
+                    return `
+                        <li class="to-buy">${ingredient.name}
+                        <button class="add-to-shopping-list" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Aggiunto</button>
+                    </li>
+                    `;
+                } else {
+                    return `
+                        <li class="to-buy">${ingredient.name}
+                        <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Aggiungi alla lista della spesa</button>
+                    </li>
+                    `;
+                }
+            }
         });
+    
+
+        const ingredientListItems = await Promise.all(ingredientPromises);
+        recipeHTML += ingredientListItems.join('');
+    
         
         recipeHTML += `
                     </ul>
@@ -244,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
             success: function(response) {
                 const button = document.querySelector(`button[data-ingredient="${ingredient}"]`);
                 button.textContent = "Aggiunto";
-                
+                button.style.backgroundColor = "grey";
                 button.disabled = true;
 
             },

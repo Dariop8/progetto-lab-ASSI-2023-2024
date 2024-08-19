@@ -9,9 +9,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La tua lista della spesa</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='lista_spesa.css')}}">
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="../static/lista_spesa.js"></script>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/fav.ico') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 </head>
 <body>
@@ -34,6 +35,8 @@
                             </li>
                         {% endfor %}
                     </ul>
+                    <!-- <button id="download-btn" class="download"></button> -->
+                    <button id="download-btn" class="download"><i class="fa fa-download"></i> Scarica in PDF</button>
                 {% endif %}
                 </div>
                 
