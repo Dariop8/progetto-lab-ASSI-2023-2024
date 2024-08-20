@@ -4,8 +4,8 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='header.css')}}">
 
 <header>
-    <div class="logo"><a href="/">LOGO</a></div>
-    {% if session %}
+    <div class="logo"><a href="/" style="color: #5cb85c;">TastyClick</a></div>
+    {% if session['username'] != Null %}    <!--dovrebbe evitare il bug di header con lista, logout, immagine ecc ma senza nome-->
     <div class="user">
         <a href="/fav">Ricette Salvate</a>
         <a href="/lista_spesa">Lista della Spesa</a>

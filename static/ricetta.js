@@ -391,10 +391,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             updateTimerDisplay();
         }, 1000);
+        playButton.disabled = true;
+        playButton.style.backgroundColor = "grey";
+        stopButton.disabled = false;
+        stopButton.style.backgroundColor = "#5cb85c";
     }
 
     function stopTimer() {
         clearInterval(timer);
+        playButton.disabled = false;
+        playButton.style.backgroundColor = "#5cb85c";
+        stopButton.disabled = true;
+        stopButton.style.backgroundColor = "grey";
     }
 
     function resetTimer() {
@@ -402,7 +410,17 @@ document.addEventListener('DOMContentLoaded', function() {
         minutes = 0;
         seconds = 0;
         updateTimerDisplay();
+        playButton.disabled = false;
+        playButton.style.backgroundColor = "#5cb85c";
+        stopButton.disabled = true;
+        stopButton.style.backgroundColor = "grey";
     }
+
+    playButton.disabled = false;
+    stopButton.disabled = true;
+    stopButton.style.backgroundColor = "grey";
+    playButton.style.backgroundColor = "#5cb85c";
+    
 
     playButton.addEventListener('click', function() {
         startTimer();
