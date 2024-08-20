@@ -182,18 +182,21 @@ def reset_password():
 
 class Comments(db.Model):
     __tablename__ = 'comments'
-    id = db.Column(db.Integer, primary_key=True)
+    comment_id = db.Column(db.Integer, primary_key=True)
     recipe_id = db.Column(db.Integer, nullable=False)
     email = db.Column(db.String(120), nullable=False)
     username = db.Column(db.String(30), nullable=False)
     comment = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __init__(self, recipe_id, email, username, comment):
+    def __init__(self, recipe_id, email, username, comment, rating):
         self.recipe_id = recipe_id
         self.email = email
         self.username = username
         self.comment = comment
+        self.rating = rating
+
 
 
 class Favourite(db.Model):
@@ -822,7 +825,14 @@ def idee_rand():
 @app.route('/get-comments/<int:recipe_id>', methods=['GET'])
 def get_comments(recipe_id):
     comments = Comments.query.filter_by(recipe_id=recipe_id).all()
-    comments_list = [{'username': c.username, 'comment': c.comment, 'timestamp': c.timestamp.strftime('%Y-%m-%d %H:%M:%S')} for c in comments]
+    comments_list = [
+        {
+            'username': c.username,
+            'comment': c.comment,
+            'rating': c.rating, 
+            'timestamp': c.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        } for c in comments
+    ]
     return jsonify(comments_list)
 
 @app.route('/submit-comment', methods=['POST'])
@@ -830,40 +840,28 @@ def submit_comment():
 
     if 'id' in session:
         user_id = session['id']
-        user = db.session.get(Users, user_id)
-
-        print(user.email)
-        print(user.username)
+        user = Users.query.get(user_id)
 
         recipe_id = request.form.get('recipe_id') 
         comment_text = request.form.get('comment')
+        rating = request.form.get('rating')
         
-        print(recipe_id)
-        print(comment_text)
-
         if not recipe_id or not comment_text:
             return jsonify({'status': 'error', 'message': 'Dati mancanti'}), 400
         
-        print(f"prima de new comment")
-
         new_comment = Comments(
             recipe_id=recipe_id,
             email=user.email,
             username=user.username,
-            comment=comment_text
+            comment=comment_text,
+            rating=int(rating)
         )
-
-        print(f"dopo de new comment")
-
+        
         db.session.add(new_comment)
-
-        print(f"dopo add")
-
         db.session.commit()
-
-        print(f"dopo commit")
     
-    return redirect(url_for("main_route"))
+    return redirect(url_for('ricetta', id=recipe_id))
+
 
 @app.route('/<something>')
 def goto(something):

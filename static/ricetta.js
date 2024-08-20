@@ -297,11 +297,34 @@ document.addEventListener('DOMContentLoaded', function() {
         <h3>Aggiungi un commento:</h3>
         <form id="commentForm" action="/submit-comment" method="post">
             <input type="hidden" name="recipe_id" value="${recipeId}">
-            <label for="comment">Commento:</label>
-            <textarea id="comment" name="comment" rows="4" required></textarea>
+            <textarea id="comment" name="comment" rows="4" required minlength="10" maxlength="400" placeholder="Fai sapere agli altri cosa ne pensi..."></textarea>
+            <div class="rating-container">
+                <p>Il tuo voto: </p>
+                <div class="rating">
+                    <input type="radio" id="star5" name="rating" value="5" required/><label for="star5" >★</label>
+                    <input type="radio" id="star4" name="rating" value="4" required/><label for="star4" >★</label>
+                    <input type="radio" id="star3" name="rating" value="3" required/><label for="star3" >★</label>
+                    <input type="radio" id="star2" name="rating" value="2" required/><label for="star2" >★</label>
+                    <input type="radio" id="star1" name="rating" value="1" required/><label for="star1" >★</label>
+                </div>
+            </div>
+            
             <button type="submit">Invia</button>
-        </form>`;      
+        </form>`;
 });
+
+
+function stampaStelle(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (rating >= i) {
+            stars += '★'; 
+        } else {
+            stars += '☆'; 
+        }
+    }
+    return stars;
+}
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -318,17 +341,21 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'GET',
             success: function(comments) {
                 const commentListDiv = document.querySelector('.comment-list');
-                commentListDiv.innerHTML = ''; // Clear existing comments
+                commentListDiv.innerHTML = ''; 
 
                 if (comments.length > 0) {
                     comments.forEach(comment => {
                         const commentDiv = document.createElement('div');
                         commentDiv.classList.add('comment');
-                        commentDiv.innerHTML = `<p><strong>${comment.username}:</strong> ${comment.comment}</p><p>${comment.timestamp}</p>`;
+                        commentDiv.innerHTML = `
+                            <p><strong>${comment.username}:</strong> ${comment.comment}</p>
+                            <p><i>Valutazione: </i>${stampaStelle(comment.rating)}</p>
+                            <p>${comment.timestamp}</p>
+                        `;
                         commentListDiv.appendChild(commentDiv);
                     });
                 } else {
-                    commentListDiv.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
+                    commentListDiv.innerHTML = '<p>Ancora nessun commento. Sii il primo a commentare!!</p>';
                 }
             },
             error: function(error) {
