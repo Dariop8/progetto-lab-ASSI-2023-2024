@@ -11,3 +11,11 @@ document.addEventListener("DOMContentLoaded", function() {
         window.location.href = "/google_login";
     });
 });
+
+//animazione spaghetti
+const div1 = document.getElementById("spaghetti");
+
+function myFunction() {
+        div1.style.animation = "spaghettiAnim 9s 1 ease-in-out forwards";
+        i++;
+}

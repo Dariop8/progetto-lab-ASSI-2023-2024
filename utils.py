@@ -1,4 +1,6 @@
 import re
+import string
+import secrets
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_mail import Mail, Message
 from flask import current_app
@@ -19,11 +21,35 @@ def is_valid_password(password):
         return True
     return False
 
-#inserire real time indicatore mentre scrivo che dice se la psw è debole, sicura ecc (5 livelli)
 #si puo aggiungere un suggeritore di password random
 #e che le password siano aggiornate e modificate ogni tot tempo
 #cost factor indica la sicurezza. se le macchine sono piu potenti allora lo aumento
-#meglio usare Argon2 o scrypt che spostano la complessità sulla memoria e no CPU (ram costa piu di cpu)
+
+def generate_password():
+    while True:
+        alphabet = string.ascii_letters + string.digits + "!@#$%^&*()_+{}:;<>,.?/~"
+        
+        #caratteri obbligatori nella psw
+        password = [
+            secrets.choice(string.ascii_uppercase),
+            secrets.choice(string.ascii_lowercase),
+            secrets.choice(string.digits),
+            secrets.choice("!@#$%^&*()_+{}:;<>,.?/~")
+        ]
+        
+        #lunga 12
+        password += [secrets.choice(alphabet) for _ in range(8)]
+        
+        #shuffle senno i primi 4 caratteri sono quelli che ho messo in password=[...]
+        secrets.SystemRandom().shuffle(password)
+        
+        password = ''.join(password)
+        
+        # Verifichiamo che la password rispetti il pattern
+        pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}:;<>,.?/~])[A-Za-z\d!@#$%^&*()_+{}:;<>,.?/~]{10,}$'
+        if re.match(pattern, password):
+            return password
+
 
 def generate_reset_token(email):
     s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])

@@ -14,7 +14,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 import secrets
 import string
-from utils import generate_reset_token, verify_reset_token, send_reset_email, is_valid_password
+from utils import generate_reset_token, verify_reset_token, send_reset_email, is_valid_password, generate_password
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_mail import Mail, Message
@@ -387,8 +387,11 @@ def google_login():
 
     if user is None:
         #password casuale come per github
-        alphabet = string.ascii_letters + string.digits
-        password = ''.join(secrets.choice(alphabet) for i in range(12))
+        # alphabet = string.ascii_letters + string.digits
+        # password = ''.join(secrets.choice(alphabet) for i in range(12))
+
+        password = generate_password()
+        # print(password)
 
         hashed_password = bcrypt.generate_password_hash(password)
 
@@ -441,8 +444,10 @@ def github_login():
     
     if user is None:
         # genero una password casuale
-        alphabet = string.ascii_letters + string.digits
-        password = ''.join(secrets.choice(alphabet) for i in range(12))
+        # alphabet = string.ascii_letters + string.digits
+        # password = ''.join(secrets.choice(alphabet) for i in range(12))
+
+        password = generate_password()
 
         hashed_password = bcrypt.generate_password_hash(password)
 
@@ -479,8 +484,10 @@ def facebook_login():
     user = Users.query.filter_by(email=email).first()
     
     if user is None:
-        alphabet = string.ascii_letters + string.digits
-        password = ''.join(secrets.choice(alphabet) for _ in range(12))
+        # alphabet = string.ascii_letters + string.digits
+        # password = ''.join(secrets.choice(alphabet) for i in range(12))
+
+        password = generate_password()
 
         hashed_password = bcrypt.generate_password_hash(password)
 
@@ -810,10 +817,7 @@ def idee_rand():
 
 
 
-@app.route('/favicon.ico')
-def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-        'fav.ico',mimetype='image/vnd.microsoft.icon')
+#SEZIONE COMMENTI
 
 @app.route('/get-comments/<int:recipe_id>', methods=['GET'])
 def get_comments(recipe_id):
@@ -864,6 +868,11 @@ def submit_comment():
 @app.route('/<something>')
 def goto(something):
     return redirect(url_for('main_route'))
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+        'fav.ico',mimetype='image/vnd.microsoft.icon')
 
 if __name__ == '__main__':
     app.run(debug=True)

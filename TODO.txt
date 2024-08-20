@@ -4,12 +4,13 @@
 [x] dice in real time se la psw è debole, ottima ecc
 [ ] spaghetti che passano dopo la registrazione
 [x] possibilità di modificare la psw
-[ ] come gestiamo la modifica di password dopo l'accesso con google/github?
+[x] come gestiamo la modifica di password dopo l'accesso con google/github?
 [ ] sarebbe bene cifrare anche la data di nascita (è PII) - andrebbe fatta con una chiave (perche poi devo rimetterla in chiaro e non solo vedere se è uguale a una che inserisce l'utente)
     quindi o ce ne sbattiamo oppure facciamo qualcosa con Fernet
-[ ] quando faccio login con Google o GitHub voglio che la password generata automaticamente rispetti i parametri (10 caratteri, maiuscolo, numero...)
+[x] quando faccio login con Google o GitHub voglio che la password generata automaticamente rispetti i parametri (10 caratteri, maiuscolo, numero...)
 [ ] far funzionare i commenti
-[ ] parlare di quali e come gestire i ruoli (MAC, DAC, RBAC ecc)
+[x] parlare di quali e come gestire i ruoli (MAC, DAC, RBAC ecc)
 [ ] quando per via dei filti non vengono trovate ricette allora far comparire qualche messaggio
 [ ] semplificare e suddividere app.py
 [ ] aggiungere immagine stilizzata in homepage
+[ ] cambiare password reset salt
