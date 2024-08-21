@@ -293,9 +293,12 @@ def registrazione():
         user = Users.query.filter_by(username=username).first()
 
         if user:
-            return render_template("registrazione.html", user_alive=True)
-
-        if password == password_verify and password_ok:
+            flash('Utente già registrato.', 'error')
+            return render_template("registrazione.html")
+        if  not password_ok:
+            flash('Password troppo semplice', 'error')
+            return render_template("registrazione.html")
+        if password == password_verify:
 
             hashed_password = bcrypt.generate_password_hash(password)
 
@@ -307,10 +310,10 @@ def registrazione():
             session['username'] = username
             session['id'] = user.id
 
-
             return redirect(url_for("main_route"))
         else:
-            return render_template("registrazione.html", password_ok=password_ok, password=password, password_verify=password_verify)
+            flash('Le due password non combaciano', 'error')
+            return render_template("registrazione.html")
     
     elif 'username' in session and 'password' in session:
         return redirect(url_for("main_route"))
@@ -339,10 +342,12 @@ def login():
             return redirect(url_for("main_route"))
         
         elif not user:
-            return render_template("login.html", something_failed=True, user_not_found=True)
+            flash('Utente non registrato', 'error')
+            return render_template("login.html")
         
         else:
-            return render_template("login.html", something_failed=True, user_not_found=False)
+            flash('Password errata', 'error')
+            return render_template("login.html")
         
     elif 'username' in session and 'password' in session and 'id' in session:
         return redirect(url_for("main_route"))
@@ -817,7 +822,6 @@ def idee_rand():
         diet = []
         intolerances = []
     return render_template("idee_rand.html", diet=diet, intolerances=intolerances)
-
 
 
 #SEZIONE COMMENTI

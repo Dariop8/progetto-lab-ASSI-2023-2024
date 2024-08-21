@@ -1,5 +1,5 @@
 [ ] sistemare definitivamente user stories e preparare i documenti per la richiesta del progetto
-[ ] notifiche di errore in login e registrazione (psw è debole o non sono uguali, se l'account gia esiste ecc)
+[x] notifiche di errore in login e registrazione (psw è debole o non sono uguali, se l'account gia esiste ecc)
 [ ] consiglia in automatico psw forti
 [x] dice in real time se la psw è debole, ottima ecc
 [ ] spaghetti che passano dopo la registrazione

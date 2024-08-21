@@ -85,8 +85,12 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     
         const recipeIngredients = recipe.extendedIngredients;
-
+        const uniqueIngredients = new Set();
         const ingredientPromises = recipeIngredients.map(async ingredient => {
+            if (uniqueIngredients.has(ingredient.name)) {
+                return '';
+            }
+            uniqueIngredients.add(ingredient.name);
             const isIngredientInList = await isInList(ingredient.name);
             if (ingredientsArray.some(ingredientItem => ingredient.name.includes(ingredientItem))) {
                 if (isIngredientInList) {

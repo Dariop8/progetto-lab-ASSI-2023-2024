@@ -29,6 +29,15 @@
                         <label for="password_input">Password</label>
                         <input type="password" id="password_input" name="password_input" required>
                     </div>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <ul class="flashes">
+                                {% for category, message in messages %}
+                                    <li class="{{ category }}">{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endwith %}
                     <button type="submit">Accedi</button>
                 </form>
                 <div class="login-options">
