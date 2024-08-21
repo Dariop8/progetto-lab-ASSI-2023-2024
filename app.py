@@ -21,6 +21,8 @@ from flask_mail import Mail, Message
 import chiavi
 from flask import jsonify
 
+from flask import current_app
+
 
 #CONFIGURAZIONE APP FLASK, DB E MAIL
 app = Flask(__name__)
@@ -35,6 +37,11 @@ app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = chiavi.email_gmail
 app.config['MAIL_PASSWORD'] = chiavi.password_gmail
+
+app.config['CURRENT_SALT'] = os.urandom(16).hex()
+print(app.config['CURRENT_SALT'])
+app.config['PREVIOUS_SALT'] = None 
+app.config['SALT_LAST_ROTATION'] = datetime.now()
 
 mail = Mail(app)
 # configuro itsdangerous
@@ -134,7 +141,7 @@ def reset_password_request():
                 token = generate_reset_token(user.email)
                 send_reset_email(user.email, token)
 
-                return jsonify({'success': True, 'message': 'Un token per il reset della password è stato inviato al tuo indirizzo email.'})
+                return jsonify({'success': True, 'message': 'Un token (con validità di 10 minuti) per il reset della password è stato inviato al tuo indirizzo email.'})
             except Exception as e:
                 print(f"Errore durante il reset della password: {str(e)}")
                 return jsonify({'success': False, 'message': 'Errore durante l\'invio dell\'email.'}), 500

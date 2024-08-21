@@ -195,12 +195,36 @@ button[type="submit"]:hover {
     margin-top: 5px;
 }
 
-.password-strength.weak {
+/* .password-strength.weak {
     color: red;
 }
 
 .password-strength.strong {
     color: green;
+} */
+
+.password-strength.very-weak {
+    color: #3352ff; 
+}
+
+.password-strength.weak {
+    color: #b833ff; 
+}
+
+.password-strength.moderate {
+    color: #ff4d4d;
+}
+
+.password-strength.strong {
+    color: #ffa500;
+}
+
+.password-strength.very-strong {
+    color: #ffd700;
+}
+
+.password-strength.extremely-strong {
+    color: #90ee90; 
 }
 
 .input-group button {

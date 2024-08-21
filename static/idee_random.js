@@ -110,58 +110,69 @@ document.getElementById('search-recipe-button').addEventListener('click', functi
 function populateRecipesList(recipes) {
     const recipeListDiv = document.querySelector('.recipes');
 
-    recipeListDiv.innerHTML='<h1>RICETTE RANDOM</h1>';
-
-    recipes.forEach(recipe => {
-        const settings = {
-            async: true,
-            crossDomain: true,
-            url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/${recipe.id}/information?includeNutrition=true`,
-            method: 'GET',
-            headers: {
-                'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
-                'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
-            }
-        };
-
-        $.ajax(settings).done(function (response) {
-            //console.log(response1);
-            const recipe=response;
-            let typesString = recipe.dishTypes.join(', ');
-            if (recipe.dishTypes.length > 3) {
-                typesString = recipe.dishTypes.slice(0, 3).join(', ') + ', ...';
-            } else if (recipe.dishTypes.length === 0) {
-                typesString = 'non specificato';
-            }
-
-            const recipeElement = document.createElement('div');
-            recipeElement.classList.add('recipe');
-
-            let recipeString = `
-                <div class="recipe-info">
-                    <div id="recipe-${recipe.id}">
-                        <span class="recipe-name">${recipe.title}</span>
-                        <div class="recipe-details">
-                            <span class="time">🕒 ${recipe.readyInMinutes}min</span>
-                            <span class="type">Tipo: ${typesString}</span>
-                            <span class="calories">Calorie: ${recipe.nutrition.nutrients[0].amount}kcal</span>
-                        </div>
+    recipeListDiv.innerHTML=`
+                    <h1>RICETTE RANDOM</h1>
+                    <div class="error-message" id="errore-recipe">
+                        <p>Purtroppo la tua ricerca non ha prodotto risultati.</p>
                     </div>
-                </div> 
-            `;
+                    `;
 
-            if (recipe.image !== "") {
-                recipeString += `<img src="${recipe.image}" alt="Immagine Ricetta" class="recipe-image"></img> `;
-            }
-            recipeElement.innerHTML = recipeString;
+    if (recipes.length === 0) {
+        document.getElementById('errore-recipe').style.display = "block";
+    } else { 
+        document.getElementById('errore-recipe').style.display = "none";
 
-            recipeListDiv.appendChild(recipeElement);
+        recipes.forEach(recipe => {
+            const settings = {
+                async: true,
+                crossDomain: true,
+                url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/${recipe.id}/information?includeNutrition=true`,
+                method: 'GET',
+                headers: {
+                    'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
+                    'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
+                }
+            };
 
-            recipeElement.addEventListener('click', function() {
-                window.location.href = `/ricetta?id=${recipe.id}`;
+            $.ajax(settings).done(function (response) {
+                //console.log(response1);
+                const recipe=response;
+                let typesString = recipe.dishTypes.join(', ');
+                if (recipe.dishTypes.length > 3) {
+                    typesString = recipe.dishTypes.slice(0, 3).join(', ') + ', ...';
+                } else if (recipe.dishTypes.length === 0) {
+                    typesString = 'non specificato';
+                }
+
+                const recipeElement = document.createElement('div');
+                recipeElement.classList.add('recipe');
+
+                let recipeString = `
+                    <div class="recipe-info">
+                        <div id="recipe-${recipe.id}">
+                            <span class="recipe-name">${recipe.title}</span>
+                            <div class="recipe-details">
+                                <span class="time">🕒 ${recipe.readyInMinutes}min</span>
+                                <span class="type">Tipo: ${typesString}</span>
+                                <span class="calories">Calorie: ${recipe.nutrition.nutrients[0].amount}kcal</span>
+                            </div>
+                        </div>
+                    </div> 
+                `;
+
+                if (recipe.image !== "") {
+                    recipeString += `<img src="${recipe.image}" alt="Immagine Ricetta" class="recipe-image"></img> `;
+                }
+                recipeElement.innerHTML = recipeString;
+
+                recipeListDiv.appendChild(recipeElement);
+
+                recipeElement.addEventListener('click', function() {
+                    window.location.href = `/ricetta?id=${recipe.id}`;
+                });
+            }).fail(function (error) {
+                console.error('Error fetching the recipe:', error);
             });
-        }).fail(function (error) {
-            console.error('Error fetching the recipe:', error);
         });
-    });
+    }
 }

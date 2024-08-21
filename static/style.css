@@ -81,11 +81,11 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-image: url(/static/images/sfondo.jpg); /* se trovate una foto per sfondo meglio avete allora cambiatela */
+    background-image: url(/static/images/piatto.jpg); /* se trovate una foto per sfondo meglio avete allora cambiatela */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 30%;
+    background-size: 70%;
 }
 
 .message {
@@ -168,3 +168,14 @@ footer {
     font-weight: bold;
 }
 
+.error-message {
+    text-align: center;
+    background-color: #f2f2f2;
+    color: #757575;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    display: none; 
+}
