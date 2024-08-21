@@ -1,8 +1,24 @@
 document.addEventListener("DOMContentLoaded", function() {
     const passwordInput = document.getElementById('password');
+    const passwordInputConf = document.getElementById('password_conf');
     const passwordStrength = document.getElementById('password-strength');
+    const suggestPasswordBtn = document.getElementById('suggest-password-btn');
 
     passwordInput.addEventListener('input', function() {
+        checkPasswordStrength();
+    });
+
+    suggestPasswordBtn.addEventListener('click', function() {
+        fetch('/generate_password')
+            .then(response => response.json())
+            .then(data => {
+                passwordInput.value = data.password;
+                passwordInputConf.value = data.password;
+                checkPasswordStrength();
+            });
+    });
+
+    function checkPasswordStrength() {
         const password = passwordInput.value;
         let strengthMessage = '';
         let strengthClass = '';
@@ -17,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         passwordStrength.textContent = strengthMessage;
         passwordStrength.className = 'password-strength ' + strengthClass;
-    });
+    }
 
     function isStrongPassword(password) {
         const minLength = 10;

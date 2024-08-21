@@ -1,6 +1,6 @@
-[ ] sistemare definitivamente user stories e preparare i documenti per la richiesta del progetto
+[x] sistemare definitivamente user stories e preparare i documenti per la richiesta del progetto
 [x] notifiche di errore in login e registrazione (psw è debole o non sono uguali, se l'account gia esiste ecc)
-[ ] consiglia in automatico psw forti
+[x] consiglia in automatico psw forti
 [x] dice in real time se la psw è debole, ottima ecc
 [ ] spaghetti che passano dopo la registrazione
 [x] possibilità di modificare la psw
@@ -14,3 +14,5 @@
 [ ] semplificare e suddividere app.py
 [ ] aggiungere immagine stilizzata in homepage
 [ ] cambiare password reset salt
+[ ] impostare step quando ti dice se la psw è sicura o debole
+[ ] blocco footer come fatto per header

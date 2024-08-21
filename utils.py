@@ -36,15 +36,11 @@ def generate_password():
             secrets.choice(string.digits),
             secrets.choice("!@#$%^&*()_+{}:;<>,.?/~")
         ]
-        
         #lunga 12
         password += [secrets.choice(alphabet) for _ in range(8)]
-        
         #shuffle senno i primi 4 caratteri sono quelli che ho messo in password=[...]
         secrets.SystemRandom().shuffle(password)
-        
         password = ''.join(password)
-        
         # Verifichiamo che la password rispetti il pattern
         pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}:;<>,.?/~])[A-Za-z\d!@#$%^&*()_+{}:;<>,.?/~]{10,}$'
         if re.match(pattern, password):

@@ -19,6 +19,7 @@ from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_mail import Mail, Message
 import chiavi
+from flask import jsonify
 
 
 #CONFIGURAZIONE APP FLASK, DB E MAIL
@@ -102,7 +103,6 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 # '''
 #         mail.send(msg)
 
-from flask import jsonify
 
 @app.route('/recupero_password_request', methods=['POST'])
 def recupero_password_request():
@@ -320,7 +320,10 @@ def registrazione():
     else:
         return render_template("registrazione.html")
 
-
+@app.route('/generate_password', methods=['GET'])
+def generate_password_route():
+    password = generate_password()
+    return jsonify({'password': password})
 
 
 @app.route("/login", methods=["GET", "POST"])
