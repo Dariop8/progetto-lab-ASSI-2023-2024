@@ -18,9 +18,9 @@ from utils import generate_reset_token, verify_reset_token, send_reset_email, is
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_mail import Mail, Message
+import pyotp
 import chiavi
 from flask import jsonify
-
 from flask import current_app
 
 
@@ -223,16 +223,19 @@ class Favourite(db.Model):
 class Users(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-
     email = db.Column(db.String(120), nullable=False, unique=True)
-    username = db.Column(db.String(30), nullable = False, unique = True)    
-    password = db.Column(db.String(250), nullable = False) 
-    data_di_nascita = db.Column(Date, nullable=True) #non so se Date è valido
-    diete = db.Column(JSON, nullable=True) #non so se JSON è valido
-    intolleranze = db.Column(JSON, nullable=True)  
+    username = db.Column(db.String(30), nullable=False, unique=True)    
+    password = db.Column(db.String(250), nullable=False) 
+    data_di_nascita = db.Column(Date, nullable=True)
+    diete = db.Column(JSON, nullable=True)
+    intolleranze = db.Column(JSON, nullable=True)
     lista_spesa = db.Column(JSON, nullable=True)
+    attivazione_2fa = db.Column(db.Boolean, default=False)
+    segreto_otp = db.Column(db.String(16), nullable=True) 
+    scad_otp = db.Column(db.DateTime, nullable=True)  
+    tentativi_login = db.Column(db.Integer, default=0)  
 
-    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, lista_spesa=None):
+    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, lista_spesa=None, attivazione_2fa=False, segreto_otp=None, scad_otp=None, tentativi_login=0):
         self.username = username
         self.password = password
         self.email = email
@@ -240,8 +243,10 @@ class Users(UserMixin, db.Model):
         self.diete = diete if diete is not None else []
         self.intolleranze = intolleranze if intolleranze is not None else []
         self.lista_spesa = lista_spesa if lista_spesa is not None else []
-
-
+        self.attivazione_2fa = attivazione_2fa
+        self.segreto_otp = segreto_otp
+        self.scad_otp = scad_otp
+        self.tentativi_login = tentativi_login
 
     def __repr__(self):
         return (f'<User {self.username}, email {self.email}, data_di_nascita {self.data_di_nascita}, diete {self.diete}, intolleranze {self.intolleranze}>')
@@ -333,28 +338,44 @@ def generate_password_route():
     return jsonify({'password': password})
 
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == "POST":
+    if request.method == 'POST':
         username_or_email = request.form.get("username_input")
         password_verify = request.form.get("password_input")
         
-        #cerca per username o email
         user = Users.query.filter((Users.username == username_or_email) | (Users.email == username_or_email)).first()
 
         if user and bcrypt.check_password_hash(user.password, password_verify):
-            login_user(user)
-            session.permanent = True
-            session['username'] = user.username
             session['password'] = password_verify
-            session['id'] = user.id
-            
-            return redirect(url_for("main_route"))
-        
+            session['email'] = user.email
+            if user.attivazione_2fa:
+                if user.segreto_otp is None:
+                    user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
+                    db.session.commit()
+
+                # Generate OTP and send via email
+                totp = pyotp.TOTP(user.segreto_otp)
+                otp = totp.now()
+                user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
+                user.tentativi_login = 0
+                db.session.commit()
+
+                msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+                msg.body = f'Your OTP code is {otp}. It is valid for 60 seconds.'
+                mail.send(msg)
+                return redirect(url_for('verify_otp'))
+            else:
+                login_user(user)
+                session.permanent = True
+                session['username'] = user.username
+                session['id'] = user.id
+                session['email'] = user.email
+                return redirect(url_for("main_route"))
+                
         elif not user:
             flash('Utente non registrato', 'error')
             return render_template("login.html")
-        
         else:
             flash('Password errata', 'error')
             return render_template("login.html")
@@ -417,12 +438,28 @@ def google_login():
                      data_di_nascita=None, diete=[], intolleranze=[])
         db.session.add(user)
         db.session.commit()
+    
+    if user.attivazione_2fa:
+        if user.segreto_otp is None:
+            user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
+            db.session.commit()
+        session['email'] = user.email
+        # Generate OTP and send via email
+        totp = pyotp.TOTP(user.segreto_otp)
+        otp = totp.now()
+        user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
+        user.tentativi_login = 0
+        db.session.commit()
 
+        msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+        msg.body = f'Your OTP code is {otp}. It is valid for 60 seconds.'
+        mail.send(msg)
+        return redirect(url_for("verify_otp"))
+    
     session.permanent = True
     session['username'] = user.username
     session['password'] = user.password 
     session['id'] = user.id
-
     return redirect(url_for("main_route"))
 
 
@@ -475,11 +512,27 @@ def github_login():
         db.session.add(user)
         db.session.commit()
 
+    if user.attivazione_2fa:
+        if user.segreto_otp is None:
+            user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
+            db.session.commit()
+        session['email'] = user.email
+        # Generate OTP and send via email
+        totp = pyotp.TOTP(user.segreto_otp)
+        otp = totp.now()
+        user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
+        user.tentativi_login = 0
+        db.session.commit()
+
+        msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+        msg.body = f'Your OTP code is {otp}. It is valid for 60 seconds.'
+        mail.send(msg)
+        return redirect(url_for("verify_otp"))
+    
     session.permanent = True
     session['username'] = user.username
     session['password'] = user.password
     session['id'] = user.id
-
     return redirect(url_for("main_route"))
 
 @app.route("/facebook_login")
@@ -514,25 +567,68 @@ def facebook_login():
         db.session.add(user)
         db.session.commit()
 
+    if user.attivazione_2fa:
+        if user.segreto_otp is None:
+            user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
+            db.session.commit()
+        session['email'] = user.email
+        # Generate OTP and send via email
+        totp = pyotp.TOTP(user.segreto_otp)
+        otp = totp.now()
+        user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
+        user.tentativi_login = 0
+        db.session.commit()
+
+        msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+        msg.body = f'Your OTP code is {otp}. It is valid for 60 seconds.'
+        mail.send(msg)
+        return redirect(url_for("verify_otp"))
+    
     session.permanent = True
     session['username'] = user.username
     session['password'] = user.password
     session['id'] = user.id
-
     return redirect(url_for("main_route"))
 
 
+@app.route('/verify_otp', methods=['GET', 'POST'])
+def verify_otp():
+
+    user = Users.query.filter_by(email=session['email']).first()
+    if request.method == 'POST':
+        otp = request.form['otp']
+        totp = pyotp.TOTP(user.segreto_otp)
+        # Verify OTP and check expiry
+        if totp.verify(otp, valid_window=1) and datetime.now() <= user.scad_otp:
+            user.tentativi_login = 0
+            db.session.commit()
+            login_user(user)
+            session.permanent = True
+            session['username'] = user.username
+            session['id'] = user.id
+            return redirect(url_for('main_route'))
+        else:
+            user.tentativi_login += 1
+            db.session.commit()
+            if user.tentativi_login > 3:
+                flash('Troppi tentativi falliti. Prova a rieseguire il login.', 'danger')
+                user.tentativi_login = 0
+                db.session.commit()
+                return redirect(url_for('login'))
+            flash('OTP invalido o scaduto, per favore riprova.', 'danger')
+    
+    return render_template('verify_otp.html')
 
 #IMPOSTAZIONI E MODIFICA ACCOUNT
 
-@app.route("/account")
+@app.route('/account', methods=['GET', 'POST'])
 def account():
     if 'id' in session:
         user_id = session['id']
         user = db.session.get(Users, user_id)
         
         if user:
-            return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze)
+            return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze, attivazione_2fa=user.attivazione_2fa)
     
     return redirect(url_for("login"))
 
@@ -612,13 +708,15 @@ def update_birthdate():
 def update_preferences():
     if 'id' in session:
         user_id = session['id']
-        user = db.session.get(Users, user_id)
 
         selected_diets = request.form.getlist('diet')
-        user.diete = selected_diets
-
         selected_allergies = request.form.getlist('allergies')
+        selected_2fa = request.form.get('attiva-2fa') == 'on'
+        user = db.session.get(Users, user_id)
+
+        user.diete = selected_diets
         user.intolleranze = selected_allergies
+        user.attivazione_2fa = selected_2fa
 
         db.session.commit()
         return redirect(url_for('account'))

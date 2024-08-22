@@ -5,18 +5,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const initialState = {
         diet: Array.from(document.querySelectorAll('input[name="diet"]')).map(cb => cb.checked),
         allergies: Array.from(document.querySelectorAll('input[name="allergies"]')).map(cb => cb.checked),
+        twofa: document.querySelector('input[name="attiva-2fa"]').checked,
     };
 
     function checkChanges() {
         const currentState = {
             diet: Array.from(document.querySelectorAll('input[name="diet"]')).map(cb => cb.checked),
             allergies: Array.from(document.querySelectorAll('input[name="allergies"]')).map(cb => cb.checked),
+            twofa: document.querySelector('input[name="attiva-2fa"]').checked,
         };
 
         const dietChanged = !initialState.diet.every((value, index) => value === currentState.diet[index]);
         const allergiesChanged = !initialState.allergies.every((value, index) => value === currentState.allergies[index]);
+        const twofaChanged = initialState.twofa !== currentState.twofa;
 
-        saveButton.disabled = !(dietChanged || allergiesChanged);
+        saveButton.disabled = !(dietChanged || allergiesChanged || twofaChanged);
     }
 
     form.addEventListener('change', checkChanges);

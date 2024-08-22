@@ -145,6 +145,14 @@
                                 </label>                                
                             </div>
                         </div>
+
+                        <!-- Checkbox per 2FA -->
+                        <div class="editable-info">
+                            <p>Abilita autenticazione a due fattori (2FA):</p>
+                            <label>
+                                <input type="checkbox" id="attiva-2fa" name="attiva-2fa" {% if attivazione_2fa %} checked {% endif %}> Abilita 2FA
+                            </label>
+                        </div>
                     
                         <button class="btn" type="submit" id="save-button" disabled>Salva modifiche</button>
                     </form>
