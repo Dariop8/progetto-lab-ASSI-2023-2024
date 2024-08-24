@@ -164,10 +164,91 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     
         recipeDetailsDiv.innerHTML = recipeHTML;
+         
+        //Caricamento form commento e rating
+        const formcommenti = document.querySelector('.comment-form')
+        formcommenti.innerHTML = `
+            <h3>Aggiungi un commento:</h3>
+            <form id="commentForm" action="/submit-comment" method="post">
+                <input type="hidden" name="recipe_id" value="${recipeId}">
+                <textarea id="comment" name="comment" rows="4" required minlength="10" maxlength="400" placeholder="Fai sapere agli altri cosa ne pensi..."></textarea>
+                <div class="rating-container">
+                    <p>Il tuo voto: </p>
+                    <div class="rating">
+                        <input type="radio" id="star5" name="rating" value="5" required/><label for="star5" >★</label>
+                        <input type="radio" id="star4" name="rating" value="4" required/><label for="star4" >★</label>
+                        <input type="radio" id="star3" name="rating" value="3" required/><label for="star3" >★</label>
+                        <input type="radio" id="star2" name="rating" value="2" required/><label for="star2" >★</label>
+                        <input type="radio" id="star1" name="rating" value="1" required/><label for="star1" >★</label>
+                    </div>
+                </div>
+                
+                <button type="submit">Invia</button>
+            </form>`;
+            
+            //Caricamento commenti degli altri utenti
+            let ruoloUtente = null;
+            if (recipeId) {
+                // Recupero il ruolo dell'utente e poi carico i commenti
+                fetch('/get-user-role')
+                    .then(response => response.json())
+                    .then(data => {
+                        ruoloUtente = data.ruolo_utente;
+                        loadComments(recipeId);
+                    })
+                    .catch(error => console.error('Errore nel recupero del ruolo utente:', error));
+            }
+        
+            function loadComments(recipeId) {
+                $.ajax({
+                    url: `/get-comments/${recipeId}`,
+                    method: 'GET',
+                    success: function(comments) {
+                        const commentListDiv = document.querySelector('.comment-list');
+                        commentListDiv.innerHTML = '<h2>Commenti:</h2>'; 
+        
+                        if (comments.length > 0) {
+                            comments.forEach(comment => {
+                                const commentDiv = document.createElement('div');
+                                commentDiv.classList.add('boxcommento');
+                                let deleteButton = '';
+
+                                if (ruoloUtente >= 2) {  //Pulsante visibile solo ai moderatori e amministratori
+                                    deleteButton = `
+                                        <form action="/elimina_commento/${comment.comment_id}" method="post" style="display:inline;">
+                                            <input type="hidden" name="recipe_id" value="${recipeId}">
+                                            <button type="submit" class="delete-button">Elimina</button>
+                                        </form>
+                                    `;
+                                }
+                                commentDiv.innerHTML = `
+                                    <div class="comment">
+                                        <div class="comment-sx">
+                                            <p><strong>${comment.username}:</strong><br> ${comment.comment}</p>
+                                            <p><i>Valutazione: </i>${stampaStelle(comment.rating)}</p>
+                                            <p>${comment.timestamp}</p>
+                                        </div>
+                                        <div class="comment-dx">
+                                            ${deleteButton}
+                                        </div>
+                                    </div>
+                                `;
+                                commentListDiv.appendChild(commentDiv);
+                            });
+                        } else {
+                            commentListDiv.innerHTML = '<p>Ancora nessun commento. Sii il primo a commentare!!</p>';
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error loading comments:', error);
+                    }
+                });
+            }
 
         let formattedTitle = recipe.title.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '-');           
         let recipeLink = `https://spoonacular.com/recipes/${formattedTitle}-${recipe.id}`;
 
+        //Condivisione
         document.getElementById('share-button').addEventListener('click', async () => {
             if (navigator.share) {
                 try {
@@ -189,6 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     
+        //Shopping list
         document.querySelectorAll('.add-to-shopping-list').forEach(button => {
             button.addEventListener('click', function() {
                 const ingredient = this.getAttribute('data-ingredient');
@@ -221,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         }
     
-
+        //Preferiti
         document.querySelector('.favorite-star .star').addEventListener('click', function() {
             const starElement = this;
     
@@ -278,6 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     }
     
+    // Funzione per aggiuta a lista spesa
     function addToShoppingList(ingredient) {
         $.ajax({
             type: 'POST',
@@ -296,25 +379,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const formcommenti = document.querySelector('.comment-form')
-    formcommenti.innerHTML = `
-        <h3>Aggiungi un commento:</h3>
-        <form id="commentForm" action="/submit-comment" method="post">
-            <input type="hidden" name="recipe_id" value="${recipeId}">
-            <textarea id="comment" name="comment" rows="4" required minlength="10" maxlength="400" placeholder="Fai sapere agli altri cosa ne pensi..."></textarea>
-            <div class="rating-container">
-                <p>Il tuo voto: </p>
-                <div class="rating">
-                    <input type="radio" id="star5" name="rating" value="5" required/><label for="star5" >★</label>
-                    <input type="radio" id="star4" name="rating" value="4" required/><label for="star4" >★</label>
-                    <input type="radio" id="star3" name="rating" value="3" required/><label for="star3" >★</label>
-                    <input type="radio" id="star2" name="rating" value="2" required/><label for="star2" >★</label>
-                    <input type="radio" id="star1" name="rating" value="1" required/><label for="star1" >★</label>
-                </div>
-            </div>
-            
-            <button type="submit">Invia</button>
-        </form>`;
 });
 
 
@@ -331,43 +395,6 @@ function stampaStelle(rating) {
 }
 
 
-document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const recipeId = urlParams.get('id');
-    
-    if (recipeId) {
-        loadComments(recipeId);
-    }
-
-    function loadComments(recipeId) {
-        $.ajax({
-            url: `/get-comments/${recipeId}`,
-            method: 'GET',
-            success: function(comments) {
-                const commentListDiv = document.querySelector('.comment-list');
-                commentListDiv.innerHTML = ''; 
-
-                if (comments.length > 0) {
-                    comments.forEach(comment => {
-                        const commentDiv = document.createElement('div');
-                        commentDiv.classList.add('comment');
-                        commentDiv.innerHTML = `
-                            <p><strong>${comment.username}:</strong> ${comment.comment}</p>
-                            <p><i>Valutazione: </i>${stampaStelle(comment.rating)}</p>
-                            <p>${comment.timestamp}</p>
-                        `;
-                        commentListDiv.appendChild(commentDiv);
-                    });
-                } else {
-                    commentListDiv.innerHTML = '<p>Ancora nessun commento. Sii il primo a commentare!!</p>';
-                }
-            },
-            error: function(error) {
-                console.error('Error loading comments:', error);
-            }
-        });
-    }
-});
 
 // timer
 document.addEventListener('DOMContentLoaded', function() {
@@ -438,31 +465,4 @@ document.addEventListener('DOMContentLoaded', function() {
         resetTimer();
     });
 });
-
-
-
-
-// document.getElementById('commentForm').addEventListener('submit', function(e) {
-//     e.preventDefault();
-
-//     const formData = $(this).serialize();
-
-//     $.ajax({
-//         url: '/submit-comment',
-//         method: 'POST',
-//         data: formData,
-//         xhrFields: {
-//             withCredentials: true // Includo i cookie di sessione
-//         },
-//         success: function(response) {
-//             alert(response.message);
-//             loadComments(recipeId); // Ricarico i commenti dopo l'invio
-//             document.getElementById('comment').value = ''; // Pulisco il form
-//         },
-//         error: function(error) {
-//             console.error('Error submitting comment:', error);
-//             alert('Errore durante l\'invio del commento.'); // messaggio di errore
-//         }
-//     });
-// });
 

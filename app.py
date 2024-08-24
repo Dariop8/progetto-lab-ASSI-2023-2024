@@ -161,7 +161,6 @@ def reset_password():
     if email is None:
         flash('Token non valido o scaduto.', 'error')
         return redirect(url_for('login'))
-    print(f"LEZGOZGHI")
 
     user = Users.query.filter_by(email=email).first()
     if user:
@@ -234,8 +233,9 @@ class Users(UserMixin, db.Model):
     segreto_otp = db.Column(db.String(16), nullable=True) 
     scad_otp = db.Column(db.DateTime, nullable=True)  
     tentativi_login = db.Column(db.Integer, default=0)  
+    ruolo = db.Column(db.Integer, default=1)
 
-    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, lista_spesa=None, attivazione_2fa=False, segreto_otp=None, scad_otp=None, tentativi_login=0):
+    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, lista_spesa=None, attivazione_2fa=False, segreto_otp=None, scad_otp=None, tentativi_login=0, ruolo=1):
         self.username = username
         self.password = password
         self.email = email
@@ -247,15 +247,23 @@ class Users(UserMixin, db.Model):
         self.segreto_otp = segreto_otp
         self.scad_otp = scad_otp
         self.tentativi_login = tentativi_login
+        self.ruolo = ruolo
 
     def __repr__(self):
         return (f'<User {self.username}, email {self.email}, data_di_nascita {self.data_di_nascita}, diete {self.diete}, intolleranze {self.intolleranze}>')
+
+
+class ruoli(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.Text, unique=True, nullable=False)
+    descrizione = db.Column(db.Text)
 
     
 db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
 
 @login_manager.user_loader
 def loader_user(user_id):
@@ -351,13 +359,13 @@ def login():
             session['email'] = user.email
             if user.attivazione_2fa:
                 if user.segreto_otp is None:
-                    user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
+                    user.segreto_otp = pyotp.random_base32()  # Genero segreto e inserisco nel db
                     db.session.commit()
 
-                # Generate OTP and send via email
+                # Genero otp e invio mail
                 totp = pyotp.TOTP(user.segreto_otp)
                 otp = totp.now()
-                user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
+                user.scad_otp = datetime.now() + timedelta(minutes=1)  # Scadenza di un minuto
                 user.tentativi_login = 0
                 db.session.commit()
 
@@ -735,6 +743,16 @@ def ricetta():
         return render_template("ricetta.html")
     return redirect(url_for('login'))
 
+#PASSAGGIO RUOLO AL FRONTEND
+
+@app.route('/get-user-role', methods=['GET'])
+def get_user_role():
+    if 'id' in session:
+        user_id = session['id']
+        ruolo_utente = db.session.get(Users, user_id).ruolo
+        print(ruolo_utente)
+        return jsonify({'ruolo_utente': ruolo_utente})
+
 
 #GESTIONE RICETTE PREFERITE
 
@@ -939,6 +957,7 @@ def get_comments(recipe_id):
     comments = Comments.query.filter_by(recipe_id=recipe_id).all()
     comments_list = [
         {
+            'comment_id': c.comment_id,
             'username': c.username,
             'comment': c.comment,
             'rating': c.rating, 
@@ -973,6 +992,25 @@ def submit_comment():
         db.session.commit()
     
     return redirect(url_for('ricetta', id=recipe_id))
+
+
+@app.route('/elimina_commento/<int:comment_id>', methods=['POST'])
+def elimina_commento(comment_id):
+
+    if 'id' in session:
+        recipe_id = request.form.get('recipe_id')
+        user_id = session['id']
+        ruolo_utente = db.session.get(Users, user_id).ruolo
+
+        # Se l'utente non ha il ruolo adeguato non può procedere con l'eliminazione:
+        if ruolo_utente < 2:
+            return redirect(url_for('ricetta', id=recipe_id))
+        
+        else:
+            comment = Comments.query.get_or_404(comment_id)
+            db.session.delete(comment)
+            db.session.commit()
+            return redirect(url_for('ricetta', id=recipe_id))
 
 
 @app.route('/<something>')
