@@ -1,3 +1,7 @@
+{% extends 'header.html' %}
+{% block contenttop %}
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +11,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='verify_otp.css') }}">
 </head>
 <body>
+    {% endblock %}
+    {% block contentdown %}
     <div class="container">
         <h2>Verifica il tuo OTP</h2>
         <form action="{{ url_for('verify_otp') }}" method="post">
@@ -26,3 +32,4 @@
     </div>
 </body>
 </html>
+{% endblock %}

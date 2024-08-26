@@ -258,6 +258,47 @@ class ruoli(db.Model):
     nome = db.Column(db.Text, unique=True, nullable=False)
     descrizione = db.Column(db.Text)
 
+
+class UtentiBloccati(db.Model):
+    __tablename__ = 'utenti_bloccati'
+
+    email = db.Column(db.String(120), primary_key=True)
+    username = db.Column(db.String(30), unique=True, nullable=False)
+    id_utente = db.Column(db.Integer, unique=True, nullable=True)
+    id_moderatore = db.Column(db.Integer, nullable=False)
+    commento_offensivo = db.Column(db.Text, nullable=True)
+    ricetta_interessata = db.Column(db.Integer, nullable=True)
+    data_blocco = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __init__(self, email, username, id_utente=None, id_moderatore=None, commento_offensivo=None, ricetta_interessata=None):
+        self.email = email
+        self.username = username
+        self.id_utente = id_utente
+        self.id_moderatore = id_moderatore
+        self.commento_offensivo = commento_offensivo
+        self.ricetta_interessata = ricetta_interessata
+
+
+class RichiestaSblocco(db.Model):
+    __tablename__ = 'richieste_sblocco'
+    
+    id_utente = db.Column(db.Integer, unique=True, nullable=False)
+    email = db.Column(db.String, primary_key=True)  
+    commento_offensivo = db.Column(db.Text, nullable=False)
+    ricetta_interessata = db.Column(db.Integer, nullable=False)
+    data_blocco = db.Column(db.String, nullable=False)  
+    testo_richiesta = db.Column(db.Text, nullable=False)
+    data_richiesta = db.Column(db.DateTime, default=datetime.utcnow)  
+
+    def __init__(self, id_utente, email, commento_offensivo, ricetta_interessata, data_blocco, testo_richiesta):
+        self.id_utente = id_utente
+        self.email = email
+        self.commento_offensivo = commento_offensivo
+        self.ricetta_interessata = ricetta_interessata
+        self.data_blocco = data_blocco
+        self.testo_richiesta = testo_richiesta
+        self.data_richiesta = datetime.utcnow()  
+
     
 db.init_app(app)
 
@@ -357,6 +398,11 @@ def login():
         if user and bcrypt.check_password_hash(user.password, password_verify):
             session['password'] = password_verify
             session['email'] = user.email
+            
+            bloccato = db.session.get(UtentiBloccati, user.email)
+            if bloccato:
+                return redirect(url_for('blocked'))
+            
             if user.attivazione_2fa:
                 if user.segreto_otp is None:
                     user.segreto_otp = pyotp.random_base32()  # Genero segreto e inserisco nel db
@@ -447,11 +493,15 @@ def google_login():
         db.session.add(user)
         db.session.commit()
     
+    bloccato = db.session.get(UtentiBloccati, user.email)
+    session['email'] = user.email
+    if bloccato:
+        return redirect(url_for('blocked'))
+
     if user.attivazione_2fa:
         if user.segreto_otp is None:
             user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
             db.session.commit()
-        session['email'] = user.email
         # Generate OTP and send via email
         totp = pyotp.TOTP(user.segreto_otp)
         otp = totp.now()
@@ -520,11 +570,15 @@ def github_login():
         db.session.add(user)
         db.session.commit()
 
+    bloccato = db.session.get(UtentiBloccati, user.email)
+    session['email'] = user.email
+    if bloccato:
+        return redirect(url_for('blocked'))
+
     if user.attivazione_2fa:
         if user.segreto_otp is None:
             user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
             db.session.commit()
-        session['email'] = user.email
         # Generate OTP and send via email
         totp = pyotp.TOTP(user.segreto_otp)
         otp = totp.now()
@@ -574,12 +628,16 @@ def facebook_login():
                      data_di_nascita=None, diete=None, intolleranze=None)
         db.session.add(user)
         db.session.commit()
-
+        
+    bloccato = db.session.get(UtentiBloccati, user.email)
+    session['email'] = user.email
+    if bloccato:
+        return redirect(url_for('blocked'))
+ 
     if user.attivazione_2fa:
         if user.segreto_otp is None:
             user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
             db.session.commit()
-        session['email'] = user.email
         # Generate OTP and send via email
         totp = pyotp.TOTP(user.segreto_otp)
         otp = totp.now()
@@ -745,13 +803,14 @@ def ricetta():
 
 #PASSAGGIO RUOLO AL FRONTEND
 
-@app.route('/get-user-role', methods=['GET'])
-def get_user_role():
+@app.route('/get-user-info', methods=['GET'])
+def get_user_info():
     if 'id' in session:
         user_id = session['id']
-        ruolo_utente = db.session.get(Users, user_id).ruolo
-        print(ruolo_utente)
-        return jsonify({'ruolo_utente': ruolo_utente})
+        user = db.session.get(Users, user_id)
+        if user:
+            return jsonify({'ruolo_utente': user.ruolo, 'user_email': user.email})
+    return jsonify({'ruolo_utente': None, 'user_email': None})
 
 
 #GESTIONE RICETTE PREFERITE
@@ -958,6 +1017,7 @@ def get_comments(recipe_id):
     comments_list = [
         {
             'comment_id': c.comment_id,
+            'email': c.email, 
             'username': c.username,
             'comment': c.comment,
             'rating': c.rating, 
@@ -972,14 +1032,11 @@ def submit_comment():
     if 'id' in session:
         user_id = session['id']
         user = Users.query.get(user_id)
-
+        
         recipe_id = request.form.get('recipe_id') 
         comment_text = request.form.get('comment')
         rating = request.form.get('rating')
-        
-        if not recipe_id or not comment_text:
-            return jsonify({'status': 'error', 'message': 'Dati mancanti'}), 400
-        
+
         new_comment = Comments(
             recipe_id=recipe_id,
             email=user.email,
@@ -990,9 +1047,13 @@ def submit_comment():
         
         db.session.add(new_comment)
         db.session.commit()
+        return redirect(url_for('ricetta', id=recipe_id))
     
-    return redirect(url_for('ricetta', id=recipe_id))
+    else:
+        return redirect(url_for('login'))
+ 
 
+#Gestione utenti da parte di moderatori e amministratori
 
 @app.route('/elimina_commento/<int:comment_id>', methods=['POST'])
 def elimina_commento(comment_id):
@@ -1002,15 +1063,146 @@ def elimina_commento(comment_id):
         user_id = session['id']
         ruolo_utente = db.session.get(Users, user_id).ruolo
 
-        # Se l'utente non ha il ruolo adeguato non può procedere con l'eliminazione:
+        # Se l'utente non ha il ruolo adeguato non può procedere:
         if ruolo_utente < 2:
             return redirect(url_for('ricetta', id=recipe_id))
         
         else:
-            comment = Comments.query.get_or_404(comment_id)
+            comment = Comments.query.get(comment_id)
             db.session.delete(comment)
             db.session.commit()
             return redirect(url_for('ricetta', id=recipe_id))
+        
+    return redirect(url_for('login'))
+
+@app.route('/blocca_utente/<int:comment_id>', methods=['POST'])
+def blocca_utente(comment_id):
+
+    if 'id' in session:
+        recipe_id = request.form.get('recipe_id')
+        user_id = session['id']
+        user_email = db.session.get(Users, user_id).email
+        ruolo_utente = db.session.get(Users, user_id).ruolo
+
+        # Se l'utente non ha il ruolo adeguato non può procedere:
+        if ruolo_utente < 2:
+            return redirect(url_for('ricetta', id=recipe_id))
+        
+        else:
+            comment = Comments.query.get(comment_id)
+            if comment:
+                if user_email != comment.email:
+                    email = comment.email
+                    username = comment.username
+                    commento_offensivo = comment.comment
+                    
+                    # Elimino il commento e recupero utente responsabile
+                    db.session.delete(comment)
+                    db.session.commit()
+
+                    utente_da_bloccare = Users.query.filter_by(email=email)
+                    giàAggiunto = UtentiBloccati.query.filter_by(email=email)
+                    
+                    if(giàAggiunto is None):
+                        if utente_da_bloccare:
+                            id_utente = utente_da_bloccare.id
+                        else:
+                            id_utente = None
+
+                        # Lo inserisco nella tabella UtentiBloccati
+                        utente_bloccato = UtentiBloccati(
+                            id_utente=id_utente,
+                            id_moderatore=user_id,  # Moderatore che esegue il blocco
+                            username=username,
+                            email=email,
+                            commento_offensivo=commento_offensivo,
+                            ricetta_interessata=recipe_id
+                        )
+
+                        db.session.add(utente_bloccato)
+                        db.session.commit()
+                    
+                    return redirect(url_for('ricetta', id=recipe_id))
+                    
+                else:
+                    flash("Non puoi bloccare te stesso.", "warning")
+                    return redirect(url_for('ricetta', id=recipe_id))
+            else:
+                return redirect(url_for('ricetta', id=recipe_id))  
+
+    return redirect(url_for('login'))  
+
+
+@app.route('/blocked', methods=['GET', 'POST'])
+def blocked():
+    
+    if 'email' in session:
+
+        bloccato = UtentiBloccati.query.filter_by(email=session['email']).first()
+        if not bloccato:
+            flash('Utente bloccato non trovato.', 'error')
+            return redirect(url_for('login'))
+
+        richiesta = RichiestaSblocco.query.filter_by(email=session['email']) 
+        if richiesta is None:
+            richiesta_effettuata = 0
+        else:
+            richiesta_effettuata = 1
+        print(richiesta_effettuata)
+
+        if request.method == 'POST':
+
+            testo_richiesta = request.form.get('testo_richiesta')
+            if richiesta_effettuata == 0:
+                return redirect(url_for('blocked'))
+
+            nuova_richiesta = RichiestaSblocco(
+                id_utente=bloccato.id_utente,
+                email=session['email'],
+                commento_offensivo=bloccato.commento_offensivo,
+                ricetta_interessata=bloccato.ricetta_interessata,
+                data_blocco=bloccato.data_blocco,
+                testo_richiesta=testo_richiesta
+            )
+
+            db.session.add(nuova_richiesta)
+            db.session.commit()
+            return redirect(url_for('blocked'))
+
+        return render_template('blocked.html')
+    
+    else:
+        return redirect(url_for('login'))
+
+
+
+@app.route('/get_block_info', methods=['GET'])
+def get_block_info():
+    if 'email' in session:
+        email = session['email']
+        if not email:
+            return jsonify({'error': 'Email non trovata nella sessione'}), 400
+
+        bloccato = UtentiBloccati.query.filter_by(email=email).first()
+
+        if not bloccato:
+            return jsonify({'error': 'Utente non trovato'}), 404
+
+        richiesta_effettuata = RichiestaSblocco.query.filter_by(email=email).first() is not None
+
+        data = {
+            'email': bloccato.email,
+            'username': bloccato.username,
+            'commento_offensivo': bloccato.commento_offensivo,
+            'ricetta_interessata': bloccato.ricetta_interessata,
+            'data_blocco': bloccato.data_blocco.strftime('%Y-%m-%d %H:%M:%S'),  
+            'richiesta_effettuata': richiesta_effettuata
+        }
+        return jsonify(data)
+    
+    else:
+        return redirect(url_for('login'))
+
 
 
 @app.route('/<something>')

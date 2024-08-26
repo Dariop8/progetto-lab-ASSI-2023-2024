@@ -257,6 +257,10 @@ footer {
     border: none;
 }
 
+.comment-form h3{
+    margin-bottom: 2%;
+}
+
 .comment-form label {
     display: block;
     margin-bottom: 5px;
@@ -391,8 +395,10 @@ footer {
     align-items: center;
 }
 
+/*Pulsanti moderatori*/
+
 .delete-button {
-    background-color: #d9534f;
+    background-color: #f0ad4e;
     color: white;
     border: none;
     border-radius: 5px;
@@ -405,9 +411,25 @@ footer {
 }
 
 .delete-button:hover {
-    background-color: #c9302c;
+    background-color: #c48329;
 }
 
+.block-button {
+    background-color: #eb2626;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 14px;
+    margin-left: 10px; 
+    margin-right: 10px; 
+    align-self: flex-end;
+}
+
+.block-button:hover {
+    background-color: #be1919;
+}
 
 /* Stile per il container del timer */
 .timer-container {

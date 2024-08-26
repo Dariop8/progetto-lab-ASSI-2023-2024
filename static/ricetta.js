@@ -188,12 +188,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             //Caricamento commenti degli altri utenti
             let ruoloUtente = null;
+            let userEmail = null;
             if (recipeId) {
-                // Recupero il ruolo dell'utente e poi carico i commenti
-                fetch('/get-user-role')
+                // Recupero il ruolo dell'utente e l'email, poi carico i commenti
+                fetch('/get-user-info')
                     .then(response => response.json())
                     .then(data => {
                         ruoloUtente = data.ruolo_utente;
+                        userEmail = data.user_email;  
                         loadComments(recipeId);
                     })
                     .catch(error => console.error('Errore nel recupero del ruolo utente:', error));
@@ -212,8 +214,22 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const commentDiv = document.createElement('div');
                                 commentDiv.classList.add('boxcommento');
                                 let deleteButton = '';
+                                let blockButton = '';
 
-                                if (ruoloUtente >= 2) {  //Pulsante visibile solo ai moderatori e amministratori
+                                if (ruoloUtente >= 2 && userEmail !== comment.email) {  
+                                    deleteButton = `
+                                        <form action="/elimina_commento/${comment.comment_id}" method="post" style="display:inline;">
+                                            <input type="hidden" name="recipe_id" value="${recipeId}">
+                                            <button type="submit" class="delete-button">Elimina</button>
+                                        </form>
+                                    `;
+                                    blockButton = `
+                                        <form action="/blocca_utente/${comment.comment_id}" method="post" style="display:inline;">
+                                            <input type="hidden" name="recipe_id" value="${recipeId}">
+                                            <button type="submit" class="block-button">Elimina e blocca utente</button>
+                                        </form>
+                                    `;
+                                } else if (ruoloUtente >= 2 && userEmail === comment.email) {
                                     deleteButton = `
                                         <form action="/elimina_commento/${comment.comment_id}" method="post" style="display:inline;">
                                             <input type="hidden" name="recipe_id" value="${recipeId}">
@@ -221,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </form>
                                     `;
                                 }
+
                                 commentDiv.innerHTML = `
                                     <div class="comment">
                                         <div class="comment-sx">
@@ -230,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </div>
                                         <div class="comment-dx">
                                             ${deleteButton}
+                                            ${blockButton}
                                         </div>
                                     </div>
                                 `;
