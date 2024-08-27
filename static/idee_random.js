@@ -98,8 +98,64 @@ document.getElementById('search-recipe-button').addEventListener('click', functi
     };
 
     $.ajax(settings).done(function (response) {
-        //console.log(response);
-        populateRecipesList(response.results); 
+        const recipeResults = response.results
+
+        // Seconda richiesta: Piatti che si abbinano al vino
+        let wine = document.getElementById('ch-wine').value;
+        if (wine){
+            const settings2 = {
+                async: true,
+                crossDomain: true,
+                url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/food/wine/dishes?wine=${wine}`,
+                method: 'GET',
+                headers: {
+                    'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
+                    'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
+                }
+            };
+            
+            $.ajax(settings2).done(function (response2) {
+
+                if(response2 && response2.pairings){
+                    const winePairingDishes = response2.pairings.map(item => item.toLowerCase());
+                    console.log("-------winePairingDishes----------");
+                    console.log(winePairingDishes);
+                    
+                    const filteredRecipesPromises = recipeResults.map(recipe => {
+                        return $.ajax({
+                            async: true,
+                            crossDomain: true,
+                            url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/${recipe.id}/information`,
+                            method: 'GET',
+                            headers: {
+                                'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
+                                'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
+                            }
+                        }).then(recipeDetails => {
+                            const recipeIngredients = recipeDetails.extendedIngredients.map(ing => ing.name.toLowerCase());
+                            console.log(recipeIngredients);
+                            const matchesWine = recipeIngredients.some(ingredient => winePairingDishes.includes(ingredient));
+                            return matchesWine ? recipeDetails : null;
+                        });
+                    });
+                    console.log(filteredRecipesPromises);
+                    Promise.all(filteredRecipesPromises).then(filteredRecipes => {
+                        const finalRecipes = filteredRecipes.filter(recipe => recipe !== null);
+                        populateRecipesList(finalRecipes);
+                        console.log(finalRecipes);
+                    });
+                    
+                } else {
+                    console.error('No pairings found in response:', response2);
+                }
+
+            });/*.fail(function (error) {
+                console.error('Error fetching wine pairings:', error);
+            })*/
+        } else {
+            // Se nessun vino è selezionato, mostra tutte le ricette trovate
+            populateRecipesList(recipeResults);
+        } 
     }).fail(function (error) {
         console.error('Error fetching recipes:', error);
     });

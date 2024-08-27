@@ -85,42 +85,74 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     
         const recipeIngredients = recipe.extendedIngredients;
+        let substitutesMap = new Map(); // Mappa per memorizzare i sostituti
+
         const uniqueIngredients = new Set();
         const ingredientPromises = recipeIngredients.map(async ingredient => {
             if (uniqueIngredients.has(ingredient.name)) {
                 return '';
             }
             uniqueIngredients.add(ingredient.name);
+            
+            const settings = {
+                async: true,
+                crossDomain: true,
+                url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/food/ingredients/substitutes?ingredientName=${ingredient.name}`,
+                method: 'GET',
+                headers: {
+                    'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
+                    'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
+                }
+            }; 
+            await $.ajax(settings).done(function (response) {
+                //console.log(ingredient);
+                //console.log(response);
+                if (Array.isArray(response.substitutes)) {
+                    substitutesMap.set(ingredient.name, response.substitutes);
+                }
+            }).fail(function() {
+                console.error('Errore nel recupero dei sostituti per l\'ingrediente:', ingredient.name);
+            });
+
             const isIngredientInList = await isInList(ingredient.name);
+
+            let substituteButton = `<button class="substitute-button" data-ingredient="${ingredient.name}">Vedere un sostituto</button>`;
+            
             if (ingredientsArray.some(ingredientItem => ingredient.name.includes(ingredientItem))) {
                 if (isIngredientInList) {
                     return `
                         <li class="possessed">
-                            ${ingredient.name}
+                            <span class="ingr_name">${ingredient.name}</span>
                             <span class="checkmark">✔</span>
                             <button class="add-to-shopping-list" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Aggiunto</button>
+                            ${substituteButton}
                         </li>
                     `;
                 } else {
                     return `
                         <li class="possessed">
-                            ${ingredient.name}
+                            <span class="ingr_name">${ingredient.name}</span>
                             <span class="checkmark">✔</span>
                             <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Aggiungi alla lista della spesa</button>
+                            ${substituteButton}
                         </li>
                     `;
                 }
             } else {
                 if (isIngredientInList) {
                     return `
-                        <li class="to-buy">${ingredient.name}
+                        <li class="to-buy">
+                        <span class="ingr_name">${ingredient.name}</span>
                         <button class="add-to-shopping-list" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Aggiunto</button>
+                        ${substituteButton}
                     </li>
                     `;
                 } else {
                     return `
-                        <li class="to-buy">${ingredient.name}
+                        <li class="to-buy">
+                        <span class="ingr_name">${ingredient.name}</span>
                         <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Aggiungi alla lista della spesa</button>
+                        ${substituteButton}
                     </li>
                     `;
                 }
@@ -330,6 +362,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Errore durante il controllo dei preferiti:', error);
                 });
         }
+
+        //Sostituti degli ingredienti
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('substitute-button')) {
+                const ingredientName = event.target.getAttribute('data-ingredient');
+                let substitutes = substitutesMap.get(ingredientName) || [];
+                
+                // Aggiungi l'ingrediente originale all'inizio dell'array dei sostituti
+                substitutes = [ingredientName, ...substitutes];
+
+                if (substitutes.length > 1) {
+                    const currentIndex = parseInt(event.target.getAttribute('data-index')) || 0;
+                    const nextIndex = (currentIndex + 1) % substitutes.length;
+                    const substitute = substitutes[nextIndex];
+        
+                    // Aggiorna l'HTML per mostrare il sostituto
+                    const listItem = event.target.closest('li');
+                    listItem.querySelector('.ingr_name').textContent = substitute;
+        
+                    // Aggiorna l'indice del sostituto
+                    event.target.setAttribute('data-index', nextIndex);
+                } else {
+                    const noSubstituteText = document.createElement('span');
+                    noSubstituteText.textContent = 'Non ha sostituti';
+                    noSubstituteText.classList.add('no-substitute-text');
+                    event.target.replaceWith(noSubstituteText);
+                }
+            }
+        });
     
         //Preferiti
         document.querySelector('.favorite-star .star').addEventListener('click', function() {
@@ -406,6 +467,118 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    //VINI CONSIGLIATI
+
+    const nowine = ["wine", "alcoholic drink", "ingredient", "sparkling wine", "food product category", "dessert wine", "drink", "champagne", "moscato", "menu item type", "port"];
+        
+    const settings2 = {
+        async: true,
+        crossDomain: true,
+        url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/${recipeId}/information?includeNutrition=true`,
+        method: 'GET',
+        headers: {
+            'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
+            'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
+        }
+    };
+
+    $.ajax(settings2).done(function (response1) {
+        const recipeTitle = response1.title;
+        const words =  recipeTitle.toLowerCase().split(' ');
+        let wineSet = new Set();
+        console.log(words);
+
+        let promises = words.map(word => {
+            const settings = {
+                async: true,
+                crossDomain: true,
+                url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/food/wine/pairing?food=${word}`,
+                method: 'GET',
+                headers: {
+                    'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
+                    'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
+                }
+            };
+            return $.ajax(settings).done(function (response) {
+                console.log(response);
+                if (Array.isArray(response.pairedWines)) {
+                    response.pairedWines.forEach(wine => {
+                        wineSet.add(wine.toLowerCase()); // Aggiungi ogni vino all'insieme, in minuscolo per uniformità
+                    });
+                }
+                console.log(wineSet);
+            });
+        });
+
+        Promise.all(promises).then(() => {
+            // Rimuovi i vini che sono presenti nell'array `nowine`
+            nowine.forEach(item => {
+                wineSet.delete(item.toLowerCase());
+            });
+
+            const listwines = document.querySelector('.wines-list')
+            listwines.innerHTML = ''; // Pulisci il contenuto precedente
+            
+            if (wineSet.size > 0) {
+                wineSet.forEach(wine => {
+                    const wineItem = document.createElement('li');
+                    const wineName = document.createElement('span');
+                    wineName.textContent = wine;
+
+                    // Crea un pulsante per la descrizione
+                    const descriptionButton = document.createElement('button');
+                    descriptionButton.textContent = 'Descrizione';
+                    descriptionButton.style.marginLeft = '10px';
+                    descriptionButton.style.marginLeft = '0px';
+                    descriptionButton.classList.add('wine-description');
+
+                    // Crea un elemento per la descrizione (inizialmente nascosto)
+                    const description = document.createElement('p');
+                    description.style.display = 'none'; // Nascondi la descrizione all'inizio
+
+                    // Aggiungi l'evento click al pulsante
+                    descriptionButton.addEventListener('click', () => {
+                        
+                        if (description.style.display === 'none') {
+                            // Fai una richiesta per ottenere la descrizione del vino (se disponibile)
+                            const settings = {
+                                async: true,
+                                crossDomain: true,
+                                url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/food/wine/description?wine=${wine}`,
+                                method: 'GET',
+                                headers: {
+                                    'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
+                                    'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
+                                }
+                            };
+                            
+                            $.ajax(settings).done(function (response) {
+                                description.textContent = response.wineDescription || 'Descrizione non disponibile';
+                                description.style.display = 'block'; // Mostra la descrizione
+                            }).fail(function () {
+                                description.textContent = 'Descrizione non disponibile (errore)';
+                                description.style.display = 'block';
+                            });
+                        } else {
+                            description.style.display = 'none'; // Nascondi la descrizione se già visibile
+                        }
+                    });
+
+                    // Appendi il nome del vino, il pulsante e la descrizione all'elemento listwines
+                    wineItem.appendChild(wineName);
+                    wineItem.appendChild(description);
+                    wineItem.appendChild(descriptionButton);
+                    listwines.appendChild(wineItem);
+                });
+            } else {
+                listwines.innerHTML = '<p>No wines found for this food pairing.</p>';
+            }
+
+        }).catch(error => {
+            console.error("Errore durante l'esecuzione delle chiamate AJAX:", error);
+        });  
+    });
 
 });
 
