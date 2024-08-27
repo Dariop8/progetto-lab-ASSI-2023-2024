@@ -185,7 +185,6 @@ def reset_password():
 
 
 
-
 class Comments(db.Model):
     __tablename__ = 'comments'
     comment_id = db.Column(db.Integer, primary_key=True)
@@ -195,6 +194,7 @@ class Comments(db.Model):
     comment = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer, nullable=False)  
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    segnalazione = db.Column(db.Integer, default=0)
 
     def __init__(self, recipe_id, email, username, comment, rating):
         self.recipe_id = recipe_id
@@ -1057,7 +1057,8 @@ def get_comments(recipe_id):
             'username': c.username,
             'comment': c.comment,
             'rating': c.rating, 
-            'timestamp': c.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            'timestamp': c.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'segnalazione': c.segnalazione
         } for c in comments
     ]
     return jsonify(comments_list)
@@ -1096,8 +1097,7 @@ def submit_comment():
         return redirect(url_for('login'))
  
 
-#Gestione utenti da parte di moderatori e amministratori
-
+#GESTIONE UTENTI DA PARTE DI MODERATORI E AMMINISTRATORI
 @app.route('/elimina_commento/<int:comment_id>', methods=['POST'])
 def elimina_commento(comment_id):
 
@@ -1117,6 +1117,7 @@ def elimina_commento(comment_id):
             return redirect(url_for('ricetta', id=recipe_id))
         
     return redirect(url_for('login'))
+
 
 @app.route('/blocca_utente/<int:comment_id>', methods=['POST'])
 def blocca_utente(comment_id):
@@ -1151,7 +1152,7 @@ def blocca_utente(comment_id):
                             id_utente = utente_da_bloccare.id
                             # Invio notifica
                             msg = Message('Account TastyClick bloccato', sender=app.config['MAIL_USERNAME'], recipients=[email])
-                            msg.body = f'Le comunichiamo che il suo account è stato bloccato per aver violato la policy della piattaforma.\nPuò visualizzare i dettagli del blocco ed inviare una richiesta di riammissione nella pagina che le sarà mostrata al prossimo login.\n\nIl team di TastyClick'
+                            msg.body = f'Ciao {comment.username},\n ti comunichiamo che il tuo account è stato bloccato per aver violato la policy della piattaforma.\nPuoi visualizzare i dettagli del blocco ed inviare una richiesta di riammissione nella pagina che ti sarà mostrata al prossimo login.\n\nIl team di TastyClick'
                             mail.send(msg)
                         
                         else:
@@ -1181,6 +1182,7 @@ def blocca_utente(comment_id):
     return redirect(url_for('login'))  
 
 
+#Gestione pagina per utenti bloccati
 @app.route('/blocked', methods=['GET', 'POST'])
 def blocked():
     
@@ -1250,6 +1252,7 @@ def get_block_info():
     else:
         return redirect(url_for('login'))
     
+
 # Gestione richieste riammissione
 @app.route('/sban', methods=['GET', 'POST'])
 def sban():
@@ -1283,7 +1286,7 @@ def sban():
 
                 # Invio notifica
                 msg = Message('Sblocco Account TastyClick', sender=app.config['MAIL_USERNAME'], recipients=[email])
-                msg.body = f"Caro utente,\nle comunichiamo che la sua richiesta di riammissione è stata accolta e il suo account di TastyClick è stato sbloccato con successo.\n Può ora accedere di nuovo alla piattaforma.\n\nA presto,\nIl team di TastyClick"
+                msg.body = f"Ciao {utente_bannato.username},\nti comunichiamo che la tua richiesta di riammissione è stata accolta e il tuo account di TastyClick è stato sbloccato con successo!!\n Puoi ora accedere di nuovo alla piattaforma.\n\nA presto,\nIl team di TastyClick"
                 mail.send(msg)
                 flash(f"L'Utente con email {email} è stato sbloccato con successo ed una notifica è stata inviata al suo indirizzo.", 'riuscito')
                 return redirect(url_for('sban'))
@@ -1310,6 +1313,42 @@ def get_requests():
     return jsonify(richieste_list)
 
 
+#Gestione invio email segnalazione 
+@app.route('/invia_segnalazione/<int:comment_id>', methods=['POST'])
+def invia_segnalazione(comment_id):
+    if 'id' in session:
+        user_id = session['id']
+        recipe_id = request.form.get('recipe_id')
+        ruolo_utente = db.session.get(Users, user_id).ruolo
+
+        # Se l'utente non ha il ruolo adeguato non può procedere:
+        if ruolo_utente < 2:
+            return redirect(url_for('main_route'))
+
+        comment = Comments.query.filter_by(comment_id=comment_id).first()
+        if not comment:
+            return redirect(url_for('ricetta', id=recipe_id))
+        
+        if comment.segnalazione == 1:
+            return redirect(url_for('ricetta', id=recipe_id))
+
+        msg = Message('Segnalazione comportamento inappropriato', sender=app.config['MAIL_USERNAME'], recipients=[comment.email])
+        msg.body = f"Ciao {comment.username},\nUn moderatore ha notato che uno dei tuoi commenti potrebbe essere offensivo o inappropriato per la piattaforma." \
+                   "Ti invitiamo a fare più attenzione e a moderare il linguaggio in futuro.\n\n" \
+                    f"Dettagli del commento:\n" \
+                    f"Commento: {comment.comment}\n" \
+                    f"Rating: {comment.rating}\n" \
+                    f"Id ricetta: {comment.recipe_id}\n" \
+                    f"Data: {comment.timestamp}\n" \
+                    "\nGrazie per la comprensione,\nIl Team di TastyClick"
+                   
+        mail.send(msg)
+        comment.segnalazione = 1
+        db.session.commit()
+        return redirect(url_for('ricetta', id=recipe_id))
+    
+    else:
+        return redirect(url_for('login'))
 
 @app.route('/<something>')
 def goto(something):

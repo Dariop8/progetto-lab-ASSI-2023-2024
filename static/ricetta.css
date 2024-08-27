@@ -433,6 +433,21 @@ footer {
     background-color: #be1919;
 }
 
+.notify-button {
+    background-color: #084cdf;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 14px;
+    width: 160px;
+}
+
+.notify-button:hover {
+    background-color: #0839a5;;
+}
+
 /* Stile per il container del timer */
 .timer-container {
     position: fixed;

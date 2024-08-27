@@ -215,20 +215,29 @@ document.addEventListener('DOMContentLoaded', function() {
                                 commentDiv.classList.add('boxcommento');
                                 let deleteButton = '';
                                 let blockButton = '';
+                                let notifyButton = '';
 
                                 if (ruoloUtente >= 2 && userEmail !== comment.email) {  
                                     deleteButton = `
-                                        <form action="/elimina_commento/${comment.comment_id}" method="post" style="display:inline;">
+                                        <form action="/elimina_commento/${comment.comment_id}" method="post">
                                             <input type="hidden" name="recipe_id" value="${recipeId}">
                                             <button type="submit" class="delete-button">Elimina</button>
                                         </form>
                                     `;
                                     blockButton = `
-                                        <form action="/blocca_utente/${comment.comment_id}" method="post" style="display:inline;">
+                                        <form action="/blocca_utente/${comment.comment_id}" method="post">
                                             <input type="hidden" name="recipe_id" value="${recipeId}">
                                             <button type="submit" class="block-button">Elimina e blocca utente</button>
                                         </form>
                                     `;
+                                    if (comment.segnalazione === 0) {
+                                        notifyButton = `
+                                            <form action="/invia_segnalazione/${comment.comment_id}" method="post">
+                                                <input type="hidden" name="recipe_id" value="${recipeId}">
+                                                <button type="submit" class="notify-button">Invia segnalazione</button>
+                                            </form>
+                                        `;
+                                    }
                                 } else if (ruoloUtente >= 2 && userEmail === comment.email) {
                                     deleteButton = `
                                         <form action="/elimina_commento/${comment.comment_id}" method="post" style="display:inline;">
@@ -248,6 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <div class="comment-dx">
                                             ${deleteButton}
                                             ${blockButton}
+                                            ${notifyButton}
                                         </div>
                                     </div>
                                 `;
