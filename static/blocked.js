@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('richiesta-container').innerHTML = `
                     <form id="richiestaForm" action="/blocked?email=${data.email}" method="post">
                         <label for="testo_richiesta">Motivo della Richiesta di Sblocco:</label>
-                        <textarea id="testo_richiesta" name="testo_richiesta" placeholder="Scrivi qui la tua richiesta" minlength="10" maxlength="500" required></textarea>
+                        <textarea id="testo_richiesta" name="testo_richiesta" placeholder="Scrivi qui la tua richiesta" minlength="10" maxlength="400" required></textarea>
                         <button type="submit">Invia Richiesta</button>
                     </form>
                 `;

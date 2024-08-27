@@ -240,8 +240,14 @@ footer {
     width: 600px;
 }
 
-.comment-dx{
-    padding-top: 29%;
+.comment-dx {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%; 
+    padding-bottom: 10%; 
 }
 
 .comment p {
@@ -405,9 +411,7 @@ footer {
     cursor: pointer;
     padding: 5px 10px;
     font-size: 14px;
-    margin-left: 10px; 
-    margin-right: 10px; 
-    align-self: flex-end;
+    width: 160px;
 }
 
 .delete-button:hover {
@@ -422,9 +426,7 @@ footer {
     cursor: pointer;
     padding: 5px 10px;
     font-size: 14px;
-    margin-left: 10px; 
-    margin-right: 10px; 
-    align-self: flex-end;
+    width: 160px;
 }
 
 .block-button:hover {

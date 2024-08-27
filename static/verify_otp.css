@@ -65,11 +65,7 @@ button:hover {
     border: none; 
 }
 
-.flash-messages .success {
-    color: green;
-}
-
-.flash-messages .danger {
+.flash-messages .errore {
     color: red;
 }
 

@@ -415,8 +415,8 @@ def login():
                 user.tentativi_login = 0
                 db.session.commit()
 
-                msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
-                msg.body = f'Your OTP code is {otp}. It is valid for 60 seconds.'
+                msg = Message('Il tuo OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+                msg.body = f'Il tuo codice otp è {otp}. Sarà valido per 60 secondi.'
                 mail.send(msg)
                 return redirect(url_for('verify_otp'))
             else:
@@ -428,10 +428,10 @@ def login():
                 return redirect(url_for("main_route"))
                 
         elif not user:
-            flash('Utente non registrato', 'error')
+            flash('Utente non registrato', 'errore')
             return render_template("login.html")
         else:
-            flash('Password errata', 'error')
+            flash('Password errata', 'errore')
             return render_template("login.html")
         
     elif 'username' in session and 'password' in session and 'id' in session:
@@ -509,8 +509,8 @@ def google_login():
         user.tentativi_login = 0
         db.session.commit()
 
-        msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
-        msg.body = f'Your OTP code is {otp}. It is valid for 60 seconds.'
+        msg = Message('Il tuo OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+        msg.body = f'Il tuo codice otp è {otp}. Sarà valido per 60 secondi.'
         mail.send(msg)
         return redirect(url_for("verify_otp"))
     
@@ -586,8 +586,8 @@ def github_login():
         user.tentativi_login = 0
         db.session.commit()
 
-        msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
-        msg.body = f'Your OTP code is {otp}. It is valid for 60 seconds.'
+        msg = Message('Il tuo OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+        msg.body = f'Il tuo codice otp è {otp}. Sarà valido per 60 secondi.'
         mail.send(msg)
         return redirect(url_for("verify_otp"))
     
@@ -645,8 +645,8 @@ def facebook_login():
         user.tentativi_login = 0
         db.session.commit()
 
-        msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
-        msg.body = f'Your OTP code is {otp}. It is valid for 60 seconds.'
+        msg = Message('Il tuo OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+        msg.body = f'Il tuo codice otp è {otp}. Sarà valido per 60 secondi.'
         mail.send(msg)
         return redirect(url_for("verify_otp"))
     
@@ -677,11 +677,11 @@ def verify_otp():
             user.tentativi_login += 1
             db.session.commit()
             if user.tentativi_login > 3:
-                flash('Troppi tentativi falliti. Prova a rieseguire il login.', 'danger')
+                flash('Troppi tentativi falliti. Prova a rieseguire il login.', 'errore')
                 user.tentativi_login = 0
                 db.session.commit()
                 return redirect(url_for('login'))
-            flash('OTP invalido o scaduto, per favore riprova.', 'danger')
+            flash('OTP invalido o scaduto, per favore riprova.', 'errore')
     
     return render_template('verify_otp.html')
 
@@ -690,6 +690,15 @@ def verify_otp():
 @app.route('/account', methods=['GET', 'POST'])
 def account():
     if 'id' in session:
+
+        bloccato = UtentiBloccati.query.filter_by(id_utente=user_id).first()
+        if bloccato is not None:
+            session.pop('id', None)
+            session.pop('username', None)
+            session.pop('email', None)
+            session.pop('password', None)
+            return redirect(url_for('login'))
+        
         user_id = session['id']
         user = db.session.get(Users, user_id)
         
@@ -798,7 +807,17 @@ def recupera_psw():
 @app.route("/ricetta")
 def ricetta():
     if 'id' in session:
+
+        bloccato = UtentiBloccati.query.filter_by(id_utente=session['id']).first()
+        if bloccato is not None:
+            session.pop('id', None)
+            session.pop('username', None)
+            session.pop('email', None)
+            session.pop('password', None)
+            return redirect(url_for('login'))
+        
         return render_template("ricetta.html")
+    
     return redirect(url_for('login'))
 
 #PASSAGGIO RUOLO AL FRONTEND
@@ -878,7 +897,16 @@ def check_favourite():
 @app.route("/fav")
 def fav():
     if 'id' in session:
+
         user_id = session['id']
+        bloccato = UtentiBloccati.query.filter_by(id_utente=user_id).first()
+        if bloccato is not None:
+            session.pop('id', None)
+            session.pop('username', None)
+            session.pop('email', None)
+            session.pop('password', None)
+            return redirect(url_for('login'))
+        
         user_email = db.session.get(Users, user_id).email
         favourites = Favourite.query.filter_by(email=user_email).all()
         recipe_ids = [fav.recipe_id for fav in favourites]
@@ -923,9 +951,17 @@ def get_note():
 @app.route("/lista_spesa")
 def lista_spesa():
     if 'id' in session:
-        user_id = session['id']
-        user = db.session.get(Users, user_id)
 
+        user_id = session['id']
+        bloccato = UtentiBloccati.query.filter_by(id_utente=user_id).first()
+        if bloccato is not None:
+            session.pop('id', None)
+            session.pop('username', None)
+            session.pop('email', None)
+            session.pop('password', None)
+            return redirect(url_for('login'))
+        
+        user = db.session.get(Users, user_id)
         user.lista_spesa
         return render_template("lista_spesa.html", lista=user.lista_spesa)
     return redirect(url_for('login'))
@@ -1031,8 +1067,15 @@ def submit_comment():
 
     if 'id' in session:
         user_id = session['id']
+        bloccato = UtentiBloccati.query.filter_by(id_utente=user_id).first()
+        if bloccato is not None:
+            session.pop('id', None)
+            session.pop('username', None)
+            session.pop('email', None)
+            session.pop('password', None)
+            return redirect(url_for('login'))
+
         user = Users.query.get(user_id)
-        
         recipe_id = request.form.get('recipe_id') 
         comment_text = request.form.get('comment')
         rating = request.form.get('rating')
@@ -1089,7 +1132,7 @@ def blocca_utente(comment_id):
             return redirect(url_for('ricetta', id=recipe_id))
         
         else:
-            comment = Comments.query.get(comment_id)
+            comment = Comments.query.filter_by(comment_id=comment_id).first()
             if comment:
                 if user_email != comment.email:
                     email = comment.email
@@ -1099,17 +1142,23 @@ def blocca_utente(comment_id):
                     # Elimino il commento e recupero utente responsabile
                     db.session.delete(comment)
                     db.session.commit()
+                    utente_da_bloccare = Users.query.filter_by(email=email).first()
+                    giàAggiunto = UtentiBloccati.query.filter_by(email=email).first()
 
-                    utente_da_bloccare = Users.query.filter_by(email=email)
-                    giàAggiunto = UtentiBloccati.query.filter_by(email=email)
-                    
                     if(giàAggiunto is None):
                         if utente_da_bloccare:
-                            id_utente = utente_da_bloccare.id
-                        else:
-                            id_utente = None
 
-                        # Lo inserisco nella tabella UtentiBloccati
+                            id_utente = utente_da_bloccare.id
+                            # Invio notifica
+                            msg = Message('Account TastyClick bloccato', sender=app.config['MAIL_USERNAME'], recipients=[email])
+                            msg.body = f'Le comunichiamo che il suo account è stato bloccato per aver violato la policy della piattaforma.\nPuò visualizzare i dettagli del blocco ed inviare una richiesta di riammissione nella pagina che le sarà mostrata al prossimo login.\n\nIl team di TastyClick'
+                            mail.send(msg)
+                        
+                        else:
+                            # Potrebbe succedere che l'utente abbia cancellato il proprio account 
+                            # dopo aver lasciato i commenti e prima di essere bloccato
+                            id_utente = None 
+
                         utente_bloccato = UtentiBloccati(
                             id_utente=id_utente,
                             id_moderatore=user_id,  # Moderatore che esegue il blocco
@@ -1125,7 +1174,6 @@ def blocca_utente(comment_id):
                     return redirect(url_for('ricetta', id=recipe_id))
                     
                 else:
-                    flash("Non puoi bloccare te stesso.", "warning")
                     return redirect(url_for('ricetta', id=recipe_id))
             else:
                 return redirect(url_for('ricetta', id=recipe_id))  
@@ -1140,7 +1188,6 @@ def blocked():
 
         bloccato = UtentiBloccati.query.filter_by(email=session['email']).first()
         if not bloccato:
-            flash('Utente bloccato non trovato.', 'error')
             return redirect(url_for('login'))
 
         richiesta = RichiestaSblocco.query.filter_by(email=session['email']) 
@@ -1202,6 +1249,65 @@ def get_block_info():
     
     else:
         return redirect(url_for('login'))
+    
+# Gestione richieste riammissione
+@app.route('/sban', methods=['GET', 'POST'])
+def sban():
+    if 'id' in session:
+
+        ruolo_utente = db.session.get(Users, session['id']).ruolo
+        # Se l'utente non ha il ruolo adeguato non può procedere:
+        if ruolo_utente < 2:
+            return redirect(url_for('main_route'))
+        
+        if request.method == 'POST':
+            email = request.form.get('email')
+
+            bloccato = UtentiBloccati.query.filter_by(email=email).first()
+            if bloccato:
+                db.session.delete(bloccato)
+            
+            richiesta = RichiestaSblocco.query.filter_by(email=email).first()
+            if richiesta:
+                db.session.delete(richiesta)
+            
+            db.session.commit()
+
+            utente_bannato = Users.query.filter_by(email=email).first()
+            if not utente_bannato:
+
+                flash("L'account di questo utente è stato eliminato e non è più presente nel database. La richiesta è stata comunque cancellata.", 'errore')
+                return redirect(url_for('sban'))
+            
+            else:
+
+                # Invio notifica
+                msg = Message('Sblocco Account TastyClick', sender=app.config['MAIL_USERNAME'], recipients=[email])
+                msg.body = f"Caro utente,\nle comunichiamo che la sua richiesta di riammissione è stata accolta e il suo account di TastyClick è stato sbloccato con successo.\n Può ora accedere di nuovo alla piattaforma.\n\nA presto,\nIl team di TastyClick"
+                mail.send(msg)
+                flash(f"L'Utente con email {email} è stato sbloccato con successo ed una notifica è stata inviata al suo indirizzo.", 'riuscito')
+                return redirect(url_for('sban'))
+
+        return render_template('sban.html')
+    
+    else:
+        return redirect(url_for('login'))
+
+
+@app.route('/get-requests', methods=['GET'])
+def get_requests():
+    richieste = RichiestaSblocco.query.all()
+    richieste_list = [
+        {
+            'id_utente': r.id_utente,
+            'email': r.email,
+            'commento_offensivo': r.commento_offensivo,
+            'ricetta_interessata': r.ricetta_interessata,
+            'data_blocco': r.data_blocco,
+            'testo_richiesta': r.testo_richiesta
+        } for r in richieste
+    ]
+    return jsonify(richieste_list)
 
 
 
