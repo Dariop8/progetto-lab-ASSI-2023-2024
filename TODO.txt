@@ -17,3 +17,4 @@
 [x] cambiare password reset salt
 [x] impostare step quando ti dice se la psw è sicura o debole
 [ ] blocco footer come fatto per header
+[ ] mettere i ruoli 1, 2, 3 in un database a parte del tipo (username, ruolo)

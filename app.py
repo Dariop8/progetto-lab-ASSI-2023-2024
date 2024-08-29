@@ -39,7 +39,7 @@ app.config['MAIL_USERNAME'] = chiavi.email_gmail
 app.config['MAIL_PASSWORD'] = chiavi.password_gmail
 
 app.config['CURRENT_SALT'] = os.urandom(16).hex()
-print(app.config['CURRENT_SALT'])
+# print(app.config['CURRENT_SALT'])
 app.config['PREVIOUS_SALT'] = None 
 app.config['SALT_LAST_ROTATION'] = datetime.now()
 
@@ -229,13 +229,12 @@ class Users(UserMixin, db.Model):
     diete = db.Column(JSON, nullable=True)
     intolleranze = db.Column(JSON, nullable=True)
     lista_spesa = db.Column(JSON, nullable=True)
-    attivazione_2fa = db.Column(db.Boolean, default=False)
+    attivazione_2fa = db.Column(db.String(250), nullable=True)
     segreto_otp = db.Column(db.String(16), nullable=True) 
-    scad_otp = db.Column(db.DateTime, nullable=True)  
     tentativi_login = db.Column(db.Integer, default=0)  
     ruolo = db.Column(db.Integer, default=1)
 
-    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, lista_spesa=None, attivazione_2fa=False, segreto_otp=None, scad_otp=None, tentativi_login=0, ruolo=1):
+    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, lista_spesa=None, attivazione_2fa=False, segreto_otp=None, tentativi_login=0, ruolo=1):
         self.username = username
         self.password = password
         self.email = email
@@ -243,9 +242,8 @@ class Users(UserMixin, db.Model):
         self.diete = diete if diete is not None else []
         self.intolleranze = intolleranze if intolleranze is not None else []
         self.lista_spesa = lista_spesa if lista_spesa is not None else []
-        self.attivazione_2fa = attivazione_2fa
+        self.attivazione_2fa = bcrypt.generate_password_hash('1' if attivazione_2fa else '0').decode('utf-8')
         self.segreto_otp = segreto_otp
-        self.scad_otp = scad_otp
         self.tentativi_login = tentativi_login
         self.ruolo = ruolo
 
@@ -403,15 +401,14 @@ def login():
             if bloccato:
                 return redirect(url_for('blocked'))
             
-            if user.attivazione_2fa:
+            if bcrypt.check_password_hash(user.attivazione_2fa, '1'):
                 if user.segreto_otp is None:
                     user.segreto_otp = pyotp.random_base32()  # Genero segreto e inserisco nel db
                     db.session.commit()
 
-                # Genero otp e invio mail
+                # Genero otp e invio mail - pyotp gestisce finestra di validità otp
                 totp = pyotp.TOTP(user.segreto_otp)
                 otp = totp.now()
-                user.scad_otp = datetime.now() + timedelta(minutes=1)  # Scadenza di un minuto
                 user.tentativi_login = 0
                 db.session.commit()
 
@@ -498,14 +495,14 @@ def google_login():
     if bloccato:
         return redirect(url_for('blocked'))
 
-    if user.attivazione_2fa:
+    if bcrypt.check_password_hash(user.attivazione_2fa, '1'):
         if user.segreto_otp is None:
             user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
             db.session.commit()
         # Generate OTP and send via email
         totp = pyotp.TOTP(user.segreto_otp)
         otp = totp.now()
-        user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
+        # user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
         user.tentativi_login = 0
         db.session.commit()
 
@@ -575,14 +572,14 @@ def github_login():
     if bloccato:
         return redirect(url_for('blocked'))
 
-    if user.attivazione_2fa:
+    if bcrypt.check_password_hash(user.attivazione_2fa, '1'):
         if user.segreto_otp is None:
             user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
             db.session.commit()
         # Generate OTP and send via email
         totp = pyotp.TOTP(user.segreto_otp)
         otp = totp.now()
-        user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
+        # user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
         user.tentativi_login = 0
         db.session.commit()
 
@@ -634,14 +631,14 @@ def facebook_login():
     if bloccato:
         return redirect(url_for('blocked'))
  
-    if user.attivazione_2fa:
+    if bcrypt.check_password_hash(user.attivazione_2fa, '1'):
         if user.segreto_otp is None:
             user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
             db.session.commit()
         # Generate OTP and send via email
         totp = pyotp.TOTP(user.segreto_otp)
         otp = totp.now()
-        user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
+        # user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
         user.tentativi_login = 0
         db.session.commit()
 
@@ -665,7 +662,7 @@ def verify_otp():
         otp = request.form['otp']
         totp = pyotp.TOTP(user.segreto_otp)
         # Verify OTP and check expiry
-        if totp.verify(otp, valid_window=1) and datetime.now() <= user.scad_otp:
+        if totp.verify(otp, valid_window=1): #1 minuto finestra
             user.tentativi_login = 0
             db.session.commit()
             login_user(user)
@@ -690,7 +687,7 @@ def verify_otp():
 @app.route('/account', methods=['GET', 'POST'])
 def account():
     if 'id' in session:
-
+        user_id = session['id']
         bloccato = UtentiBloccati.query.filter_by(id_utente=user_id).first()
         if bloccato is not None:
             session.pop('id', None)
@@ -703,7 +700,7 @@ def account():
         user = db.session.get(Users, user_id)
         
         if user:
-            return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze, attivazione_2fa=user.attivazione_2fa)
+            return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze, attivazione_2fa=bcrypt.check_password_hash(user.attivazione_2fa, '1'))
     
     return redirect(url_for("login"))
 
@@ -791,7 +788,7 @@ def update_preferences():
 
         user.diete = selected_diets
         user.intolleranze = selected_allergies
-        user.attivazione_2fa = selected_2fa
+        user.attivazione_2fa = bcrypt.generate_password_hash('1' if selected_2fa else '0').decode('utf-8')
 
         db.session.commit()
         return redirect(url_for('account'))
@@ -1197,7 +1194,7 @@ def blocked():
             richiesta_effettuata = 0
         else:
             richiesta_effettuata = 1
-        print(richiesta_effettuata)
+        # print(richiesta_effettuata)
 
         if request.method == 'POST':
 
@@ -1262,7 +1259,7 @@ def admin():
         # Se l'utente non ha il ruolo adeguato non può procedere:
         if ruolo_utente < 3:
             return redirect(url_for('main_route'))
-        
+
         # Statistiche globali
         num_users = db.session.query(func.count(Users.id)).scalar()
         num_banned = db.session.query(func.count(UtentiBloccati.email)).scalar()
@@ -1298,7 +1295,6 @@ def change_role():
         flash(f"User with email {email} not found.", 'error')
 
     return redirect(url_for('admin'))
-
 
 # Gestione richieste riammissione
 @app.route('/sban', methods=['GET', 'POST'])
