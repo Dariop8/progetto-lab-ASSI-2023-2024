@@ -1,0 +1,70 @@
+{% extends 'header.html' %}
+{% block contenttop %}
+
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator-Tools</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body>
+    {% endblock %}
+    {% block contentdown %}
+    <div class="container">
+        <div class="stats">
+            <h2>Statistiche generali del sito</h2>
+            <p>Number of Users: {{ num_users }}</p>
+            <p>Number of Banned Users: {{ num_banned }}</p>
+            <p>Average Comments per User: {{ avg_comments }}</p>
+        </div>
+
+        <div class="user_admin">
+            <h2>Users Administration:</h2>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Username</th>
+                        <th>Banned</th>
+                        <th>User</th>
+                        <th>Moderator</th>
+                        <th>Admin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user, banned in users %}
+                    <tr>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ 'X' if banned else '' }}</td>
+                        <td>{{ 'X' if user.ruolo == 1 else '' }}</td>
+                        <td>{{ 'X' if user.ruolo == 2 else '' }}</td>
+                        <td>{{ 'X' if user.ruolo == 3 else '' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="promote_demote">
+            <h2>Promote/Demote Users:</h2>
+            <form action="{{ url_for('change_role') }}" method="POST">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+    
+                <label for="new_role">New Role:</label>
+                <select id="new_role" name="new_role">
+                    <option value="1">User</option>
+                    <option value="2">Moderator</option>
+                    <!--<option value="3">Admin</option>-->
+                </select>
+    
+                <button type="submit">Change Role</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+{% endblock %}

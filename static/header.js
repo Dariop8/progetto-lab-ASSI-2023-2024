@@ -10,6 +10,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 sbanLink.textContent = 'Area moderatore';
                 sbanLinkContainer.appendChild(sbanLink);
             }
+            if(ruoloUtente == 3){
+                const admin_tools_cont = document.getElementById('admin-tools');
+                const admin_tools = document.createElement('a');
+                admin_tools.href = '/admin';
+                admin_tools.textContent = 'Admin Tools';
+                admin_tools_cont.appendChild(admin_tools);
+            }
         })
         .catch(error => {
             console.error('Errore durante il recupero delle informazioni utente:', error);
