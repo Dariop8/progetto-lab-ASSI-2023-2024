@@ -239,29 +239,46 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'GET',
                     success: function(comments) {
                         const commentListDiv = document.querySelector('.comment-list');
-                        commentListDiv.innerHTML = '<h2>Commenti:</h2>'; 
-        
+                        commentListDiv.innerHTML = '<h2>Commenti:</h2>';
+            
                         if (comments.length > 0) {
                             comments.forEach(comment => {
                                 const commentDiv = document.createElement('div');
+                                const ruolo_autore = comment.ruolo_autore;
                                 commentDiv.classList.add('boxcommento');
-                                let deleteButton = '';
-                                let blockButton = '';
-                                let notifyButton = '';
+                                let role = '';
 
-                                if (ruoloUtente >= 2 && userEmail !== comment.email) {  
-                                    deleteButton = `
+                                if (ruolo_autore==2){role = `<span style="color: #7d7d7d; margin-left: 3px"> • moderatore</span>`;}
+                                else if (ruolo_autore==3){role= `<span style="color: #7d7d7d; margin-left: 3px;"> • amministratore</span>`}
+                                else {role=""}
+
+                                // Visualizzazione del commento
+                                let commentContent = `
+                                    <div class="comment">
+                                        <div class="comment-sx">
+                                            <p><strong>${comment.username}</strong>${role}<br>
+                                            ${comment.comment}</p>
+                                            <p><i>Valutazione: </i>${stampaStelle(comment.rating)}</p>
+                                            <p>${comment.timestamp}</p>
+                                        </div>
+                                `;
+            
+                                // Aggiungo azioni per i moderatori
+                                if (ruoloUtente >= 2 && userEmail !== comment.email && ruoloUtente > comment.ruolo_autore) {
+                                    let deleteButton = `
                                         <form action="/elimina_commento/${comment.comment_id}" method="post">
                                             <input type="hidden" name="recipe_id" value="${recipeId}">
                                             <button type="submit" class="delete-button">Elimina</button>
                                         </form>
                                     `;
-                                    blockButton = `
+                                    let blockButton = `
                                         <form action="/blocca_utente/${comment.comment_id}" method="post">
                                             <input type="hidden" name="recipe_id" value="${recipeId}">
-                                            <button type="submit" class="block-button">Elimina e blocca utente</button>
+                                            <button type="submit" class="block-button">Elimina e blocca</button>
                                         </form>
                                     `;
+                                    let notifyButton = '';
+            
                                     if (comment.segnalazione === 0) {
                                         notifyButton = `
                                             <form action="/invia_segnalazione/${comment.comment_id}" method="post">
@@ -269,30 +286,43 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 <button type="submit" class="notify-button">Invia segnalazione</button>
                                             </form>
                                         `;
+                                    } else {
+                                        notifyButton = `<button type="submit" class="empty-button">Segnalazione inviata</button>`;
                                     }
-                                } else if (ruoloUtente >= 2 && userEmail === comment.email) {
-                                    deleteButton = `
-                                        <form action="/elimina_commento/${comment.comment_id}" method="post" style="display:inline;">
+            
+                                    commentContent += `
+                                        <div class="comment-dx">
+                                            <div class="menu">
+                                                <button class="bottone-tendina">Modera</button>
+                                                <div id="azioni" class="azioni">
+                                                    ${deleteButton}
+                                                    ${blockButton}
+                                                    ${notifyButton}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                } 
+                                else if (userEmail === comment.email) {
+                                    let deleteButton = `
+                                        <form action="/elimina_commento/${comment.comment_id}" method="post">
                                             <input type="hidden" name="recipe_id" value="${recipeId}">
-                                            <button type="submit" class="delete-button">Elimina</button>
+                                            <button type="submit" class="trash-button">
+                                                <img src="/static/images/bin.png" alt="Elimina">
+                                            </button>
                                         </form>
                                     `;
-                                }
-
-                                commentDiv.innerHTML = `
-                                    <div class="comment">
-                                        <div class="comment-sx">
-                                            <p><strong>${comment.username}:</strong><br> ${comment.comment}</p>
-                                            <p><i>Valutazione: </i>${stampaStelle(comment.rating)}</p>
-                                            <p>${comment.timestamp}</p>
-                                        </div>
+            
+                                    commentContent += `
                                         <div class="comment-dx">
                                             ${deleteButton}
-                                            ${blockButton}
-                                            ${notifyButton}
                                         </div>
-                                    </div>
-                                `;
+                                    `;
+                                }
+            
+                                commentContent += '</div>'; 
+                                commentDiv.innerHTML = commentContent;
+            
                                 commentListDiv.appendChild(commentDiv);
                             });
                         } else {
@@ -304,7 +334,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             }
-
         let formattedTitle = recipe.title.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '-');           
         let recipeLink = `https://spoonacular.com/recipes/${formattedTitle}-${recipe.id}`;
 
@@ -595,6 +624,13 @@ function stampaStelle(rating) {
     return stars;
 }
 
+//Funzione per menu tendina moderatore nei commenti
+document.querySelectorAll('.bottone-tendina').forEach(button => {
+    button.addEventListener('click', function() {
+        const menu = this.nextElementSibling;
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    });
+});
 
 
 // timer

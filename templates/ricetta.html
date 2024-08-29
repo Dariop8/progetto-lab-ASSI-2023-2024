@@ -18,6 +18,17 @@
     <div class="container">
 
         <main>
+            <div id="flash-messages">
+                {% with messages = get_flashed_messages(with_categories=True) %}
+                    {% if messages %}
+                        <ul>
+                            {% for category, message in messages %}
+                                <li class="flash-message {{ category }}">{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
+            </div>
             <div class="timer-container">
                 <h2>Timer</h2>
                 <div id="timer-screen">
@@ -75,12 +86,6 @@
                 </div> -->
             </div>
 
-            <div class="vini">
-                <h2>Vini Consigliati</h2>
-                <ul class="wines-list">
-                </div>
-            </div>
-
             <div class="commenti">
                 <div class="comment-list"></div>
                 <div class="comment-form"></div>
@@ -94,6 +99,20 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../static/ricetta.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('#flash-messages .flash-message');
+            flashMessages.forEach(message => {
+                setTimeout(() => {
+                    message.classList.add('hide');
+                    setTimeout(() => {
+                        message.remove();
+                    }, 1000); 
+                }, 3000);
+            });
+        });
+    </script>
 </body>
 </html>
+
 {% endblock %}

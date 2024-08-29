@@ -687,20 +687,16 @@ def verify_otp():
 @app.route('/account', methods=['GET', 'POST'])
 def account():
     if 'id' in session:
-        user_id = session['id']
-        bloccato = UtentiBloccati.query.filter_by(id_utente=user_id).first()
-        if bloccato is not None:
-            session.pop('id', None)
-            session.pop('username', None)
-            session.pop('email', None)
-            session.pop('password', None)
-            return redirect(url_for('login'))
+
+        blocked = user_blocked()
+        if blocked:
+            return blocked
         
         user_id = session['id']
         user = db.session.get(Users, user_id)
         
         if user:
-            return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze, attivazione_2fa=bcrypt.check_password_hash(user.attivazione_2fa, '1'))
+            return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze, attivazione_2fa=user.attivazione_2fa)
     
     return redirect(url_for("login"))
 
@@ -804,14 +800,9 @@ def recupera_psw():
 @app.route("/ricetta")
 def ricetta():
     if 'id' in session:
-
-        bloccato = UtentiBloccati.query.filter_by(id_utente=session['id']).first()
-        if bloccato is not None:
-            session.pop('id', None)
-            session.pop('username', None)
-            session.pop('email', None)
-            session.pop('password', None)
-            return redirect(url_for('login'))
+        blocked = user_blocked()
+        if blocked:
+            return blocked
         
         return render_template("ricetta.html")
     
@@ -894,15 +885,10 @@ def check_favourite():
 @app.route("/fav")
 def fav():
     if 'id' in session:
-
         user_id = session['id']
-        bloccato = UtentiBloccati.query.filter_by(id_utente=user_id).first()
-        if bloccato is not None:
-            session.pop('id', None)
-            session.pop('username', None)
-            session.pop('email', None)
-            session.pop('password', None)
-            return redirect(url_for('login'))
+        blocked = user_blocked()
+        if blocked:
+            return blocked
         
         user_email = db.session.get(Users, user_id).email
         favourites = Favourite.query.filter_by(email=user_email).all()
@@ -948,15 +934,10 @@ def get_note():
 @app.route("/lista_spesa")
 def lista_spesa():
     if 'id' in session:
-
         user_id = session['id']
-        bloccato = UtentiBloccati.query.filter_by(id_utente=user_id).first()
-        if bloccato is not None:
-            session.pop('id', None)
-            session.pop('username', None)
-            session.pop('email', None)
-            session.pop('password', None)
-            return redirect(url_for('login'))
+        blocked = user_blocked()
+        if blocked:
+            return blocked
         
         user = db.session.get(Users, user_id)
         user.lista_spesa
@@ -1047,17 +1028,26 @@ def idee_rand():
 @app.route('/get-comments/<int:recipe_id>', methods=['GET'])
 def get_comments(recipe_id):
     comments = Comments.query.filter_by(recipe_id=recipe_id).all()
-    comments_list = [
-        {
+    comments_list = []
+    
+    for c in comments:
+        user = Users.query.filter_by(email=c.email).first()
+        if user:
+            ruolo_autore = user.ruolo
+        else:
+            ruolo_autore = 1 # Se l'account non esiste più
+        
+        comments_list.append({
             'comment_id': c.comment_id,
             'email': c.email, 
             'username': c.username,
             'comment': c.comment,
-            'rating': c.rating, 
+            'rating': c.rating,
             'timestamp': c.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-            'segnalazione': c.segnalazione
-        } for c in comments
-    ]
+            'segnalazione': c.segnalazione,
+            'ruolo_autore': ruolo_autore  
+        })
+    
     return jsonify(comments_list)
 
 @app.route('/submit-comment', methods=['POST'])
@@ -1065,13 +1055,9 @@ def submit_comment():
 
     if 'id' in session:
         user_id = session['id']
-        bloccato = UtentiBloccati.query.filter_by(id_utente=user_id).first()
-        if bloccato is not None:
-            session.pop('id', None)
-            session.pop('username', None)
-            session.pop('email', None)
-            session.pop('password', None)
-            return redirect(url_for('login'))
+        blocked = user_blocked()
+        if blocked:
+            return blocked
 
         user = Users.query.get(user_id)
         recipe_id = request.form.get('recipe_id') 
@@ -1088,6 +1074,7 @@ def submit_comment():
         
         db.session.add(new_comment)
         db.session.commit()
+        flash('Commento aggiunto con successo.', 'riuscito')
         return redirect(url_for('ricetta', id=recipe_id))
     
     else:
@@ -1099,21 +1086,40 @@ def submit_comment():
 def elimina_commento(comment_id):
 
     if 'id' in session:
+        
         recipe_id = request.form.get('recipe_id')
         user_id = session['id']
         ruolo_utente = db.session.get(Users, user_id).ruolo
+        email_utente = db.session.get(Users, user_id).email
+        comment = Comments.query.get(comment_id)
 
-        # Se l'utente non ha il ruolo adeguato non può procedere:
-        if ruolo_utente < 2:
+        blocked = user_blocked()
+        if blocked:
+            return blocked
+
+        if comment:
+            autore_commento = Users.query.filter_by(email=comment.email).first()
+            if autore_commento:
+                ruolo_autore = autore_commento.ruolo
+            else:
+                ruolo_autore = 1
+
+            if comment.email != email_utente and ruolo_utente <= ruolo_autore:
+                # Se l'utente non ha il ruolo adeguato non può procedere:
+                if ruolo_utente < 2:
+                    return redirect(url_for('main_route'))
+            
+            db.session.delete(comment)
+            db.session.commit()
+            flash('Commento eliminato con successo.', 'riuscito')
             return redirect(url_for('ricetta', id=recipe_id))
         
         else:
-            comment = Comments.query.get(comment_id)
-            db.session.delete(comment)
-            db.session.commit()
+            flash('Commento non più presente.', 'errore')
             return redirect(url_for('ricetta', id=recipe_id))
         
     return redirect(url_for('login'))
+
 
 
 @app.route('/blocca_utente/<int:comment_id>', methods=['POST'])
@@ -1125,31 +1131,49 @@ def blocca_utente(comment_id):
         user_email = db.session.get(Users, user_id).email
         ruolo_utente = db.session.get(Users, user_id).ruolo
 
+        blocked = user_blocked()
+        if blocked:
+            return blocked
+
         # Se l'utente non ha il ruolo adeguato non può procedere:
         if ruolo_utente < 2:
-            return redirect(url_for('ricetta', id=recipe_id))
+            return redirect(url_for('main_route'))
         
         else:
             comment = Comments.query.filter_by(comment_id=comment_id).first()
+
             if comment:
                 if user_email != comment.email:
+
+                    autore_commento = Users.query.filter_by(email=comment.email).first()
+                    if autore_commento:
+                        ruolo_autore = autore_commento.ruolo
+                    else:
+                        ruolo_autore = 1
+
+                    # Gli utenti dello stesso ruolo non si possono bloccare fra loro e
+                    # i moderatori non possono bloccare gli amministratori
+                    if ruolo_autore >= ruolo_utente:
+                        return redirect(url_for('main_route'))
+                    
                     email = comment.email
                     username = comment.username
                     commento_offensivo = comment.comment
                     
-                    # Elimino il commento e recupero utente responsabile
+                    # Elimino il commento e blocco utente responsabile se non è già bloccato
                     db.session.delete(comment)
                     db.session.commit()
-                    utente_da_bloccare = Users.query.filter_by(email=email).first()
                     giàAggiunto = UtentiBloccati.query.filter_by(email=email).first()
 
                     if(giàAggiunto is None):
-                        if utente_da_bloccare:
+                        if autore_commento:
 
-                            id_utente = utente_da_bloccare.id
+                            id_utente = autore_commento.id
                             # Invio notifica
                             msg = Message('Account TastyClick bloccato', sender=app.config['MAIL_USERNAME'], recipients=[email])
-                            msg.body = f'Ciao {comment.username},\n ti comunichiamo che il tuo account è stato bloccato per aver violato la policy della piattaforma.\nPuoi visualizzare i dettagli del blocco ed inviare una richiesta di riammissione nella pagina che ti sarà mostrata al prossimo login.\n\nIl team di TastyClick'
+                            msg.body = f"Ciao {comment.username},\nti comunichiamo che il tuo account è stato bloccato per aver "\
+                                       "violato la policy della piattaforma.\nPuoi visualizzare i dettagli del blocco ed inviare una richiesta "\
+                                       "di riammissione nella pagina che ti sarà mostrata al prossimo login.\n\nIl team di TastyClick"
                             mail.send(msg)
                         
                         else:
@@ -1168,15 +1192,19 @@ def blocca_utente(comment_id):
 
                         db.session.add(utente_bloccato)
                         db.session.commit()
-                    
+                        flash('Utente bloccato con successo.', 'riuscito')
+                    else:
+                        flash('L\'utente è già bloccato. Commento eliminato con successo.', 'riuscito')
                     return redirect(url_for('ricetta', id=recipe_id))
                     
                 else:
                     return redirect(url_for('ricetta', id=recipe_id))
             else:
+                flash('Commento non più presente.', 'errore')
                 return redirect(url_for('ricetta', id=recipe_id))  
 
     return redirect(url_for('login'))  
+
 
 
 #Gestione pagina per utenti bloccati
@@ -1194,7 +1222,7 @@ def blocked():
             richiesta_effettuata = 0
         else:
             richiesta_effettuata = 1
-        # print(richiesta_effettuata)
+        print(richiesta_effettuata)
 
         if request.method == 'POST':
 
@@ -1249,57 +1277,14 @@ def get_block_info():
     else:
         return redirect(url_for('login'))
     
-# Gestione admin-tools
-from sqlalchemy.sql import func
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    if 'id' in session:
-
-        ruolo_utente = db.session.get(Users, session['id']).ruolo
-        # Se l'utente non ha il ruolo adeguato non può procedere:
-        if ruolo_utente < 3:
-            return redirect(url_for('main_route'))
-
-        # Statistiche globali
-        num_users = db.session.query(func.count(Users.id)).scalar()
-        num_banned = db.session.query(func.count(UtentiBloccati.email)).scalar()
-        # Media dei commenti per utente
-        avg_comments = db.session.query(func.avg(db.session.query(func.count(Comments.comment_id))
-                                                 .filter(Comments.email == Users.email)
-                                                 .group_by(Users.email))).scalar()
-
-        # Dati degli utenti
-        users = db.session.query(Users, UtentiBloccati.email.label('banned'))\
-                        .outerjoin(UtentiBloccati, Users.email == UtentiBloccati.email)\
-                        .all()
-
-        return render_template('admin.html',
-                                num_users=num_users, 
-                                num_banned=num_banned, 
-                                avg_comments=avg_comments, 
-                                users=users)
-    else:
-        return redirect(url_for('login'))
-
-@app.route('/change_role', methods=['POST'])
-def change_role():
-    email = request.form.get('email')
-    new_role = request.form.get('new_role')
-
-    user = Users.query.filter_by(email=email).first()
-    if user:
-        user.ruolo = int(new_role)
-        db.session.commit()
-        flash(f"Role for {email} changed successfully.", 'success')
-    else:
-        flash(f"User with email {email} not found.", 'error')
-
-    return redirect(url_for('admin'))
 
 # Gestione richieste riammissione
 @app.route('/sban', methods=['GET', 'POST'])
 def sban():
     if 'id' in session:
+        blocked = user_blocked()
+        if blocked:
+            return blocked
 
         ruolo_utente = db.session.get(Users, session['id']).ruolo
         # Se l'utente non ha il ruolo adeguato non può procedere:
@@ -1329,7 +1314,9 @@ def sban():
 
                 # Invio notifica
                 msg = Message('Sblocco Account TastyClick', sender=app.config['MAIL_USERNAME'], recipients=[email])
-                msg.body = f"Ciao {utente_bannato.username},\nti comunichiamo che la tua richiesta di riammissione è stata accolta e il tuo account di TastyClick è stato sbloccato con successo!!\n Puoi ora accedere di nuovo alla piattaforma.\n\nA presto,\nIl team di TastyClick"
+                msg.body = f"Ciao {utente_bannato.username},\nti comunichiamo che la tua richiesta di riammissione è stata accolta "\
+                           "e il tuo account di TastyClick è stato sbloccato con successo!!\n Puoi ora accedere di nuovo alla piattaforma."\
+                           "\n\nA presto,\nIl team di TastyClick"
                 mail.send(msg)
                 flash(f"L'Utente con email {email} è stato sbloccato con successo ed una notifica è stata inviata al suo indirizzo.", 'riuscito')
                 return redirect(url_for('sban'))
@@ -1338,6 +1325,7 @@ def sban():
     
     else:
         return redirect(url_for('login'))
+
 
 
 @app.route('/get-requests', methods=['GET'])
@@ -1356,6 +1344,7 @@ def get_requests():
     return jsonify(richieste_list)
 
 
+
 #Gestione invio email segnalazione 
 @app.route('/invia_segnalazione/<int:comment_id>', methods=['POST'])
 def invia_segnalazione(comment_id):
@@ -1364,34 +1353,67 @@ def invia_segnalazione(comment_id):
         recipe_id = request.form.get('recipe_id')
         ruolo_utente = db.session.get(Users, user_id).ruolo
 
+        blocked = user_blocked()
+        if blocked:
+            return blocked
+
         # Se l'utente non ha il ruolo adeguato non può procedere:
         if ruolo_utente < 2:
             return redirect(url_for('main_route'))
 
         comment = Comments.query.filter_by(comment_id=comment_id).first()
         if not comment:
+            flash('Commento non più presente.', 'errore')
             return redirect(url_for('ricetta', id=recipe_id))
         
+        autore_commento = Users.query.filter_by(email=comment.email).first()
+        if autore_commento:
+            ruolo_autore = autore_commento.ruolo
+        else:
+            ruolo_autore = 1
+
+        if ruolo_autore >= ruolo_utente:
+            return redirect(url_for('main_route'))
+        
+        # Se una segnalazione è già stata mandata per quel commento
         if comment.segnalazione == 1:
             return redirect(url_for('ricetta', id=recipe_id))
 
         msg = Message('Segnalazione comportamento inappropriato', sender=app.config['MAIL_USERNAME'], recipients=[comment.email])
-        msg.body = f"Ciao {comment.username},\nUn moderatore ha notato che uno dei tuoi commenti potrebbe essere offensivo o inappropriato per la piattaforma." \
-                   "Ti invitiamo a fare più attenzione e a moderare il linguaggio in futuro.\n\n" \
-                    f"Dettagli del commento:\n" \
-                    f"Commento: {comment.comment}\n" \
-                    f"Rating: {comment.rating}\n" \
-                    f"Id ricetta: {comment.recipe_id}\n" \
-                    f"Data: {comment.timestamp}\n" \
+        msg.body = f"Ciao {comment.username},\nUn moderatore ha notato che uno dei tuoi commenti potrebbe essere offensivo o inappropriato per la piattaforma."\
+                   "Ti invitiamo a fare più attenzione e a moderare il linguaggio in futuro.\n\n"\
+                    f"Dettagli del commento:\n"\
+                    f"Commento: {comment.comment}\n"\
+                    f"Rating: {comment.rating}\n"\
+                    f"Id ricetta: {comment.recipe_id}\n"\
+                    f"Data: {comment.timestamp}\n"\
                     "\nGrazie per la comprensione,\nIl Team di TastyClick"
                    
         mail.send(msg)
         comment.segnalazione = 1
         db.session.commit()
+        flash('Segnalazione inviata con successo.', 'riuscito')
         return redirect(url_for('ricetta', id=recipe_id))
     
     else:
         return redirect(url_for('login'))
+    
+
+
+#Per controllare se l'utente attuale sia stato bloccato mentre è loggato
+#e impedire ulteriori danni
+def user_blocked():
+    if 'id' in session:
+        user_id = session['id']
+        bloccato = UtentiBloccati.query.filter_by(id_utente=user_id).first()
+        if bloccato is not None:
+            session.pop('id', None)
+            session.pop('username', None)
+            session.pop('email', None)
+            session.pop('password', None)
+            return redirect(url_for('login'))
+    return None  
+
 
 @app.route('/<something>')
 def goto(something):

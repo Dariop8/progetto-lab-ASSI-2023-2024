@@ -96,45 +96,6 @@ li {
     margin-right: 100px;
 }
 
-.substitute-button{
-    display: block;
-    margin-left: 0;
-    padding: 8px 13px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: right;
-    margin-right: 0px;
-}
-
-.no-substitute-text{
-    color: blue; /* Cambia il colore del testo */
-    font-style: italic; /* Aggiungi stile corsivo */
-    font-size: small;
-    font-weight: bold;
-    margin-right: 4%;
-    margin-left: 1.7%
-}
-
-.vini h2{
-    margin-bottom: 20px;
-}
-
-.wine-description {
-    display: block;
-    margin-left: auto;
-    padding: 10px 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: right;
-    margin-right: 10px;
-}
-
 .recipe-description {
     margin-bottom: 20px;
     font-size: 18px;
@@ -246,20 +207,6 @@ footer {
     content: '\2605'; 
 }
 
-.vini{
-    width: 100%;
-    max-width: 800px;
-    margin: 2% auto;
-}
-.wines-list{
-    list-style-type: circle; /* Ripristina i punti (bullet points) */
-    font-family: Arial, Helvetica, sans-serif;
-}
-.wines-list li{
-    margin-top: 10px;
-    margin-left: 10px;
-}
-
 .commenti {
     width: 100%;
     max-width: 800px;
@@ -297,8 +244,6 @@ footer {
     width: 200px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     height: 100%; 
     padding-bottom: 10%; 
 }
@@ -457,10 +402,11 @@ footer {
 /*Pulsanti moderatori*/
 
 .delete-button {
-    background-color: #f0ad4e;
-    color: white;
+    background-color: white;
+    color: #f3b734;
+    border: 1px solid gray;
+    border-radius: 0;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
     padding: 5px 10px;
     font-size: 14px;
@@ -468,14 +414,15 @@ footer {
 }
 
 .delete-button:hover {
-    background-color: #c48329;
+    background-color: #f3b734;
+    color: white;
 }
 
 .block-button {
-    background-color: #eb2626;
-    color: white;
+    background-color: white;
+    color: #eb2626;
+    border-radius: 0;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
     padding: 5px 10px;
     font-size: 14px;
@@ -483,23 +430,96 @@ footer {
 }
 
 .block-button:hover {
-    background-color: #be1919;
+    background-color: #eb2626;
+    color: white;
 }
 
 .notify-button {
-    background-color: #084cdf;
-    color: white;
+    background-color: white;
+    color: #1468e6;
+    border-radius: 0 0 15px 15px;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
     padding: 5px 10px;
     font-size: 14px;
     width: 160px;
+    padding-bottom: 10px;
 }
 
 .notify-button:hover {
-    background-color: #0839a5;;
+    background-color: #1468e6;
+    color: white;
 }
+
+.empty-button {
+    background-color: white;
+    color: #a4badb;
+    border-radius: 0 0 15px 15px;
+    border: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    width: 160px;
+    padding-bottom: 10px;
+}
+
+.trash-button {
+    background: none; 
+    border: none;
+    padding: 0; 
+    margin-top: 25px;
+    cursor: pointer; 
+    margin-left: 54%;
+}
+
+.trash-button:hover {
+    opacity: 0.6;
+}
+
+.trash-button img {
+    width: 30px;  
+    height: auto; 
+}
+
+.menu {
+    position: relative;
+    display: inline-block;
+    align-self: flex-end;
+}
+
+.bottone-tendina {
+    background-color: white;
+    color: gray;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid rgb(214, 214, 214);
+    border-radius: 0;
+    padding: 5px 10px;
+    font-size: 14px;
+    width: 160px;
+    cursor: pointer; 
+}
+
+.bottone-tendina:hover {
+    color: rgb(44, 44, 44);
+    border-bottom: 1px solid rgb(104, 104, 104);
+}
+
+.azioni {
+    display: none; 
+    width: 160px;
+    position: absolute;
+    background-color: white;
+    border: none;
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0px 8px 10px 0px rgba(0,0,0,0.2);
+    transition: ease;
+}
+
+.menu:hover .azioni {
+    display: block; 
+}
+
 
 /* Stile per il container del timer */
 .timer-container {
@@ -530,4 +550,33 @@ footer {
     background-color: #5cb85c;
     color: white;
     cursor: pointer;
+}
+
+#flash-messages ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.flash-message {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.flash-message.riuscito {
+    color: rgb(7, 111, 172);
+    border-color: rgb(7, 111, 172);
+    background-color: #e6ffe6;
+}
+
+.flash-message.error {
+    color: rgb(173, 0, 0);
+    border-color: rgb(173, 0, 0);
+    background-color: #ffe6e6;
+}
+
+.flash-message.hide {
+    display: none;
 }
