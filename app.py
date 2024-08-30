@@ -23,7 +23,6 @@ import chiavi
 from flask import jsonify
 from flask import current_app
 
-
 #CONFIGURAZIONE APP FLASK, DB E MAIL
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -329,10 +328,10 @@ def main_route():
 @app.route('/registrazione', methods=["GET", "POST"])
 def registrazione():
     if request.method == "POST":
-        email = request.form.get('email')
-        username = request.form.get('username')
-        password = request.form.get("password")
-        password_verify = request.form.get("password_conf")
+        email = request.form.get('email').strip()
+        username = request.form.get('username').strip()
+        password = request.form.get("password").strip()
+        password_verify = request.form.get("password_conf").strip()
         data_di_nascita_str = request.form.get('birthdate')
         
         diete = request.form.getlist('diet')
@@ -350,8 +349,9 @@ def registrazione():
 
         password_ok = is_valid_password(password)
         user = Users.query.filter_by(username=username).first()
+        m = Users.query.filter_by(email=email).first()
 
-        if user:
+        if user or m:
             flash('Utente già registrato.', 'error')
             return render_template("registrazione.html")
         if  not password_ok:
@@ -696,7 +696,7 @@ def account():
         user = db.session.get(Users, user_id)
         
         if user:
-            return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze, attivazione_2fa=user.attivazione_2fa)
+            return render_template("account.html", username=user.username, email=user.email, data_nascita=user.data_di_nascita.strftime('%Y-%m-%d') if user.data_di_nascita else "N/A", diete=user.diete, intolleranze=user.intolleranze, attivazione_2fa=bcrypt.check_password_hash(user.attivazione_2fa, '1'))
     
     return redirect(url_for("login"))
 

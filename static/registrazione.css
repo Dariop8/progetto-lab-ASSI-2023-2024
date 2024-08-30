@@ -236,5 +236,6 @@ button[type="submit"]:hover {
     color: #fff;
 }
 
-
-
+.flashes {
+    color: red
+}
