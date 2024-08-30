@@ -333,6 +333,7 @@ def registrazione():
         password = request.form.get("password").strip()
         password_verify = request.form.get("password_conf").strip()
         data_di_nascita_str = request.form.get('birthdate')
+        attivazione_2fa = request.form.get('attiva-2fa')
         
         diete = request.form.getlist('diet')
         intolleranze = request.form.getlist('allergies')
@@ -361,7 +362,7 @@ def registrazione():
 
             hashed_password = bcrypt.generate_password_hash(password)
 
-            user = Users(username=username, password=hashed_password, email=email, data_di_nascita=data_di_nascita, diete=diete, intolleranze=intolleranze)
+            user = Users(username=username, password=hashed_password, email=email, data_di_nascita=data_di_nascita, diete=diete, intolleranze=intolleranze, attivazione_2fa=attivazione_2fa)
             db.session.add(user)
             db.session.commit()
 
