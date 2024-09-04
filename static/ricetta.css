@@ -190,6 +190,61 @@ footer {
     background-color: #0056b3;
 }
 
+/*Ingredienti sostitutivi*/
+.substitute-button{
+    display: block;
+    margin-left: 0;
+    padding: 8px 13px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: right;
+    margin-right: 0px;
+}
+
+.no-substitute-text{
+    color: blue; 
+    font-style: italic; 
+    font-size: small;
+    font-weight: bold;
+    margin-right: 4%;
+    margin-left: 1.7%
+}
+
+/*Stile vini consigliati*/
+.vini h2{
+    margin-bottom: 20px;
+}
+
+.wine-description {
+    display: block;
+    margin-left: auto;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: right;
+    margin-right: 10px;
+}
+
+.vini{
+    width: 100%;
+    max-width: 800px;
+    margin: 2% auto;
+}
+.wines-list{
+    list-style-type: circle; /* Ripristina i punti (bullet points) */
+    font-family: Arial, Helvetica, sans-serif;
+}
+.wines-list li{
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
 .favorite-star {
     cursor: pointer;
     font-size: 32px;

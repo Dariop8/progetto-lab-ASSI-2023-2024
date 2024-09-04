@@ -1277,7 +1277,55 @@ def get_block_info():
     
     else:
         return redirect(url_for('login'))
-    
+
+
+# Gestione admin-tools
+from sqlalchemy.sql import func
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if 'id' in session:
+
+        ruolo_utente = db.session.get(Users, session['id']).ruolo
+        # Se l'utente non ha il ruolo adeguato non può procedere:
+        if ruolo_utente < 3:
+            return redirect(url_for('main_route'))
+        
+        # Statistiche globali
+        num_users = db.session.query(func.count(Users.id)).scalar()
+        num_banned = db.session.query(func.count(UtentiBloccati.email)).scalar()
+        # Media dei commenti per utente
+        avg_comments = db.session.query(func.avg(db.session.query(func.count(Comments.comment_id))
+                                                 .filter(Comments.email == Users.email)
+                                                 .group_by(Users.email))).scalar()
+
+        # Dati degli utenti
+        users = db.session.query(Users, UtentiBloccati.email.label('banned'))\
+                        .outerjoin(UtentiBloccati, Users.email == UtentiBloccati.email)\
+                        .all()
+
+        return render_template('admin.html',
+                                num_users=num_users, 
+                                num_banned=num_banned, 
+                                avg_comments=avg_comments, 
+                                users=users)
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/change_role', methods=['POST'])
+def change_role():
+    email = request.form.get('email')
+    new_role = request.form.get('new_role')
+
+    user = Users.query.filter_by(email=email).first()
+    if user:
+        user.ruolo = int(new_role)
+        db.session.commit()
+        flash(f"Role for {email} changed successfully.", 'success')
+    else:
+        flash(f"User with email {email} not found.", 'error')
+
+    return redirect(url_for('admin'))
+
 
 # Gestione richieste riammissione
 @app.route('/sban', methods=['GET', 'POST'])
