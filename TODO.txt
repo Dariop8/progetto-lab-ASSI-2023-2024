@@ -2,7 +2,6 @@
 [x] notifiche di errore in login e registrazione (psw è debole o non sono uguali, se l'account gia esiste ecc)
 [x] consiglia in automatico psw forti
 [x] dice in real time se la psw è debole, ottima ecc
-[ ] spaghetti che passano dopo la registrazione
 [x] possibilità di modificare la psw
 [x] come gestiamo la modifica di password dopo l'accesso con google/github?
 [ ] sarebbe bene cifrare anche la data di nascita (è PII) - andrebbe fatta con una chiave (perche poi devo rimetterla in chiaro e non solo vedere se è uguale a una che inserisce l'utente)

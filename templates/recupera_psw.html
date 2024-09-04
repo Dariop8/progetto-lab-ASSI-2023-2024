@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recupero Password - Nome Sito</title>
+    <title>Password Recovery</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='recupera_psw.css')}}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/fav.ico') }}">
 
@@ -19,7 +19,7 @@
 
         <main>
             <div class="login-box">
-                <h2>Recupero Password</h2>
+                <h2>Password Recovery</h2>
                     
                 {% if request.args.get('token_sended') %}
                     <form id="token-form" method="POST" action="{{ url_for('reset_password') }}">
@@ -28,22 +28,22 @@
                             <input type="text" id="token" name="token" required>
                         </div>
                         <div class="input-group">
-                            <label for="new_password">Nuova Password</label>
+                            <label for="new_password">New Password</label>
                             <input type="password" id="new_password" name="new_password" required>
                         </div>
                         <div class="input-group">
-                            <label for="confirm_new_password">Conferma Password</label>
+                            <label for="confirm_new_password">Confirm Password</label>
                             <input type="password" id="confirm_new_password" name="confirm_new_password" required>
                         </div>
-                        <button type="submit" id="save-token-password-button">Salva Password</button>
+                        <button type="submit" id="save-token-password-button">Save Password</button>
                     </form>
                 {% else %}
                     <form id="email-form" method="POST" action="{{ url_for('recupero_password_request') }}">
                         <div class="input-group">
-                            <label for="email_input">Inserisci la tua Email</label>
+                            <label for="email_input">Enter your email</label>
                             <input type="text" id="email_input" name="email_input" required>
                         </div>
-                        <button type="submit" id="invia-token-button">invia token</button>
+                        <button type="submit" id="invia-token-button">send token</button>
                     </form>
                 {% endif %}
             </div>

@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Nome Sito</title>
+    <title>Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='login.css')}}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/fav.ico') }}">
 
@@ -38,17 +38,17 @@
                             </ul>
                         {% endif %}
                     {% endwith %}
-                    <button type="submit">Accedi</button>
+                    <button type="submit">Sign in</button>
                 </form>
                 <div class="login-options">
-                    <p>Oppure accedi con:</p>
+                    <p>Or sign in with:</p>
                     <div class="social-login">
                         <img id="google-button" class="google-login" src="../static/images/google.png">                      
                         <img id="facebook-button" class="facebook-login" src="../static/images/facebook.png">
                         <img id="github-button" class="github-login" src="../static/images/git.png">
                     </div>
-                    <p>Non hai ancora un account? <a href="/registrazione">Registrati</a></p>
-                    <p><a href="/recupera_psw">Password dimenticata?</a></p>
+                    <p>Don't have an account yet? <a href="/registrazione">Sign up</a></p>
+                    <p><a href="/recupera_psw">Forgot Password?</a></p>
                 </div>
             </div>
         </main>

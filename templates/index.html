@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ricette</title>
+    <title>Recipes</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/fav.ico') }}">
 
@@ -17,29 +17,32 @@
     <div class="container">
         <main>
             <div class="sidebar">
-                <h2>Cosa hai in frigo?</h2>
+                <h2>What do you have in your fridge?</h2>
                 <div class="search-bar">
                     <input type="text" id="ingredient-input" placeholder="ingredienti">
-                    <button id="search-button">Cerca</button>
+                    <button id="search-button">Search</button>
                 </div>
                 <div class="ingredient-list">
+                    <div class="error-message" id="errore-ingredients">
+                        <p>No ingredients found.</p>
+                    </div>
                 </div>
-                <button id="search-recipe-button" class="search-recipe">Cerca Ricetta</button>
+                <button id="search-recipe-button" class="search-recipe">Search Recipes</button>
             </div>
 
             <div class="no-recipes">
                 <div class="message">
-                    <p class="large-text">Cerca una ricetta per gli ingredienti del tuo frigo</p>
-                    <p>oppure</p>
+                    <p class="large-text">Search for a recipe using the ingredients in your fridge</p>
+                    <p>or</p>
                     
-                    <a href="/idee_rand"><button class="search-ideas">Cerca Idee</button></a>
+                    <a href="/idee_rand"><button class="search-ideas">Search Ideas</button></a>
 
                 </div>
             </div>
 
             <div class="recipes">
                 <div class="error-message" id="errore-recipe">
-                    <p>Purtroppo la tua ricerca non ha prodotto risultati.</p>
+                    <p>Unfortunately, your search did not return any results.</p>
                 </div>
             </div>
         </main>

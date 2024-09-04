@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le tue ricette Preferite</title>
+    <title>Your Favorite Recipes</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='fav.css')}}">
 
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/fav.ico') }}">
@@ -21,7 +21,7 @@
         <main>
             <div class="recipes">
                  {% if lista==[] %}
-                    <h2>Non hai nessuna ricetta salvata!</h2>
+                    <h2>You don't have any saved recipes!</h2>
                 {% endif %}
             </div>
         </main>

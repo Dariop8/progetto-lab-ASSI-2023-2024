@@ -114,25 +114,31 @@ function populateIngredientList(ingredients) {
 
     updateIngredientList();
 
-    const existingCheckboxValues = new Set();
-    const existingCheckboxes = ingredientListDiv.querySelectorAll('input[type="checkbox"]');
-    existingCheckboxes.forEach(checkbox => existingCheckboxValues.add(checkbox.value));
+    if (ingredients.length === 0) {
+        document.getElementById('errore-ingredients').style.display = "block";
+    } else { 
+        document.getElementById('errore-ingredients').style.display = "none";
 
-    ingredients.forEach(ingredient => {
-        if (!existingCheckboxValues.has(ingredient.name)) {
-            const articoloIngredient = document.createElement('label');
-            articoloIngredient.classList.add('articoloIngredient');
+        const existingCheckboxValues = new Set();
+        const existingCheckboxes = ingredientListDiv.querySelectorAll('input[type="checkbox"]');
+        existingCheckboxes.forEach(checkbox => existingCheckboxValues.add(checkbox.value));
 
-            articoloIngredient.innerHTML = `
-                <input type="checkbox" value="${ingredient.name}">
-                ${ingredient.name}
-            `;
+        ingredients.forEach(ingredient => {
+            if (!existingCheckboxValues.has(ingredient.name)) {
+                const articoloIngredient = document.createElement('label');
+                articoloIngredient.classList.add('articoloIngredient');
 
-            ingredientListDiv.appendChild(articoloIngredient);
+                articoloIngredient.innerHTML = `
+                    <input type="checkbox" value="${ingredient.name}">
+                    ${ingredient.name}
+                `;
 
-            existingCheckboxValues.add(ingredient.name);
-        }
-    });
+                ingredientListDiv.appendChild(articoloIngredient);
+
+                existingCheckboxValues.add(ingredient.name);
+            }
+        });
+    }
 }
 
 function populateRecipesList(recipes, ingredients) {
@@ -140,7 +146,7 @@ function populateRecipesList(recipes, ingredients) {
 
     recipeListDiv.innerHTML=`
                 <div class="error-message" id="errore-recipe">
-                    <p>Purtroppo la tua ricerca non ha prodotto risultati.</p>
+                    <p>Unfortunately, your search did not return any results.</p>
                 </div>
                 `;
 
@@ -181,15 +187,15 @@ function populateRecipesList(recipes, ingredients) {
                             <span class="recipe-name">${recipe.title}</span>
                             <div class="recipe-details">
                                 <span class="time">🕒 ${recipe.readyInMinutes}min</span>
-                                <span class="type">Tipo: ${typesString}</span>
-                                <span class="calories">Calorie: ${recipe.nutrition.nutrients[0].amount}kcal</span>
+                                <span class="type">Type: ${typesString}</span>
+                                <span class="calories">Calories: ${recipe.nutrition.nutrients[0].amount}kcal</span>
                             </div>
                         </div>
                     </div> 
                 `;
 
                 if (recipe.image !== "") {
-                    recipeString += `<img src="${recipe.image}" alt="Immagine Ricetta" class="recipe-image"></img> `;
+                    recipeString += `<img src="${recipe.image}" alt="Recipe Image" class="recipe-image"></img> `;
                 }
                 recipeElement.innerHTML = recipeString;
                 

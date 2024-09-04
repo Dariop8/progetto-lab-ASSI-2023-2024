@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La tua lista della spesa</title>
+    <title>Your shopping list</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='lista_spesa.css')}}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="../static/lista_spesa.js"></script>
@@ -23,9 +23,9 @@
         <main>
             <div class="item-box">
                 {% if lista==[] %}
-                    <h2>La tua LISTA della SPESA è VUOTA!</h2>
+                    <h2>Your SHOPPING LIST is EMPTY!</h2>
                 {% else %}
-                <h2>LA TUA LISTA DELLA SPESA:</h2>
+                <h2>YOUR SHOPPING LIST:</h2>
                 <div class="item-details">
                     <ul>
                         {% for el in lista %}
@@ -36,7 +36,7 @@
                         {% endfor %}
                     </ul>
                     <!-- <button id="download-btn" class="download"></button> -->
-                    <button id="download-btn" class="download"><i class="fa fa-download"></i> Scarica in PDF</button>
+                    <button id="download-btn" class="download"><i class="fa fa-download"></i> Download PDF</button>
                 {% endif %}
                 </div>
                 

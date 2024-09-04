@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Il Tuo Account</title>
+    <title>Your Account</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='account.css')}}">
     <script src="../static/account.js"></script>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/fav.ico') }}">
@@ -20,27 +20,27 @@
 
         <main>
             <div class="account-box">
-                <h2>IL TUO ACCOUNT</h2>
+                <h2>YOUR ACCOUNT</h2>
                 <div class="account-details">
                     
                     <p>Username: <span class="user-info">{{ username }}</span></p>
                     <p>Email: <span class="user-info">{{ email }}</span></p>
-                    <button class="btn" id="changePasswordBtn">Cambia Password</button>
+                    <button class="btn" id="changePasswordBtn">Change Password</button>
 
                     <div id="changePasswordModal" class="modal">
                         <div class="modal-content">
                             <span class="close">&times;</span>
-                            <h3>Cambia Password</h3>
+                            <h3>Change Password</h3>
                             <form id="password-form" method="POST" action="{{ url_for('update_password') }}">
-                                <label for="old_password">Vecchia Password:</label>
+                                <label for="old_password">Old Password:</label>
                                 <input type="password" id="old_password" name="old_password" required><br>
-                                <label for="new_password">Nuova Password:</label>
+                                <label for="new_password">New Password:</label>
                                 <input type="password" id="new_password" name="new_password" required><br>
-                                <label for="confirm_new_password">Conferma Password:</label>
+                                <label for="confirm_new_password">Confirm Password:</label>
                                 <input type="password" id="confirm_new_password" name="confirm_new_password" required><br>
-                                <button type="submit" id="save-password-button">Salva Password</button>
+                                <button type="submit" id="save-password-button">Save Password</button>
                             </form>
-                            <a id="resetPasswordLink">Resetta password via email</a>
+                            <a id="resetPasswordLink">Reset password via email</a>
                         </div>
                     </div>
 
@@ -51,21 +51,21 @@
                             <form id="token-form" method="POST" action="{{ url_for('reset_password') }}">
                                 <label for="token">Token:</label>
                                 <input type="text" id="token" name="token" required><br>
-                                <label for="new_password_token">Nuova Password:</label>
+                                <label for="new_password_token">New Password:</label>
                                 <input type="password" id="new_password_token" name="new_password" required><br>
-                                <label for="confirm_new_password_token">Conferma Nuova Password:</label>
+                                <label for="confirm_new_password_token">Confirm New Password:</label>
                                 <input type="password" id="confirm_new_password_token" name="confirm_new_password" required><br>
-                                <button type="submit" id="save-token-password-button">Salva Password</button>
+                                <button type="submit" id="save-token-password-button">Save Password</button>
                             </form>
                         </div>
                     </div>
                     
 
                     <form id="birthdate-form" method="POST" action="{{ url_for('update_birthdate') }}">
-                        <p>Data di nascita: 
+                        <p>Birth Date: 
                             <input type="date" name="birthdate" id="birthdate" class="user-info" value="{{ data_nascita }}">
                         </p>
-                        <button class="btn" type="submit" id="save-birthdate-button">Aggiorna Data di Nascita</button>
+                        <button class="btn" type="submit" id="save-birthdate-button">Update Birth Date</button>
                     </form>
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
@@ -78,10 +78,10 @@
                     {% endwith %}
                     <form id="preferences-form" method="POST" action="/update_preferences">
                         <div class="editable-info">
-                            <p>Diete particolari:</p>
+                            <p>Special diets:</p>
                             <div class="checkbox-group">
                                 <label>
-                                    <input type="radio" id="diet-none" name="diet" value="" {% if not diete %} checked {% endif %}> Nessuna
+                                    <input type="radio" id="diet-none" name="diet" value="" {% if not diete %} checked {% endif %}> None
                                 </label><br>
                                 <label>
                                     <input type="radio" id="diet-vegetarian" name="diet" value="vegetarian" {% if 'vegetarian' in diete %} checked {% endif %}> Vegetarian
@@ -108,7 +108,7 @@
                         </div>
                     
                         <div class="editable-info">
-                            <p>Intolleranze / Allergie:</p>
+                            <p>Intolerances / Allergies:</p>
                             <div class="checkbox-group">
                                 <label>
                                     <input type="checkbox" id="allergy-dairy" name="allergies" value="dairy" {% if 'dairy' in intolleranze %} checked {% endif %}> Dairy
@@ -146,30 +146,29 @@
                             </div>
                         </div>
 
-                        <!-- Checkbox per 2FA -->
                         <div class="editable-info">
-                            <p>Abilita autenticazione a due fattori (2FA):</p>
+                            <p>Enable two-factor authentication (2FA):</p>
                             <label>
-                                <input type="checkbox" id="attiva-2fa" name="attiva-2fa" {% if attivazione_2fa %} checked {% endif %}> Abilita 2FA
+                                <input type="checkbox" id="attiva-2fa" name="attiva-2fa" {% if attivazione_2fa %} checked {% endif %}> Enable 2FA
                             </label>
                         </div>
                     
-                        <button class="btn" type="submit" id="save-button" disabled>Salva modifiche</button>
+                        <button class="btn" type="submit" id="save-button" disabled>Save changes</button>
                     </form>
                     
 
                 </div>
                 <a href="{{ url_for('logout') }}"><button class="logout-button">LOGOUT</button></a>
 
-                <button type="button" class="delete-account-button" id="openDeleteModal">Elimina account</button>
+                <button type="button" class="delete-account-button" id="openDeleteModal">Delete account</button>
 
                 <div id="deleteModal" class="modal">
                 <div class="modal-content">
                     <span class="close">&times;</span>
-                    <p>Sei sicuro di voler eliminare il tuo account? Questa azione è irreversibile.</p>
+                    <p>Are you sure you want to delete your account? This action is irreversible</p>
                     <form id="deleteAccountForm" action="{{ url_for('delete_account') }}" method="POST">
-                        <button type="submit" class="confirm-delete">Si, elimina</button>
-                        <button type="button" class="cancel-delete">Annulla</button>
+                        <button type="submit" class="confirm-delete">Yes, delete</button>
+                        <button type="button" class="cancel-delete">Back</button>
                     </form>
                 </div>
                 </div>
