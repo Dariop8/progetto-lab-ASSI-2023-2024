@@ -188,13 +188,13 @@ class Comments(db.Model):
     __tablename__ = 'comments'
     comment_id = db.Column(db.Integer, primary_key=True)
     recipe_id = db.Column(db.Integer, nullable=False)
-    email = db.Column(db.String(120), nullable=False)
-    username = db.Column(db.String(30), nullable=False)
+    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), nullable=False)
+    username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), nullable=False)
     comment = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer, nullable=False)  
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     segnalazione = db.Column(db.Integer, default=0)
-
+#controllare cosa succede se elimino l'account - rimane il commento? - on delete cascade
     def __init__(self, recipe_id, email, username, comment, rating):
         self.recipe_id = recipe_id
         self.email = email
@@ -208,8 +208,8 @@ class Favourite(db.Model):
     __tablename__ = 'favourite'
 
     id = db.Column(db.Integer, primary_key=True)
-    recipe_id = db.Column(db.Integer, nullable=False, unique=True)
-    email = db.Column(db.String(120), nullable=False)
+    recipe_id = db.Column(db.Integer, nullable=False)
+    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), nullable=False)
     note = db.Column(db.String(300), nullable=False, default="")
 
     def __init__(self, recipe_id=None, email=None):
@@ -255,7 +255,7 @@ class ruoli(db.Model):
     nome = db.Column(db.Text, unique=True, nullable=False)
     descrizione = db.Column(db.Text)
 
-
+#UtentiBloccati non ha foreignkey perchè se sono bannato e cancello l'account allora deve rimanere quella mail tra i bloccati
 class UtentiBloccati(db.Model):
     __tablename__ = 'utenti_bloccati'
 
@@ -279,8 +279,8 @@ class UtentiBloccati(db.Model):
 class RichiestaSblocco(db.Model):
     __tablename__ = 'richieste_sblocco'
     
-    id_utente = db.Column(db.Integer, unique=True, nullable=False)
-    email = db.Column(db.String, primary_key=True)  
+    id_utente = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), unique=True, nullable=False)
+    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), primary_key=True)   
     commento_offensivo = db.Column(db.Text, nullable=False)
     ricetta_interessata = db.Column(db.Integer, nullable=False)
     data_blocco = db.Column(db.String, nullable=False)  
