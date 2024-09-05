@@ -1,0 +1,59 @@
+{% extends 'header.html' %}
+{% block contenttop %}
+
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - TastyClick</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='about_us.css')}}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/fav.ico') }}">
+
+</head>
+<body>
+    {% endblock %}
+    {% block contentdown %}
+    <div class="container">
+        <main>
+            <div class="about-us">
+                <h1>Benvenuti su TastyClick</h1>    
+                <p>
+                    Cosa è TastyClick? TastyClick è la tua guida completa in cucina. Inserisci gli ingredienti che hai a disposizione e scopri subito quali ricette puoi realizzare.
+                    Se non sai cosa cucinare, lascia che sia TastyClick a suggerirti una ricetta: puoi filtrare i risultati per tipo, origine, tempo di preparazione e calorie.
+                    Inoltre, il nostro sistema tiene conto delle tue allergie e intolleranze per offrirti ricette sicure e personalizzate.
+                </p>
+
+                <h2>Come funziona?</h2>
+                <ol>
+                    <li><strong>Inserisci gli ingredienti:</strong> Inserisci gli ingredienti che hai nel frigo e scopri tutte le ricette che puoi preparare con ciò che hai.</li>
+                    <li><strong>Ricevi ricette suggerite:</strong> Esplora le ricette suggerite e filtra per le tue preferenze.</li>
+                    <li><strong>Salva gli ingredienti nella Lista della spesa:</strong> Manca qualcosa? Salva gli ingredienti che ti servono nella tua Lista della spesa per averli sempre a portata di mano.</li>
+                    <li><strong>Trova sostituti degli ingredienti:</strong> Se un ingrediente non è disponibile, verifica subito se ci sono sostituti suggeriti.</li>
+                    <li><strong>Scopri il vino perfetto:</strong> Ogni ricetta può essere accompagnata da un vino consigliato per esaltare i sapori del piatto.</li>
+                    <li><strong>Crea il tuo profilo:</strong> Registrati per salvare le tue ricette preferite, gestire la tua Lista della spesa, controllare le tue allergie e interagire con la community.</li>
+                </ol>
+
+                <h2>Ruoli Utente:</h2>
+                <ul>
+                    <li><strong>Utente:</strong> Esplora ricette, salva i tuoi ingredienti nella Lista della spesa, trova sostituti, e scopri vini abbinati.</li>
+                    <li><strong>Moderatore:</strong> Segnala o elimina commenti inappropriati e blocca profili problematici.</li>
+                    <li><strong>Admin:</strong> Gestisci moderatori e utenti, con accesso completo a tutte le funzionalità del sito.</li>
+                </ul>
+
+                <h2>Contatti</h2>
+                <p>Hai domande? Vuoi saperne di più? Contattaci!</p>
+                <ul>
+                    <li>Email: support@tastyclick.com</li>
+                    <li>Telefono: +39 3284668009</li>
+                    <li>Indirizzo: Viale Scalo San Lorenzo, 15, 00150 Roma, Italia</li>
+                </ul>
+                <strong>Registrati Ora!</strong>
+                <p>Unisciti alla nostra community e scopri un nuovo modo di cucinare con TastyClick.</p>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+{% endblock %}

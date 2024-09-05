@@ -324,6 +324,10 @@ def main_route():
         intolerances = []
     return render_template("index.html", diet=diet, intolerances=intolerances)
 
+@app.route('/about_us')
+def about_us():
+    return render_template("about_us.html")
+
 #SIGNUP E LOGIN
 @app.route('/registrazione', methods=["GET", "POST"])
 def registrazione():
