@@ -17,3 +17,6 @@
 [x] impostare step quando ti dice se la psw è sicura o debole
 [ ] blocco footer come fatto per header
 [ ] mettere i ruoli 1, 2, 3 in un database a parte del tipo (username, ruolo)
+[ ] inserire i messaggi di errore per i diversi casi
+[ ] aggiustare la pagina about us così che si veda anche quando il login è eseguito
+[ ] aggiustare la pagina della ricetta che presenta la sezione commenti separata e ha due scrollbar
