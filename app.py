@@ -38,7 +38,6 @@ app.config['MAIL_USERNAME'] = chiavi.email_gmail
 app.config['MAIL_PASSWORD'] = chiavi.password_gmail
 
 app.config['CURRENT_SALT'] = os.urandom(16).hex()
-# print(app.config['CURRENT_SALT'])
 app.config['PREVIOUS_SALT'] = None 
 app.config['SALT_LAST_ROTATION'] = datetime.now()
 
@@ -1290,19 +1289,19 @@ def admin():
     if 'id' in session:
 
         ruolo_utente = db.session.get(Users, session['id']).ruolo
-        # Se l'utente non ha il ruolo adeguato non può procedere:
+        
         if ruolo_utente < 3:
             return redirect(url_for('main_route'))
         
-        # Statistiche globali
+        
         num_users = db.session.query(func.count(Users.id)).scalar()
         num_banned = db.session.query(func.count(UtentiBloccati.email)).scalar()
-        # Media dei commenti per utente
+        
         avg_comments = db.session.query(func.avg(db.session.query(func.count(Comments.comment_id))
                                                  .filter(Comments.email == Users.email)
                                                  .group_by(Users.email))).scalar()
 
-        # Dati degli utenti
+        
         users = db.session.query(Users, UtentiBloccati.email.label('banned'))\
                         .outerjoin(UtentiBloccati, Users.email == UtentiBloccati.email)\
                         .all()
@@ -1322,11 +1321,14 @@ def change_role():
 
     user = Users.query.filter_by(email=email).first()
     if user:
-        user.ruolo = int(new_role)
-        db.session.commit()
-        flash(f"Role for {email} changed successfully.", 'success')
+        if user.ruolo == 3 and int(new_role) < 3: 
+            flash(f"Non puoi retrocedere un altro amministratore.", 'error')
+        else:
+            user.ruolo = int(new_role)
+            db.session.commit()
+            flash(f"Ruolo per {email} cambiato con successo.", 'success')
     else:
-        flash(f"User with email {email} not found.", 'error')
+        flash(f"Utente con email {email} non trovato.", 'error')
 
     return redirect(url_for('admin'))
 

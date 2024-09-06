@@ -86,3 +86,25 @@ label {
     justify-content: center;
     align-items: center;
 }
+
+.flash-messages {
+    margin: 20px;
+    padding: 10px;
+    transition: opacity 1s ease-in-out;
+    opacity: 1;
+}
+.alert {
+    padding: 10px;
+    border-radius: 5px;
+}
+  .alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+  .alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+  .fade-out {
+    opacity: 0;
+}

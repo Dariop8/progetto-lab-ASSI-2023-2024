@@ -18,16 +18,16 @@
 
         <main>
             <div class="sidebar">
-                <h2>Cerca per nome</h2>
+                <h2>Search by name</h2>
                 <div class="search-bar">
-                    <input id="selected-recipe" type="text" placeholder="ricette">
+                    <input id="selected-recipe" type="text" placeholder="recipes">
                 </div>
-                <h2>Filtri</h2>
+                <h2>Filters</h2>
                 <div class="filters">
                     <div class="filter-section">
-                        <label for="type">Tipo</label>
+                        <label for="type">Type</label>
                         <select id="type">
-                            <option value="">-- Seleziona Tipo --</option>
+                            <option value="">-- Select Type --</option>
                             <option value="main course">main course</option>
                             <option value="side dish">side dish</option>
                             <option value="dessert">dessert</option>
@@ -42,7 +42,7 @@
                         </select>
                     </div>
                     <div class="filter-section">
-                        <label style="display: inline-block;">Origine</label>
+                        <label style="display: inline-block;">Origin</label>
                         <button id="toggle-origine" style="display: inline-block;">↓</button>
                         <div class="checkbox-group" id="origine-options">
                             <label><input type="checkbox" value="african"> African</label>
@@ -72,71 +72,36 @@
                         </div>
                     </div>
                     <div class="filter-section">
-                        <label for="max-time">Max Tempo</label>
+                        <label for="max-time">Max Time</label>
                         <select id="max-time">
-                            <option value="">-- Seleziona Tempo Max --</option>
-                            <option value="30">30 minuti</option>
-                            <option value="60">1 ora</option>
-                            <option value="120">2 ore</option>
+                            <option value="">-- Select Max Time --</option>
+                            <option value="30">30 minuts</option>
+                            <option value="60">1 hour</option>
+                            <option value="120">2 hours</option>
                         </select>
                     </div>
                     <div class="filter-section">
-                        <label for="max-cal">Max Calorie</label>
+                        <label for="max-cal">Max Calories</label>
                         <select id="max-cal">
-                            <option value="">-- Seleziona Calorie Max --</option>
+                            <option value="">-- Select Max Calories --</option>
                             <option value="100">200 kcal</option>
                             <option value="200">200 kcal</option>
                             <option value="500">500 kcal</option>
                             <option value="1000">1000 kcal</option>
                         </select>
                     </div>
-                    <div class="filter-section">
-                        <label for="ch-wine">Vino (consigliato abbinare il vino dopo aver scelto la ricetta)</label>
-                        <select id="ch-wine">
-                            <option value="">-- Seleziona Vino --</option>
-                            <option value="Albarino">Albarino</option>           
-                            <option value="Beaujolais">Beaujolais</option>
-                            <option value="Cabernet Sauvignon">Cabernet Sauvignon</option>
-                            <option value="Champagne">Champagne</option>
-                            <option value="Chardonnay">Chardonnay</option>
-                            <option value="Chenin Blanc">Chenin Blanc</option>
-                            <option value="Chianti">Chianti</option>
-                            <option value="dry red wine">dry red wine</option>               <!-- DA LEVARE, DA' ERRORE-->
-                            <option value="dry white wine">dry white wine</option>           <!-- DA LEVARE, DA' ERRORE-->
-                            <option value="Gamay">Gamay</option>
-                            <option value="Grenache">Grenache</option>
-                            <option value="Gruener Veltliner">Gruener Veltliner</option>
-                            <option value="Lambrusco">Lambrusco</option>
-                            <option value="Malbec">Malbec</option>
-                            <option value="Merlot">Merlot</option>
-                            <option value="Montepulciano">Montepulciano</option>
-                            <option value="Moscato">Moscato</option>
-                            <option value="Pinot Grigio">Pinot Grigio</option>
-                            <option value="Pinot Noir">Pinot Noir</option>
-                            <option value="Riesling">Riesling</option>
-                            <option value="Sangiovese">Sangiovese</option>
-                            <option value="Sauvignon Blanc">Sauvignon Blanc</option>
-                            <option value="Shiraz">Shiraz</option>
-                            <option value="sparkling rose">sparkling rose</option>          <!-- DA LEVARE, DA' ERRORE-->
-                            <option value="sparkling wine">sparkling wine</option>          <!-- DA LEVARE, DA' ERRORE-->
-                            <option value="Tempranillo">Tempranillo</option>
-                            <option value="Trebbiano">Trebbiano</option>
-                            <option value="Verdicchio">Verdicchio</option>
-                            <option value="Zinfandel">Zinfandel</option>
-                        </select>
-                    </div>
                 </div>
-                <button id="search-recipe-button" class="search-recipe">Cerca Ricetta</button>
+                <button id="search-recipe-button" class="search-recipe">Search Recipe</button>
             </div>
             <div class="recipes">
-                <h1>RICETTE RANDOM</h1>
+                <h1>RANDOM RECIPES</h1>
                 <div class="error-message" id="errore-recipe">
-                    <p>Purtroppo la tua ricerca non ha prodotto risultati.</p>
+                    <p>Unfortunately your search returned no results.</p>
                 </div>
             </div>
         </main>
         <footer>
-            <div class="footer-logo">LOGO</div>
+            <div class="footer-logo">TastyClick</div>
         </footer>
     </div>
     <h1 id="user-diet" style="display: none;">{{ diet|tojson|safe }}</h1>

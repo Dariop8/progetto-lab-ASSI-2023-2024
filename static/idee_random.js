@@ -13,8 +13,6 @@ function cleanArray(arr) {
 
 dietArray = cleanArray(dietArray);
 intolerancesArray = cleanArray(intolerancesArray);
-// console.log(dietArray);
-// console.log(intolerancesArray);
 
 const dietString = dietArray.length ? `diet=${dietArray[0]}&` : '';
 const intolerancesString = intolerancesArray.length ? `intolerances=${intolerancesArray.join('%2C%20')}&` : '';
@@ -33,7 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     $.ajax(settings).done(function (response) {
-        //console.log(response);
         populateRecipesList(response.results); 
     }).fail(function (error) {
         console.error('Error fetching recipes:', error);
@@ -81,7 +78,6 @@ document.getElementById('search-recipe-button').addEventListener('click', functi
 
     let selectedCuisines = "";
     if (labelsForSearch.length > 0) {
-        // converto l'array nella stringa adeguata
         selectedCuisines = labelsForSearch.map(encodeURIComponent).join('%2C');
         selectedCuisines = selectedCuisines.replace(/ /g, "%20");
         selectedCuisines = 'cuisine=' + selectedCuisines + '&';
@@ -96,80 +92,15 @@ document.getElementById('search-recipe-button').addEventListener('click', functi
             'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
         }
     };
-
-    $.ajax(settings).done(function (response) {
-        const recipeResults = response.results
-
-        // Seconda richiesta: Piatti che si abbinano al vino
-        let wine = document.getElementById('ch-wine').value;
-        if (wine){
-            const settings2 = {
-                async: true,
-                crossDomain: true,
-                url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/food/wine/dishes?wine=${wine}`,
-                method: 'GET',
-                headers: {
-                    'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
-                    'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
-                }
-            };
-            
-            $.ajax(settings2).done(function (response2) {
-
-                if(response2 && response2.pairings){
-                    const winePairingDishes = response2.pairings.map(item => item.toLowerCase());
-                    console.log("-------winePairingDishes----------");
-                    console.log(winePairingDishes);
-                    
-                    const filteredRecipesPromises = recipeResults.map(recipe => {
-                        return $.ajax({
-                            async: true,
-                            crossDomain: true,
-                            url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/${recipe.id}/information`,
-                            method: 'GET',
-                            headers: {
-                                'x-rapidapi-key': 'ec8475a6eamshde7b5569a35c096p1b0addjsnc9c0a6b52687',
-                                'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
-                            }
-                        }).then(recipeDetails => {
-                            const recipeIngredients = recipeDetails.extendedIngredients.map(ing => ing.name.toLowerCase());
-                            console.log(recipeIngredients);
-                            const matchesWine = recipeIngredients.some(ingredient => winePairingDishes.includes(ingredient));
-                            return matchesWine ? recipeDetails : null;
-                        });
-                    });
-                    console.log(filteredRecipesPromises);
-                    Promise.all(filteredRecipesPromises).then(filteredRecipes => {
-                        const finalRecipes = filteredRecipes.filter(recipe => recipe !== null);
-                        populateRecipesList(finalRecipes);
-                        console.log(finalRecipes);
-                    });
-                    
-                } else {
-                    console.error('No pairings found in response:', response2);
-                }
-
-            });/*.fail(function (error) {
-                console.error('Error fetching wine pairings:', error);
-            })*/
-        } else {
-            // Se nessun vino è selezionato, mostra tutte le ricette trovate
-            populateRecipesList(recipeResults);
-        } 
-    }).fail(function (error) {
-        console.error('Error fetching recipes:', error);
-    });
-
-    
 });
 
 function populateRecipesList(recipes) {
     const recipeListDiv = document.querySelector('.recipes');
 
     recipeListDiv.innerHTML=`
-                    <h1>RICETTE RANDOM</h1>
+                    <h1>RANDOM RECIPES</h1>
                     <div class="error-message" id="errore-recipe">
-                        <p>Purtroppo la tua ricerca non ha prodotto risultati.</p>
+                        <p>Unfortunately your search returned no results.</p>
                     </div>
                     `;
 
@@ -191,7 +122,6 @@ function populateRecipesList(recipes) {
             };
 
             $.ajax(settings).done(function (response) {
-                //console.log(response1);
                 const recipe=response;
                 let typesString = recipe.dishTypes.join(', ');
                 if (recipe.dishTypes.length > 3) {
@@ -209,15 +139,15 @@ function populateRecipesList(recipes) {
                             <span class="recipe-name">${recipe.title}</span>
                             <div class="recipe-details">
                                 <span class="time">🕒 ${recipe.readyInMinutes}min</span>
-                                <span class="type">Tipo: ${typesString}</span>
-                                <span class="calories">Calorie: ${recipe.nutrition.nutrients[0].amount}kcal</span>
+                                <span class="type">Type: ${typesString}</span>
+                                <span class="calories">Calories: ${recipe.nutrition.nutrients[0].amount}kcal</span>
                             </div>
                         </div>
                     </div> 
                 `;
 
                 if (recipe.image !== "") {
-                    recipeString += `<img src="${recipe.image}" alt="Immagine Ricetta" class="recipe-image"></img> `;
+                    recipeString += `<img src="${recipe.image}" alt="Img Recipe" class="recipe-image"></img> `;
                 }
                 recipeElement.innerHTML = recipeString;
 

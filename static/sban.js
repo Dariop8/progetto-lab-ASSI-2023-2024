@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.length === 0) {
-                requestsContainer.innerHTML = '<p>Nessuna richiesta di sblocco trovata.</p>';
+                requestsContainer.innerHTML = '<p>No unlock requests found.</p>';
             } else {
                 let content = '';
                 data.forEach(request => {
@@ -13,10 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="request-item">
                             <p><strong>ID Utente:</strong> ${request.id_utente}</p>
                             <p><strong>Email:</strong> ${request.email}</p>
-                            <p><strong>Commento Offensivo:</strong> ${request.commento_offensivo}</p>
-                            <p><strong>Ricetta Interessata:</strong> ${request.ricetta_interessata}</p>
-                            <p><strong>Data Blocco:</strong> ${request.data_blocco}</p>
-                            <p><strong>Testo Richiesta:</strong> ${request.testo_richiesta}</p>
+                            <p><strong>Offensive Comment:</strong> ${request.commento_offensivo}</p>
+                            <p><strong>Recipe Affected:</strong> ${request.ricetta_interessata}</p>
+                            <p><strong>Blocking Date:</strong> ${request.data_blocco}</p>
+                            <p><strong>Request Text:</strong> ${request.testo_richiesta}</p>
                         </div>
                         <hr>
                     `;
@@ -26,6 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Errore nel caricamento delle richieste:', error);
-            requestsContainer.innerHTML = '<p>Errore nel caricamento delle richieste.</p>';
+            requestsContainer.innerHTML = '<p>Error loading requests.</p>';
         });
 });

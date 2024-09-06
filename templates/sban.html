@@ -15,7 +15,7 @@
     {% endblock %}
     {% block contentdown %}
     <div class="container">
-        <h1>Gestione Richieste di Sblocco</h1>
+        <h1>Unlock Request Management</h1>
         
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
@@ -28,12 +28,12 @@
         {% endwith %}
 
         <div id="requests-container">
-            <p>Caricamento richieste...</p>
+            <p>Loading requests...</p>
         </div>
         <form action="{{ url_for('sban') }}" method="POST">
-            <label for="email">Inserisci l'email dell'utente da sbloccare:</label>
+            <label for="email">Enter the email of the user to unblock:</label>
             <input type="email" id="email" name="email" maxlength="50" placeholder="Email" required>
-            <button type="submit">Sblocca Utente</button>
+            <button type="submit">Unlock User</button>
         </form>
     </div>
     <script src="{{ url_for('static', filename='sban.js') }}"></script>

@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const sbanLinkContainer = document.getElementById('sban-link-container');
                 const sbanLink = document.createElement('a');
                 sbanLink.href = '/sban';
-                sbanLink.textContent = 'Area moderatore';
+                sbanLink.textContent = 'Moderator Area';
                 sbanLinkContainer.appendChild(sbanLink);
             }
             if(ruoloUtente == 3){

@@ -1,10 +1,10 @@
 function populateRecipesList(recipeIds) {
     const recipeListDiv = document.querySelector('.recipes');
     
-    recipeListDiv.innerHTML = '<h1>LE TUE RICETTE SALVATE:</h1>';
+    recipeListDiv.innerHTML = '<h1>YOUR SAVED RECIPES:</h1>';
 
     if (recipeIds.length === 0) {
-        recipeListDiv.innerHTML = '<h2>Non hai nessuna ricetta salvata!</h2>';
+        recipeListDiv.innerHTML = '<h2>You don\'t have any recipes saved!</h2>';
         return;
     }
 
@@ -38,19 +38,19 @@ function populateRecipesList(recipeIds) {
                         <span class="recipe-name">${recipe.title}</span>
                         <div class="recipe-details">
                             <span class="time">🕒 ${recipe.readyInMinutes}min</span>
-                            <span class="type">Tipo: ${typesString}</span>
-                            <span class="calories">Calorie: ${recipe.nutrition.nutrients[0].amount}kcal</span>
+                            <span class="type">Type: ${typesString}</span>
+                            <span class="calories">Calories: ${recipe.nutrition.nutrients[0].amount}kcal</span>
                         </div>
                     </div>
                 </div> 
                 <div class="recipe-note">
-                    <textarea id="note-${recipe.id}" placeholder="Aggiungi una nota..."></textarea>
-                    <button onclick="saveNote('${recipe.id}')">Salva Nota</button>
+                    <textarea id="note-${recipe.id}" placeholder=" Add a note..."></textarea>
+                    <button onclick="saveNote('${recipe.id}')">Save Note</button>
                 </div>
             `;
 
             if (recipe.image !== "") {
-                recipeString += `<img src="${recipe.image}" alt="Immagine Ricetta" class="recipe-image"></img>`;
+                recipeString += `<img src="${recipe.image}" alt="Img Recipe" class="recipe-image"></img>`;
             }
             recipeElement.innerHTML = recipeString;
 
@@ -59,7 +59,7 @@ function populateRecipesList(recipeIds) {
             recipeElement.addEventListener('click', function() {
                 window.location.href = `/ricetta?id=${recipe.id}`;
             });
-            //blocca l'event listener sulle note
+            
             const recipeNote = recipeElement.querySelector('.recipe-note');
             if (recipeNote) {
                 recipeNote.addEventListener('click', function(event) {
@@ -87,10 +87,8 @@ function saveNote(recipeId) {
         },
         success: function(response) {
             el.style.border = "2px solid green";
-            // alert('Nota salvata con successo!');
         },
         error: function(xhr, status, error) {
-            // alert('Errore durante il salvataggio della nota.');
             el.style.border = "2px solid green";
         }
     });
@@ -109,7 +107,6 @@ function loadNoteForRecipe(recipeId) {
             }
         },
         error: function(xhr, status, error) {
-            // console.error('Error loading note:', error);
             const textarea = document.getElementById(`note-${response.recipe_id}`);
             if (textarea) {
                 textarea.value = "Errore nel caricamento della nota";
@@ -117,9 +114,6 @@ function loadNoteForRecipe(recipeId) {
         }
     });
 }
-
-
-
 
 
 $(document).ready(function() {

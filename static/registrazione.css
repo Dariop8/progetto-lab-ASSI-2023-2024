@@ -8,7 +8,6 @@ body, html {
     height: 100%;
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
-    /* overflow-y: scroll; */
 }
 
 .container {
@@ -187,14 +186,6 @@ button[type="submit"]:hover {
     opacity: 0.5;
 }
 
-/* .social-login .google-login {
-    color: #db4437;
-}
-
-.social-login .facebook-login {
-    color: #3b5998;
-} */
-
 .social-login  img {
     /* width: 50px; */
     height: 50px;
@@ -206,14 +197,6 @@ button[type="submit"]:hover {
     font-size: 0.9em;
     margin-top: 5px;
 }
-
-/* .password-strength.weak {
-    color: red;
-}
-
-.password-strength.strong {
-    color: green;
-} */
 
 .password-strength.very-weak {
     color: #3352ff; 

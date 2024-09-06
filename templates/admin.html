@@ -16,7 +16,7 @@
     {% block contentdown %}
     <div class="container">
         <div class="stats">
-            <h2>Statistiche generali del sito</h2>
+            <h2>General site statistics</h2>
             <p>Number of Users: {{ num_users }}</p>
             <p>Number of Banned Users: {{ num_banned }}</p>
             <p>Average Comments per User: {{ avg_comments }}</p>
@@ -59,13 +59,39 @@
                 <select id="new_role" name="new_role">
                     <option value="1">User</option>
                     <option value="2">Moderator</option>
-                    <!--<option value="3">Admin</option>-->
                 </select>
     
                 <button type="submit">Change Role</button>
             </form>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages" id="flash-message">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                        {{ message }}
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
         </div>
     </div>
+    <script>
+        window.addEventListener('load', function() {
+          const flashMessage = document.getElementById('flash-message');
+          if (flashMessage) {
+            flashMessage.scrollIntoView({ behavior: 'smooth' });
+
+            setTimeout(function() {
+                flashMessage.classList.add('fade-out');
+            }, 2000);
+
+            setTimeout(function() {
+                flashMessage.remove();
+            }, 3000);
+          }
+        });
+      </script>
 </body>
 </html>
 {% endblock %}

@@ -22,7 +22,6 @@ document.getElementById('search-button').addEventListener('click', function() {
 
     // richiesta AJAX
     $.ajax(settings).done(function (response) {
-        //console.log(response); 
         populateIngredientList(response.results); 
     }).fail(function (error) {
         console.error('Error fetching ingredients:', error);
@@ -63,8 +62,6 @@ document.getElementById('search-recipe-button').addEventListener('click', functi
 
         dietArray = cleanArray(dietArray);
         intolerancesArray = cleanArray(intolerancesArray);
-        // console.log(dietArray);
-        // console.log(intolerancesArray);
 
         const dietString = dietArray.length ? `diet=${dietArray[0]}&` : '';
         const intolerancesString = intolerancesArray.length ? `intolerances=${intolerancesArray.join('%2C%20')}&` : '';
@@ -82,7 +79,6 @@ document.getElementById('search-recipe-button').addEventListener('click', functi
         
 
         $.ajax(settings).done(function (response) {
-            //console.log(response);
             populateRecipesList(response.results, labelsForSearch); 
         }).fail(function (error) {
             console.error('Error fetching recipes:', error);
@@ -169,7 +165,6 @@ function populateRecipesList(recipes, ingredients) {
             };
 
             $.ajax(settings).done(function (response) {
-                //console.log(response1);
                 const recipe=response;
                 
                 let typesString = recipe.dishTypes.join(', ');

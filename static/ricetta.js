@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     $.ajax(settings).done(function (response1) {
-        //console.log(response1);
         const settings = {
             async: true,
             crossDomain: true,
@@ -35,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         $.ajax(settings).done(function (response2) {
-            //console.log(response2);
             populateRecipePage(response1, response2); 
         });
     }).fail(function (error) {
@@ -59,33 +57,33 @@ document.addEventListener('DOMContentLoaded', function() {
         const recipeDetailsDiv = document.querySelector('.recipe-details');
     
         let recipeHTML = `
-            <h1>Nome Ricetta: ${recipe.title}</h1>
+            <h1>Recipe Name: ${recipe.title}</h1>
             <div class="recipe-actions">
-                <button id="share-button" class="share-button">Condividi</button>
+                <button id="share-button" class="share-button">Share</button>
                 <div class="favorite-star">
                     <span class="star inactive">&#9734;</span> 
                 </div>
             </div>
             <div class="recipe-info">
-                <span>Tempo: ${recipe.readyInMinutes} minuti</span>
-                <span>Tipo: ${recipe.dishTypes ? recipe.dishTypes.join(', ') : 'non specificato'}</span>
-                <span>Calorie: ${recipe.nutrition.nutrients[0].amount} kcal</span>
+                <span>Time: ${recipe.readyInMinutes} minutes</span>
+                <span>Type: ${recipe.dishTypes ? recipe.dishTypes.join(', ') : 'not specified'}</span>
+                <span>Calories: ${recipe.nutrition.nutrients[0].amount} kcal</span>
             </div>
             <div class="recipe-image">
-                <img src="${recipe.image}" alt="Immagine della Ricetta">
+                <img src="${recipe.image}" alt="Img recipe">
             </div>
             <div class="recipe-description">
                 <p>${recipe.summary}</p>
             </div>
             <div class="recipe-instructions">
-                <h2>Istruzioni:</h2>
+                <h2>Instructions:</h2>
                 <div class="ingredients">
-                    <p><strong>Ingredienti:</strong></p>
+                    <p><strong>Ingredients:</strong></p>
                     <ul class="ingredientsUl"> 
         `;
     
         const recipeIngredients = recipe.extendedIngredients;
-        let substitutesMap = new Map(); // Mappa per memorizzare i sostituti
+        let substitutesMap = new Map();
 
         const uniqueIngredients = new Set();
         const ingredientPromises = recipeIngredients.map(async ingredient => {
@@ -105,8 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }; 
             await $.ajax(settings).done(function (response) {
-                //console.log(ingredient);
-                //console.log(response);
+
                 if (Array.isArray(response.substitutes)) {
                     substitutesMap.set(ingredient.name, response.substitutes);
                 }
@@ -116,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const isIngredientInList = await isInList(ingredient.name);
 
-            let substituteButton = `<button class="substitute-button" data-ingredient="${ingredient.name}">Vedere un sostituto</button>`;
+            let substituteButton = `<button class="substitute-button" data-ingredient="${ingredient.name}">See a replacement</button>`;
             
             if (ingredientsArray.some(ingredientItem => ingredient.name.includes(ingredientItem))) {
                 if (isIngredientInList) {
@@ -124,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <li class="possessed">
                             <span class="ingr_name">${ingredient.name}</span>
                             <span class="checkmark">✔</span>
-                            <button class="add-to-shopping-list" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Aggiunto</button>
+                            <button class="add-to-shopping-list" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Added</button>
                             ${substituteButton}
                         </li>
                     `;
@@ -133,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <li class="possessed">
                             <span class="ingr_name">${ingredient.name}</span>
                             <span class="checkmark">✔</span>
-                            <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Aggiungi alla lista della spesa</button>
+                            <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Add to shopping list</button>
                             ${substituteButton}
                         </li>
                     `;
@@ -143,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return `
                         <li class="to-buy">
                         <span class="ingr_name">${ingredient.name}</span>
-                        <button class="add-to-shopping-list" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Aggiunto</button>
+                        <button class="add-to-shopping-list" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Added</button>
                         ${substituteButton}
                     </li>
                     `;
@@ -151,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return `
                         <li class="to-buy">
                         <span class="ingr_name">${ingredient.name}</span>
-                        <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Aggiungi alla lista della spesa</button>
+                        <button class="add-to-shopping-list" data-ingredient="${ingredient.name}">Add to shopping list</button>
                         ${substituteButton}
                     </li>
                     `;
@@ -183,8 +180,8 @@ document.addEventListener('DOMContentLoaded', function() {
             recipeHTML += `
                 <li class="no-steps">
                     <div class="no-steps-content">
-                        <p class="no-steps-title">Nessuna istruzione disponibile</p>
-                        <p>Siamo spiacenti, ma non ci sono istruzioni disponibili per questa ricetta.</p>
+                        <p class="no-steps-title">No instructions available</p>
+                        <p>We're sorry, but there are no instructions available for this recipe.</p>
                     </div>
                 </li>`;
         }
@@ -200,12 +197,12 @@ document.addEventListener('DOMContentLoaded', function() {
         //Caricamento form commento e rating
         const formcommenti = document.querySelector('.comment-form')
         formcommenti.innerHTML = `
-            <h3>Aggiungi un commento:</h3>
+            <h3>Add a comment:</h3>
             <form id="commentForm" action="/submit-comment" method="post">
                 <input type="hidden" name="recipe_id" value="${recipeId}">
-                <textarea id="comment" name="comment" rows="4" required minlength="10" maxlength="400" placeholder="Fai sapere agli altri cosa ne pensi..."></textarea>
+                <textarea id="comment" name="comment" rows="4" required minlength="10" maxlength="400" placeholder="Let others know what you think..."></textarea>
                 <div class="rating-container">
-                    <p>Il tuo voto: </p>
+                    <p>Your rating: </p>
                     <div class="rating">
                         <input type="radio" id="star5" name="rating" value="5" required/><label for="star5" >★</label>
                         <input type="radio" id="star4" name="rating" value="4" required/><label for="star4" >★</label>
@@ -215,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 
-                <button type="submit">Invia</button>
+                <button type="submit">Send</button>
             </form>`;
             
             //Caricamento commenti degli altri utenti
@@ -239,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'GET',
                     success: function(comments) {
                         const commentListDiv = document.querySelector('.comment-list');
-                        commentListDiv.innerHTML = '<h2>Commenti:</h2>';
+                        commentListDiv.innerHTML = '<h2>Comments:</h2>';
             
                         if (comments.length > 0) {
                             comments.forEach(comment => {
@@ -248,8 +245,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 commentDiv.classList.add('boxcommento');
                                 let role = '';
 
-                                if (ruolo_autore==2){role = `<span style="color: #7d7d7d; margin-left: 3px"> • moderatore</span>`;}
-                                else if (ruolo_autore==3){role= `<span style="color: #7d7d7d; margin-left: 3px;"> • amministratore</span>`}
+                                if (ruolo_autore==2){role = `<span style="color: #7d7d7d; margin-left: 3px"> • moderator</span>`;}
+                                else if (ruolo_autore==3){role= `<span style="color: #7d7d7d; margin-left: 3px;"> • admin</span>`}
                                 else {role=""}
 
                                 // Visualizzazione del commento
@@ -258,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <div class="comment-sx">
                                             <p><strong>${comment.username}</strong>${role}<br>
                                             ${comment.comment}</p>
-                                            <p><i>Valutazione: </i>${stampaStelle(comment.rating)}</p>
+                                            <p><i>Rating: </i>${stampaStelle(comment.rating)}</p>
                                             <p>${comment.timestamp}</p>
                                         </div>
                                 `;
@@ -268,13 +265,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                     let deleteButton = `
                                         <form action="/elimina_commento/${comment.comment_id}" method="post">
                                             <input type="hidden" name="recipe_id" value="${recipeId}">
-                                            <button type="submit" class="delete-button">Elimina</button>
+                                            <button type="submit" class="delete-button">Delete</button>
                                         </form>
                                     `;
                                     let blockButton = `
                                         <form action="/blocca_utente/${comment.comment_id}" method="post">
                                             <input type="hidden" name="recipe_id" value="${recipeId}">
-                                            <button type="submit" class="block-button">Elimina e blocca</button>
+                                            <button type="submit" class="block-button">Delete and block</button>
                                         </form>
                                     `;
                                     let notifyButton = '';
@@ -283,17 +280,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                         notifyButton = `
                                             <form action="/invia_segnalazione/${comment.comment_id}" method="post">
                                                 <input type="hidden" name="recipe_id" value="${recipeId}">
-                                                <button type="submit" class="notify-button">Invia segnalazione</button>
+                                                <button type="submit" class="notify-button">Send report</button>
                                             </form>
                                         `;
                                     } else {
-                                        notifyButton = `<button type="submit" class="empty-button">Segnalazione inviata</button>`;
+                                        notifyButton = `<button type="submit" class="empty-button">Report sent</button>`;
                                     }
             
                                     commentContent += `
                                         <div class="comment-dx">
                                             <div class="menu">
-                                                <button class="bottone-tendina">Modera</button>
+                                                <button class="bottone-tendina">Moderate</button>
                                                 <div id="azioni" class="azioni">
                                                     ${deleteButton}
                                                     ${blockButton}
@@ -326,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 commentListDiv.appendChild(commentDiv);
                             });
                         } else {
-                            commentListDiv.innerHTML = '<p>Ancora nessun commento. Sii il primo a commentare!!</p>';
+                            commentListDiv.innerHTML = '<p>No comments yet. Be the first to comment!!</p>';
                         }
                     },
                     error: function(error) {
@@ -398,7 +395,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const ingredientName = event.target.getAttribute('data-ingredient');
                 let substitutes = substitutesMap.get(ingredientName) || [];
                 
-                // Aggiungi l'ingrediente originale all'inizio dell'array dei sostituti
                 substitutes = [ingredientName, ...substitutes];
 
                 if (substitutes.length > 1) {
@@ -406,15 +402,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     const nextIndex = (currentIndex + 1) % substitutes.length;
                     const substitute = substitutes[nextIndex];
         
-                    // Aggiorna l'HTML per mostrare il sostituto
                     const listItem = event.target.closest('li');
                     listItem.querySelector('.ingr_name').textContent = substitute;
         
-                    // Aggiorna l'indice del sostituto
                     event.target.setAttribute('data-index', nextIndex);
                 } else {
                     const noSubstituteText = document.createElement('span');
-                    noSubstituteText.textContent = 'Non ha sostituti';
+                    noSubstituteText.textContent = 'It has no substitutes';
                     noSubstituteText.classList.add('no-substitute-text');
                     event.target.replaceWith(noSubstituteText);
                 }
@@ -440,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         starElement.classList.remove('inactive');
                         starElement.classList.add('active');
                         starElement.innerHTML = '&#9733;';
-                        console.log('Ricetta aggiunta ai preferiti con successo');
+                        console.log('Recipe added to favorites successfully');
                     } else {
                         console.error('Errore nell\'aggiungere la ricetta ai preferiti:', data.error);
                     }
@@ -486,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
             data: { ingredient: ingredient },
             success: function(response) {
                 const button = document.querySelector(`button[data-ingredient="${ingredient}"]`);
-                button.textContent = "Aggiunto";
+                button.textContent = "Added";
                 button.style.backgroundColor = "grey";
                 button.disabled = true;
 
@@ -533,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(response);
                 if (Array.isArray(response.pairedWines)) {
                     response.pairedWines.forEach(wine => {
-                        wineSet.add(wine.toLowerCase()); // Aggiungi ogni vino all'insieme, in minuscolo per uniformità
+                        wineSet.add(wine.toLowerCase());
                     });
                 }
                 console.log(wineSet);
@@ -541,13 +535,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         Promise.all(promises).then(() => {
-            // Rimuovi i vini che sono presenti nell'array `nowine`
+
+            const titlewine = document.querySelector('.titlewine')
+            titlewine.innerHTML = '<h2>Recommended Wines</h2>';
+
             nowine.forEach(item => {
                 wineSet.delete(item.toLowerCase());
             });
 
             const listwines = document.querySelector('.wines-list')
-            listwines.innerHTML = ''; // Pulisci il contenuto precedente
+            listwines.innerHTML = '';
             
             if (wineSet.size > 0) {
                 wineSet.forEach(wine => {
@@ -555,22 +552,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     const wineName = document.createElement('span');
                     wineName.textContent = wine;
 
-                    // Crea un pulsante per la descrizione
                     const descriptionButton = document.createElement('button');
-                    descriptionButton.textContent = 'Descrizione';
+                    descriptionButton.textContent = 'Description';
                     descriptionButton.style.marginLeft = '10px';
                     descriptionButton.style.marginLeft = '0px';
                     descriptionButton.classList.add('wine-description');
 
-                    // Crea un elemento per la descrizione (inizialmente nascosto)
                     const description = document.createElement('p');
-                    description.style.display = 'none'; // Nascondi la descrizione all'inizio
+                    description.style.display = 'none';
 
-                    // Aggiungi l'evento click al pulsante
                     descriptionButton.addEventListener('click', () => {
                         
                         if (description.style.display === 'none') {
-                            // Fai una richiesta per ottenere la descrizione del vino (se disponibile)
                             const settings = {
                                 async: true,
                                 crossDomain: true,
@@ -583,18 +576,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             };
                             
                             $.ajax(settings).done(function (response) {
-                                description.textContent = response.wineDescription || 'Descrizione non disponibile';
-                                description.style.display = 'block'; // Mostra la descrizione
+                                description.textContent = response.wineDescription || 'Description not available';
+                                description.style.display = 'block';
                             }).fail(function () {
-                                description.textContent = 'Descrizione non disponibile (errore)';
+                                description.textContent = 'Description not available (error)';
                                 description.style.display = 'block';
                             });
                         } else {
-                            description.style.display = 'none'; // Nascondi la descrizione se già visibile
+                            description.style.display = 'none';
                         }
                     });
 
-                    // Appendi il nome del vino, il pulsante e la descrizione all'elemento listwines
                     wineItem.appendChild(wineName);
                     wineItem.appendChild(description);
                     wineItem.appendChild(descriptionButton);

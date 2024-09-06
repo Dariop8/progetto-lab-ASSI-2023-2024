@@ -209,8 +209,8 @@ footer {
     font-style: italic; 
     font-size: small;
     font-weight: bold;
-    margin-right: 4%;
-    margin-left: 1.7%
+    margin-right: 1.5%;
+    margin-left: 1.5%
 }
 
 /*Stile vini consigliati*/
@@ -237,7 +237,7 @@ footer {
     margin: 2% auto;
 }
 .wines-list{
-    list-style-type: circle; /* Ripristina i punti (bullet points) */
+    list-style-type: circle; 
     font-family: Arial, Helvetica, sans-serif;
 }
 .wines-list li{
@@ -580,7 +580,6 @@ footer {
 .timer-container {
     position: fixed;
     text-align: center;
-    /* margin-top: 20px; */
     bottom: 45%;
     right: 7%;
 }
