@@ -193,7 +193,7 @@ class Comments(db.Model):
     rating = db.Column(db.Integer, nullable=False)  
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     segnalazione = db.Column(db.Integer, default=0)
-#controllare cosa succede se elimino l'account - rimane il commento? - on delete cascade
+
     def __init__(self, recipe_id, email, username, comment, rating):
         self.recipe_id = recipe_id
         self.email = email
@@ -216,6 +216,18 @@ class Favourite(db.Model):
         self.email = email
         self.note=""
 
+class ShoppingList(db.Model):
+    __tablename__ = 'shopping_list'
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), nullable=False)
+    ingredient = db.Column(db.String(300), nullable=False, default="")
+
+    def __init__(self, email=None, ingredient=None):
+        self.email = email
+        self.ingredient=ingredient
+
+
 
 class Users(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -226,27 +238,27 @@ class Users(UserMixin, db.Model):
     data_di_nascita = db.Column(Date, nullable=True)
     diete = db.Column(JSON, nullable=True)
     intolleranze = db.Column(JSON, nullable=True)
-    lista_spesa = db.Column(JSON, nullable=True)
     attivazione_2fa = db.Column(db.String(250), nullable=True)
     segreto_otp = db.Column(db.String(16), nullable=True) 
     tentativi_login = db.Column(db.Integer, default=0)  
     ruolo = db.Column(db.Integer, default=1)
 
-    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, lista_spesa=None, attivazione_2fa=False, segreto_otp=None, tentativi_login=0, ruolo=1):
+    comments = db.relationship('Comments', backref='user', lazy=True, cascade="all, delete", foreign_keys='Comments.email')
+    favourites = db.relationship('Favourite', backref='user', lazy=True, cascade="all, delete", foreign_keys='Favourite.email')
+    shoppinglist = db.relationship('ShoppingList', backref='user', lazy=True, cascade="all, delete", foreign_keys='ShoppingList.email')
+    # richieste_sblocco = db.relationship('RichiestaSblocco', backref='user', lazy=True, cascade="all, delete", foreign_keys='RichiestaSblocco.email')
+
+    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, attivazione_2fa=False, segreto_otp=None, tentativi_login=0, ruolo=1):
         self.username = username
         self.password = password
         self.email = email
         self.data_di_nascita = data_di_nascita
         self.diete = diete if diete is not None else []
         self.intolleranze = intolleranze if intolleranze is not None else []
-        self.lista_spesa = lista_spesa if lista_spesa is not None else []
         self.attivazione_2fa = bcrypt.generate_password_hash('1' if attivazione_2fa else '0').decode('utf-8')
         self.segreto_otp = segreto_otp
         self.tentativi_login = tentativi_login
         self.ruolo = ruolo
-
-    def __repr__(self):
-        return (f'<User {self.username}, email {self.email}, data_di_nascita {self.data_di_nascita}, diete {self.diete}, intolleranze {self.intolleranze}>')
 
 
 class ruoli(db.Model):
@@ -278,8 +290,10 @@ class UtentiBloccati(db.Model):
 class RichiestaSblocco(db.Model):
     __tablename__ = 'richieste_sblocco'
     
-    id_utente = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), unique=True, nullable=False)
-    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), primary_key=True)   
+    # id_utente = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), unique=True, nullable=False)
+    # email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), primary_key=True)   
+    id_utente = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False)
+    email = db.Column(db.String(120), db.ForeignKey('users.email'), primary_key=True)  
     commento_offensivo = db.Column(db.Text, nullable=False)
     ricetta_interessata = db.Column(db.Integer, nullable=False)
     data_blocco = db.Column(db.String, nullable=False)  
@@ -293,7 +307,8 @@ class RichiestaSblocco(db.Model):
         self.ricetta_interessata = ricetta_interessata
         self.data_blocco = data_blocco
         self.testo_richiesta = testo_richiesta
-        self.data_richiesta = datetime.utcnow()  
+        self.data_richiesta = datetime.utcnow()
+ 
 
     
 db.init_app(app)
@@ -944,8 +959,10 @@ def lista_spesa():
             return blocked
         
         user = db.session.get(Users, user_id)
-        user.lista_spesa
-        return render_template("lista_spesa.html", lista=user.lista_spesa)
+        items = ShoppingList.query.filter_by(email=user.email).all()
+        lista_spesa = [item.ingredient for item in items]
+
+        return render_template("lista_spesa.html", lista=lista_spesa)
     return redirect(url_for('login'))
 
 
@@ -958,10 +975,10 @@ def update_shopping_list():
         ingredient = request.form.get('ingredient')
 
         if ingredient:
-            updated_lista_spesa = user.lista_spesa.copy() if user.lista_spesa else []
-            if ingredient not in updated_lista_spesa:
-                updated_lista_spesa.append(ingredient)
-                user.lista_spesa = updated_lista_spesa
+            existing_item = ShoppingList.query.filter_by(email=user.email, ingredient=ingredient).first()
+            if not existing_item:
+                new_item = ShoppingList(email=user.email, ingredient=ingredient)
+                db.session.add(new_item)
                 db.session.commit()
 
             return jsonify({'message': f'{ingredient} aggiunto alla lista della spesa!'}), 200
@@ -975,7 +992,9 @@ def get_shopping_list():
         user_id = session['id']
         user = db.session.get(Users, user_id)
         if user:
-            return jsonify({'lista_spesa': user.lista_spesa}), 200
+            items = ShoppingList.query.filter_by(email=user.email).all()
+            lista_spesa = [item.ingredient for item in items]
+            return jsonify({'lista_spesa': lista_spesa}), 200
     return redirect(url_for('login'))
 
 @app.route('/remove_from_shopping_list', methods=['POST'])
@@ -987,15 +1006,15 @@ def remove_from_shopping_list():
         data = request.get_json()
         ingredient = data.get('ingredient')
 
-        if ingredient and ingredient in user.lista_spesa:
-            updated_lista_spesa = user.lista_spesa.copy()
-            updated_lista_spesa.remove(ingredient)
-            user.lista_spesa = updated_lista_spesa
-            db.session.commit()
-
-            return jsonify({'message': 'success'}), 200
+        if ingredient:
+            item_to_remove = ShoppingList.query.filter_by(email=user.email, ingredient=ingredient).first()
+            if item_to_remove:
+                db.session.delete(item_to_remove)
+                db.session.commit()
+                return jsonify({'message': 'success'}), 200
 
     return jsonify({'message': 'error'}), 400
+
 
 @app.route('/check_lista', methods=['GET'])
 def check_lista():
@@ -1006,10 +1025,12 @@ def check_lista():
 
         if not ingredient:
             return jsonify({'error': 'Missing ingredient'}), 400
-        is_in_list = ingredient in user.lista_spesa if user.lista_spesa else False
+
+        is_in_list = ShoppingList.query.filter_by(email=user.email, ingredient=ingredient).first() is not None
         return jsonify({'in_in_list': is_in_list}), 200
 
     return jsonify({'in_in_list': False})
+
 
 
 #IDEE RANDOM

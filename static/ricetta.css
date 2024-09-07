@@ -96,6 +96,10 @@ li {
     margin-right: 100px;
 }
 
+.add-to-shopping-list-added {
+    cursor: not-allowed;
+}
+
 .recipe-description {
     margin-bottom: 20px;
     font-size: 18px;
@@ -214,28 +218,60 @@ footer {
 }
 
 /*Stile vini consigliati*/
-.vini h2{
-    margin-bottom: 20px;
-}
-
-.wine-description {
-    display: block;
-    margin-left: auto;
-    padding: 10px 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: right;
-    margin-right: 10px;
-}
-
-.vini{
+.vini {
     width: 100%;
     max-width: 800px;
     margin: 2% auto;
 }
+
+.wine-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.wine-name {
+    flex: 1;
+}
+
+.wine-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.wine-description, 
+.spesa-vino {
+    padding: 10px 15px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+li p {
+    margin: 0 3%;
+}
+
+.wine-description {
+    background-color: #007bff;
+}
+
+.spesa-vino {
+    background-color: #5cb85c;
+}
+
+.spesa-vino-added {
+    background-color: grey;
+    padding: 10px 15px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: not-allowed;
+}
+
+
 .wines-list{
     list-style-type: circle; 
     font-family: Arial, Helvetica, sans-serif;

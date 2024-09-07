@@ -19,4 +19,4 @@
 [ ] mettere i ruoli 1, 2, 3 in un database a parte del tipo (username, ruolo)
 [ ] inserire i messaggi di errore per i diversi casi
 [ ] aggiustare la pagina about us così che si veda anche quando il login è eseguito
-[ ] aggiustare la pagina della ricetta che presenta la sezione commenti separata e ha due scrollbar
+[x] aggiustare la pagina della ricetta che presenta la sezione commenti separata e ha due scrollbar

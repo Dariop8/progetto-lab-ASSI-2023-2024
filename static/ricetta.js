@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <li class="possessed">
                             <span class="ingr_name">${ingredient.name}</span>
                             <span class="checkmark">✔</span>
-                            <button class="add-to-shopping-list" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Added</button>
+                            <button class="add-to-shopping-list add-to-shopping-list-added" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Added</button>
                             ${substituteButton}
                         </li>
                     `;
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return `
                         <li class="to-buy">
                         <span class="ingr_name">${ingredient.name}</span>
-                        <button class="add-to-shopping-list" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Added</button>
+                        <button class="add-to-shopping-list add-to-shopping-list-added" data-ingredient="${ingredient.name}" disabled style="background-color: grey">Added</button>
                         ${substituteButton}
                     </li>
                     `;
@@ -483,13 +483,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.textContent = "Added";
                 button.style.backgroundColor = "grey";
                 button.disabled = true;
-
+                button.style.cursor = "not-allowed";
             },
             error: function() {
                 alert('Errore durante l\'aggiunta dell\'ingrediente alla lista della spesa.\n UN MESSAGGIO COSI FA CAGARE, FARE IN MODO DIVERSO');
             }
         });
     }
+
+function addWineToShoppingList(ingredient, button) {
+    $.ajax({
+        type: 'POST',
+        url: '/update_shopping_list',
+        data: { ingredient: ingredient },
+        success: function(response) {
+            button.textContent = "Added";
+            button.style.backgroundColor = "grey";
+            button.disabled = true;
+            button.style.cursor = "not-allowed";
+        },
+        error: function() {
+            alert('Errore durante l\'aggiunta dell\'ingrediente alla lista della spesa. Si prega di riprovare.');
+        }
+    });
+}
 
     //VINI CONSIGLIATI
 
@@ -549,20 +566,37 @@ document.addEventListener('DOMContentLoaded', function() {
             if (wineSet.size > 0) {
                 wineSet.forEach(wine => {
                     const wineItem = document.createElement('li');
-                    const wineName = document.createElement('span');
+                    wineItem.classList.add('wine-item');
+                    
+                    const wineName = document.createElement('div');
+                    wineName.classList.add('wine-name');
                     wineName.textContent = wine;
-
+                
+                    const wineActions = document.createElement('div');
+                    wineActions.classList.add('wine-actions');
+                
                     const descriptionButton = document.createElement('button');
                     descriptionButton.textContent = 'Description';
-                    descriptionButton.style.marginLeft = '10px';
-                    descriptionButton.style.marginLeft = '0px';
                     descriptionButton.classList.add('wine-description');
+                    
+                
+                    const vinolista = document.createElement('button');
+                    isInList(wine).then(isInList => {
+                        if (isInList) {
+                            vinolista.classList.add('spesa-vino-added');
+                            vinolista.textContent = 'Added';
+                            vinolista.disabled = true;
+                        } else {
+                            vinolista.textContent = '+';
+                            vinolista.classList.add('spesa-vino');
+                        }
+                    });
 
+                
                     const description = document.createElement('p');
                     description.style.display = 'none';
-
+                
                     descriptionButton.addEventListener('click', () => {
-                        
                         if (description.style.display === 'none') {
                             const settings = {
                                 async: true,
@@ -574,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
                                 }
                             };
-                            
+                
                             $.ajax(settings).done(function (response) {
                                 description.textContent = response.wineDescription || 'Description not available';
                                 description.style.display = 'block';
@@ -587,9 +621,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
 
+                    vinolista.addEventListener('click', () => {
+                        addWineToShoppingList(wine, vinolista);
+                    });
+
+                
+                    wineActions.appendChild(descriptionButton);
+                    wineActions.appendChild(vinolista);
+                    
                     wineItem.appendChild(wineName);
                     wineItem.appendChild(description);
-                    wineItem.appendChild(descriptionButton);
+                    wineItem.appendChild(wineActions);
                     listwines.appendChild(wineItem);
                 });
             } else {
@@ -653,8 +695,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
         playButton.disabled = true;
         playButton.style.backgroundColor = "grey";
+        playButton.style.cursor = "not-allowed";
         stopButton.disabled = false;
         stopButton.style.backgroundColor = "#5cb85c";
+        stopButton.style.cursor = "pointer";
+
     }
 
     function stopTimer() {
@@ -663,6 +708,10 @@ document.addEventListener('DOMContentLoaded', function() {
         playButton.style.backgroundColor = "#5cb85c";
         stopButton.disabled = true;
         stopButton.style.backgroundColor = "grey";
+        stopButton.style.cursor = "not-allowed";
+        playButton.style.cursor = "pointer";
+
+
     }
 
     function resetTimer() {
@@ -674,12 +723,18 @@ document.addEventListener('DOMContentLoaded', function() {
         playButton.style.backgroundColor = "#5cb85c";
         stopButton.disabled = true;
         stopButton.style.backgroundColor = "grey";
+        stopButton.style.cursor = "not-allowed";
+        playButton.style.cursor = "pointer";
+
     }
 
     playButton.disabled = false;
     stopButton.disabled = true;
     stopButton.style.backgroundColor = "grey";
+    stopButton.style.cursor = "not-allowed";
     playButton.style.backgroundColor = "#5cb85c";
+    playButton.style.cursor = "pointer";
+
     
 
     playButton.addEventListener('click', function() {
