@@ -670,3 +670,10 @@ li p {
 .flash-message.hide {
     display: none;
 }
+
+.error-message {
+    color: red;
+    font-weight: bold;
+    display: none;
+    margin-bottom: 15px;
+}

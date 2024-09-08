@@ -61,7 +61,7 @@ document.getElementById('search-recipe-button').addEventListener('click', functi
     if (recipeName !== '') {  
         recipeName = recipeName.replace(/ /g, "%20");
         query = 'query=' + recipeName + '&';
-        document.getElementById('selected-recipe').value='';
+    //  document.getElementById('selected-recipe').value='';
     }
 
     const cuisinesListDiv = document.querySelector('.checkbox-group');

@@ -3,7 +3,7 @@ from flask import Flask,render_template, url_for, redirect, request, session, js
 from flask_sqlalchemy import SQLAlchemy
 from requests import Session
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 import os
 from sqlalchemy.types import Date
 from sqlalchemy.dialects.postgresql import JSON
@@ -191,7 +191,7 @@ class Comments(db.Model):
     username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), nullable=False)
     comment = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer, nullable=False)  
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     segnalazione = db.Column(db.Integer, default=0)
 
     def __init__(self, recipe_id, email, username, comment, rating):
@@ -234,7 +234,7 @@ class Users(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), nullable=False, unique=True)
     username = db.Column(db.String(30), nullable=False, unique=True)    
-    password = db.Column(db.String(250), nullable=False) 
+    _password = db.Column('password', db.String(250), nullable=False) # rinominato in _password
     data_di_nascita = db.Column(Date, nullable=True)
     diete = db.Column(JSON, nullable=True)
     intolleranze = db.Column(JSON, nullable=True)
@@ -260,6 +260,14 @@ class Users(UserMixin, db.Model):
         self.tentativi_login = tentativi_login
         self.ruolo = ruolo
 
+    @property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, plaintext):
+        self._password = bcrypt.generate_password_hash(plaintext).decode('utf-8')
+
 
 class ruoli(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -276,7 +284,7 @@ class UtentiBloccati(db.Model):
     id_moderatore = db.Column(db.Integer, nullable=False)
     commento_offensivo = db.Column(db.Text, nullable=True)
     ricetta_interessata = db.Column(db.Integer, nullable=True)
-    data_blocco = db.Column(db.DateTime, default=datetime.utcnow)
+    data_blocco = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def __init__(self, email, username, id_utente=None, id_moderatore=None, commento_offensivo=None, ricetta_interessata=None):
         self.email = email
@@ -298,7 +306,7 @@ class RichiestaSblocco(db.Model):
     ricetta_interessata = db.Column(db.Integer, nullable=False)
     data_blocco = db.Column(db.String, nullable=False)  
     testo_richiesta = db.Column(db.Text, nullable=False)
-    data_richiesta = db.Column(db.DateTime, default=datetime.utcnow)  
+    data_richiesta = db.Column(db.DateTime, default=datetime.now(timezone.utc))  
 
     def __init__(self, id_utente, email, commento_offensivo, ricetta_interessata, data_blocco, testo_richiesta):
         self.id_utente = id_utente
@@ -307,7 +315,7 @@ class RichiestaSblocco(db.Model):
         self.ricetta_interessata = ricetta_interessata
         self.data_blocco = data_blocco
         self.testo_richiesta = testo_richiesta
-        self.data_richiesta = datetime.utcnow()
+        self.data_richiesta = datetime.now(timezone.utc) 
  
 
     
@@ -1084,7 +1092,7 @@ def submit_comment():
         if blocked:
             return blocked
 
-        user = Users.query.get(user_id)
+        user = db.session.get(Users, user_id)
         recipe_id = request.form.get('recipe_id') 
         comment_text = request.form.get('comment')
         rating = request.form.get('rating')
@@ -1116,7 +1124,7 @@ def elimina_commento(comment_id):
         user_id = session['id']
         ruolo_utente = db.session.get(Users, user_id).ruolo
         email_utente = db.session.get(Users, user_id).email
-        comment = Comments.query.get(comment_id)
+        comment = db.session.get(Comments, comment_id)
 
         blocked = user_blocked()
         if blocked:

@@ -197,23 +197,77 @@ document.addEventListener('DOMContentLoaded', function() {
         //Caricamento form commento e rating
         const formcommenti = document.querySelector('.comment-form')
         formcommenti.innerHTML = `
-            <h3>Add a comment:</h3>
+            <h3>Aggiungi un commento:</h3>
             <form id="commentForm" action="/submit-comment" method="post">
                 <input type="hidden" name="recipe_id" value="${recipeId}">
-                <textarea id="comment" name="comment" rows="4" required minlength="10" maxlength="400" placeholder="Let others know what you think..."></textarea>
+                <textarea id="comment" name="comment" rows="4" minlength="10" maxlength="400" placeholder="Fai sapere agli altri cosa ne pensi..."></textarea>
                 <div class="rating-container">
-                    <p>Your rating: </p>
+                    <p>Il tuo voto: </p>
                     <div class="rating">
-                        <input type="radio" id="star5" name="rating" value="5" required/><label for="star5" >★</label>
-                        <input type="radio" id="star4" name="rating" value="4" required/><label for="star4" >★</label>
-                        <input type="radio" id="star3" name="rating" value="3" required/><label for="star3" >★</label>
-                        <input type="radio" id="star2" name="rating" value="2" required/><label for="star2" >★</label>
-                        <input type="radio" id="star1" name="rating" value="1" required/><label for="star1" >★</label>
+                        <input type="radio" id="star5" name="rating" value="5" /><label id="s5" for="star5">★</label>
+                        <input type="radio" id="star4" name="rating" value="4" /><label id="s4" for="star4">★</label>
+                        <input type="radio" id="star3" name="rating" value="3" /><label id="s3" for="star3">★</label>
+                        <input type="radio" id="star2" name="rating" value="2" /><label id="s2" for="star2">★</label>
+                        <input type="radio" id="star1" name="rating" value="1" /><label id="s1" for="star1">★</label>
                     </div>
                 </div>
-                
-                <button type="submit">Send</button>
+                <p class="error-message both-error" id="errore1">È necessario scrivere un commento ed esprimere una valutazione</p>
+                <p class="error-message comment-error" id="errore2">È necessario scrivere un commento</p>
+                <p class="error-message rating-error" id="errore3">È necessario esprimere una valutazione</p>
+                <p class="error-message char-error" id="errore4">Inserire un commento valido</p>
+                <button type="submit" id='submit_button'>Invia</button>
             </form>`;
+
+        const form = document.getElementById('commentForm');
+        const comment_error = document.querySelector('.comment-error');
+        const rating_error = document.querySelector('.rating-error');
+        const both_error = document.querySelector('.both-error');
+        const char_error = document.querySelector('.char-error');
+
+        comment_error.style.display = 'none';
+        rating_error.style.display = 'none';
+        both_error.style.display = 'none';
+        char_error.style.display = 'none';
+
+        form.addEventListener('submit', function(event) {
+            const comment = document.getElementById('comment').value.trim(); 
+            const rating = document.querySelector('input[name="rating"]:checked');
+
+            function invalid(str) {
+                return str.split('').every(char => char === str[0]);
+            }
+
+            if (!comment && !rating) {
+                event.preventDefault();
+                both_error.style.display = 'block';
+                comment_error.style.display = 'none';
+                rating_error.style.display = 'none';
+                char_error.style.display = 'none';
+            } else if (!comment) {
+                event.preventDefault();
+                both_error.style.display = 'none';
+                comment_error.style.display = 'block';
+                rating_error.style.display = 'none';
+                char_error.style.display = 'none';
+            } else if (!rating) {
+                event.preventDefault();
+                both_error.style.display = 'none';
+                comment_error.style.display = 'none';
+                rating_error.style.display = 'block';
+                char_error.style.display = 'none';
+            } else if (invalid(comment)) {
+                event.preventDefault();
+                both_error.style.display = 'none';
+                comment_error.style.display = 'none';
+                rating_error.style.display = 'none';
+                char_error.style.display = 'block';
+            } else {
+                both_error.style.display = 'none';
+                comment_error.style.display = 'none';
+                rating_error.style.display = 'none';
+                char_error.style.display = 'none';
+            }
+        });
             
             //Caricamento commenti degli altri utenti
             let ruoloUtente = null;
@@ -253,10 +307,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 let commentContent = `
                                     <div class="comment">
                                         <div class="comment-sx">
-                                            <p><strong>${comment.username}</strong>${role}<br>
+                                            <p class="p1"><strong>${comment.username}</strong>${role}<br>
                                             ${comment.comment}</p>
-                                            <p><i>Rating: </i>${stampaStelle(comment.rating)}</p>
-                                            <p>${comment.timestamp}</p>
+                                            <p class="p2"><i>Valutazione: </i>${stampaStelle(comment.rating)}</p>
+                                            <p class="p3">${comment.timestamp}</p>
                                         </div>
                                 `;
             
