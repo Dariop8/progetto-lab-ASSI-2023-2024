@@ -228,10 +228,12 @@ class Favourite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     recipe_id = db.Column(db.Integer, nullable=False)
     email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), nullable=False)
+    username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), nullable=False)
     note = db.Column(db.String(300), nullable=False, default="")
 
-    def __init__(self, recipe_id=None, email=None):
+    def __init__(self, username=None, recipe_id=None, email=None):
         self.recipe_id = recipe_id
+        self.username = username
         self.email = email
         self.note=""
 
@@ -240,10 +242,12 @@ class ShoppingList(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), nullable=False)
+    username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), nullable=False)
     ingredient = db.Column(db.String(300), nullable=False, default="")
 
-    def __init__(self, email=None, ingredient=None):
+    def __init__(self, username=None, email=None, ingredient=None):
         self.email = email
+        self.username = username
         self.ingredient=ingredient
 
 
@@ -268,7 +272,10 @@ class Users(UserMixin, db.Model):
     comments = db.relationship('Comments', backref='user', lazy=True, cascade="all, delete", foreign_keys='Comments.email')
     favourites = db.relationship('Favourite', backref='user', lazy=True, cascade="all, delete", foreign_keys='Favourite.email')
     shoppinglist = db.relationship('ShoppingList', backref='user', lazy=True, cascade="all, delete", foreign_keys='ShoppingList.email')
-    # richieste_sblocco = db.relationship('RichiestaSblocco', backref='user', lazy=True, cascade="all, delete", foreign_keys='RichiestaSblocco.email')
+    richieste_sblocco = db.relationship('RichiestaSblocco', backref='user', lazy=True, cascade="all, delete", foreign_keys='RichiestaSblocco.email')
+    utenti_bloccati = db.relationship('UtentiBloccati', foreign_keys='UtentiBloccati.id_utente', backref='utente_bloccato', lazy=True, cascade="all, delete")
+    moderazioni_blocchi = db.relationship('UtentiBloccati', foreign_keys='UtentiBloccati.id_moderatore', backref='moderatore', lazy=True, cascade="all, delete")
+
     
     __table_args__ = (
         db.CheckConstraint('ruolo BETWEEN 1 AND 3', name='check_ruolo_range'),
@@ -295,17 +302,20 @@ class ruoli(db.Model):
     nome = db.Column(db.Text, unique=True, nullable=False)
     descrizione = db.Column(db.Text)
 
-#UtentiBloccati non ha foreignkey perchè se sono bannato e cancello l'account allora deve rimanere quella mail tra i bloccati
 class UtentiBloccati(db.Model):
     __tablename__ = 'utenti_bloccati'
 
-    email = db.Column(db.String(120), primary_key=True)
-    username = db.Column(db.String(30), unique=True, nullable=False)
-    id_utente = db.Column(db.Integer, unique=True, nullable=True)
-    id_moderatore = db.Column(db.Integer, nullable=False)
+    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), primary_key=True)
+    username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), unique=True, nullable=False)
+    id_utente = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), unique=True, nullable=True)
+    id_moderatore = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     commento_offensivo = db.Column(db.Text, nullable=True)
     ricetta_interessata = db.Column(db.Integer, nullable=True)
     data_blocco = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+    __table_args__ = (
+        db.CheckConstraint('id_utente != id_moderatore', name='check_moderatore_diverso'),
+    )
 
     def __init__(self, email, username, id_utente=None, id_moderatore=None, commento_offensivo=None, ricetta_interessata=None):
         self.email = email
@@ -314,6 +324,7 @@ class UtentiBloccati(db.Model):
         self.id_moderatore = id_moderatore
         self.commento_offensivo = commento_offensivo
         self.ricetta_interessata = ricetta_interessata
+
 
 
 class RichiestaSblocco(db.Model):
@@ -876,6 +887,7 @@ def add_to_favourites():
 
         user_id = session['id']
         user_email = db.session.get(Users, user_id).email
+        username = db.session.get(Users, user_id).username
         recipe_id = request.json.get('recipe_id')
 
         if not recipe_id:
@@ -885,7 +897,7 @@ def add_to_favourites():
         if existing_favourite:
             return jsonify({'error': 'Recipe is already in favourites'}), 409
 
-        favourite = Favourite(recipe_id=recipe_id, email=user_email)
+        favourite = Favourite(username=username, recipe_id=recipe_id, email=user_email)
         db.session.add(favourite)
         db.session.commit()
 
@@ -1006,7 +1018,7 @@ def update_shopping_list():
         if ingredient:
             existing_item = ShoppingList.query.filter_by(email=user.email, ingredient=ingredient).first()
             if not existing_item:
-                new_item = ShoppingList(email=user.email, ingredient=ingredient)
+                new_item = ShoppingList(username=user.username, email=user.email, ingredient=ingredient)
                 db.session.add(new_item)
                 db.session.commit()
 
