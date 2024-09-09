@@ -90,34 +90,37 @@ class CommentModel_test(TestCase):
             with self.assertRaises(IntegrityError):
                 db.session.commit()
 
-    # def test_comment_too_short(self):
-    #         with app.app_context():
-    #             short_comment = Comments(
-    #                 recipe_id=1,
-    #                 email="testuser@example.com",
-    #                 username="TestUser",
-    #                 comment="ciao",  # Commento troppo corto
-    #                 rating=5
-    #             )
+    def test_comment_too_short(self):
+            with app.app_context():
+                with self.assertRaises(ValueError) as context:
+                    short_comment = Comments(
+                        recipe_id=1,
+                        email="marco@mail.com",
+                        username="Marco",
+                        comment="ciao",  # Commento troppo corto
+                        rating=5
+                    )
+                
+                    db.session.add(short_comment)
+                    db.session.commit()
 
-    #             with self.assertRaises(ValueError) as context:
-    #                 db.session.add(short_comment)
-    #                 db.session.commit()
+                self.assertEqual(str(context.exception), "Commento deve essere lungo almeno 10 caratteri.")
 
-    # def test_rating_out_of_range(self):
-    #     with app.app_context():
-    #         invalid_rating_comment = Comments(
-    #             recipe_id=1,
-    #             email="testuser@example.com",
-    #             username="TestUser",
-    #             comment="Ottimo commento!",
-    #             rating=11  
-    #         )
-    #         db.session.add(invalid_rating_comment)
+    def test_rating_out_of_range(self):
+        with app.app_context():
+            with self.assertRaises(ValueError) as context:
+                invalid_rating_comment = Comments(
+                    recipe_id=1,
+                    email="marco@mail.com",
+                    username="Marco",
+                    comment="Adatta a tutti.",
+                    rating=11  # Rating non tra 1 e 5
+                )
             
-    #         with self.assertRaises(IntegrityError):
-    #             db.session.commit()
+                db.session.add(invalid_rating_comment)
+                db.session.commit()
 
+            self.assertEqual(str(context.exception), "Rating deve essere tra 1 e 5.")
 
     def test_missing_fields(self):
         with app.app_context():

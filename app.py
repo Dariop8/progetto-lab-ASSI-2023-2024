@@ -203,12 +203,17 @@ class Comments(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     segnalazione = db.Column(db.Integer, default=0)
 
-    _table_args_ = (
+    __table_args__ = (
         CheckConstraint('length(comment) >= 10', name='check_comment_length'),
         CheckConstraint('rating BETWEEN 1 AND 5', name='check_rating_range'),
     )
 
     def __init__(self, recipe_id, email, username, comment, rating):
+        if comment:
+            validate_comment_length(comment)
+        if rating:
+            validate_rating(rating)
+
         self.recipe_id = recipe_id
         self.email = email
         self.username = username
@@ -242,10 +247,9 @@ class ShoppingList(db.Model):
         self.ingredient=ingredient
 
 
-_table_args_ = (
-        CheckConstraint('length(comment) >= 10', name='check_comment_length'),
-        CheckConstraint('rating BETWEEN 1 AND 5', name='check_rating_range'),
-    )
+def validate_ruolo(ruolo_value):
+    if not (1 <= ruolo_value <= 3):
+        raise ValueError("Il ruolo deve essere compreso tra 1 e 3.")
 
 class Users(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -266,11 +270,14 @@ class Users(UserMixin, db.Model):
     shoppinglist = db.relationship('ShoppingList', backref='user', lazy=True, cascade="all, delete", foreign_keys='ShoppingList.email')
     # richieste_sblocco = db.relationship('RichiestaSblocco', backref='user', lazy=True, cascade="all, delete", foreign_keys='RichiestaSblocco.email')
     
-    _table_args_ = (
-            db.CheckConstraint('ruolo BETWEEN 1 AND 3', name='check_ruolo_range'),
+    __table_args__ = (
+        db.CheckConstraint('ruolo BETWEEN 1 AND 3', name='check_ruolo_range'),
     )
     
     def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, attivazione_2fa=False, segreto_otp=None, tentativi_login=0, ruolo=1):
+        if ruolo:
+            validate_ruolo(ruolo)
+        
         self.username = username
         self.password = password
         self.email = email

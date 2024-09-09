@@ -111,18 +111,15 @@ class Usermodel_test(TestCase):
                 user = Users(username=f"validuser{role}", email=f"validuser{role}@mail.com", password="pswd1234.", ruolo = role)
                 db.session.add(user)
                 db.session.commit()
-                db.session.delete(user)  # per non riempire il db di test
+                db.session.delete(user)  
 
-            try:
+            with self.assertRaises(ValueError) as context:
                 user = Users(username="invaliduser", email = f"invaliduser{role}@mail.com", password="pswd1234.", ruolo=5)
                 db.session.add(user)
                 db.session.commit()
                 self.fail(f"Expected IntegrityError for ruolo={role}, but no error was raised")
-            except IntegrityError:
-                db.session.rollback()  
-            except Exception as e:
-                print(f"Unexpected exception occurred: {e}")
-                db.session.rollback()
+
+            self.assertEqual(str(context.exception), "Il ruolo deve essere compreso tra 1 e 3.")
 
     def test_user_comments(self):
         with app.app_context():

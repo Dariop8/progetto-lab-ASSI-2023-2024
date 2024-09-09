@@ -10,13 +10,12 @@
 [x] far funzionare i commenti
 [x] parlare di quali e come gestire i ruoli (MAC, DAC, RBAC ecc)
 [x] quando per via dei filti non vengono trovate ricette allora far comparire qualche messaggio
-[ ] fare lo stesso del punto sopra ma per gli ingredienti
+[x] fare lo stesso del punto sopra ma per gli ingredienti
 [ ] semplificare e suddividere app.py
 [x] aggiungere immagine stilizzata in homepage
 [x] cambiare password reset salt
 [x] impostare step quando ti dice se la psw è sicura o debole
 [ ] blocco footer come fatto per header
 [ ] mettere i ruoli 1, 2, 3 in un database a parte del tipo (username, ruolo)
-[ ] inserire i messaggi di errore per i diversi casi
-[ ] aggiustare la pagina about us così che si veda anche quando il login è eseguito
+[x] inserire i messaggi di errore per i diversi casi
 [x] aggiustare la pagina della ricetta che presenta la sezione commenti separata e ha due scrollbar

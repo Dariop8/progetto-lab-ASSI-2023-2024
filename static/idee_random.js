@@ -102,6 +102,8 @@ document.getElementById('search-recipe-button').addEventListener('click', functi
 });
 
 function populateRecipesList(recipes) {
+    recipes = recipes.sort(() => Math.random() - 0.5);
+
     const recipeListDiv = document.querySelector('.recipes');
 
     recipeListDiv.innerHTML=`
