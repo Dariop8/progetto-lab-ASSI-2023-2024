@@ -92,6 +92,13 @@ document.getElementById('search-recipe-button').addEventListener('click', functi
             'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com'
         }
     };
+    
+    $.ajax(settings).done(function (response) {
+        //console.log(response);
+        populateRecipesList(response.results); 
+    }).fail(function (error) {
+        console.error('Error fetching recipes:', error);
+    });
 });
 
 function populateRecipesList(recipes) {

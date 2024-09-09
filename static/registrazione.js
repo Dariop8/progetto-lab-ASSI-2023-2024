@@ -38,66 +38,66 @@ document.addEventListener("DOMContentLoaded", function() {
     
         if (length <= 4) {
             strengthClass = 'very-weak';
-            strengthMessage = 'Molto debole (istantaneamente decifrabile)';
+            strengthMessage = 'Very weak (instantly crackable)';
         } else if (length <= 6) {
             strengthClass = 'weak';
-            strengthMessage = 'Debole (istantaneamente decifrabile)';
+            strengthMessage = 'Weak (instantly crackable)';
         } else if (length <= 8) {
             if (hasUpperCase && hasLowerCase) {
                 strengthClass = 'moderate';
-                strengthMessage = 'Moderata (decifrabile in pochi minuti)';
+                strengthMessage = 'Moderate (crackable in a few minutes)';
             } else {
                 strengthClass = 'weak';
-                strengthMessage = 'Debole (decifrabile in pochi secondi)';
+                strengthMessage = 'Weak (crackable in a few seconds)';
             }
         } else if (length <= 10) {
             if (hasNumber && !hasUpperCase && !hasLowerCase && !hasSpecialChar) {
                 strengthClass = 'weak';
-                strengthMessage = 'Debole (decifrabile in pochi minuti)';
+                strengthMessage = 'Weak (crackable in a few minutes)';
             } else {
                 strengthClass = 'moderate';
-                strengthMessage = 'Moderata (decifrabile in ore o giorni)';
+                strengthMessage = 'Moderate (crackable in hours or days)';
             }
         } else if (length <= 11) {
             if (hasNumber && !hasUpperCase && !hasLowerCase && !hasSpecialChar) {
                 strengthClass = 'weak';
-                strengthMessage = 'Debole (decifrabile in pochi minuti)';
+                strengthMessage = 'Weak (crackable in a few minutes)';
             } else if (hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar) {
                 strengthClass = 'strong';
-                strengthMessage = 'Forte (decifrabile in settimane o mesi)';
+                strengthMessage = 'Strong (crackable in weeks or months)';
             } else {
                 strengthClass = 'moderate';
-                strengthMessage = 'Moderata (decifrabile in ore o giorni)';
+                strengthMessage = 'Moderate (crackable in hours or days)';
             }
         } else if (length <= 13) {
             if (hasUpperCase && hasLowerCase) {
                 strengthClass = 'strong';
-                strengthMessage = 'Forte (decifrabile in settimane o mesi)';
+                strengthMessage = 'Strong (crackable in weeks or months)';
             } else {
                 strengthClass = 'moderate';
-                strengthMessage = 'Moderata (decifrabile in ore o giorni)';
+                strengthMessage = 'Moderate (crackable in hours or days)';
             }
         } else if (length <= 16) {
             if (hasUpperCase && hasLowerCase) {
                 strengthClass = 'very-strong';
-                strengthMessage = 'Molto forte (decifrabile in anni)';
+                strengthMessage = 'Very strong (crackable in years)';
             } else if (hasNumber && !hasUpperCase && !hasLowerCase && !hasSpecialChar) {
                 strengthClass = 'moderate';
-                strengthMessage = 'Moderata (decifrabile in ore o giorni)';
+                strengthMessage = 'Moderate (crackable in hours or days)';
             } else {
                 strengthClass = 'strong';
-                strengthMessage = 'Forte (decifrabile in settimane o mesi)';
+                strengthMessage = 'Strong (crackable in weeks or months)';
             }
         } else {
             if (hasUpperCase && hasLowerCase) {
                 strengthClass = 'extremely-strong';
-                strengthMessage = 'Estremamente forte (decifrabile in millenni o mai)';
+                strengthMessage = 'Extremely strong (crackable in millennia or never)';
             } else if (hasNumber && !hasUpperCase && !hasLowerCase && !hasSpecialChar) {
                 strengthClass = 'moderate';
-                strengthMessage = 'Moderata (decifrabile in ore o giorni)';
+                strengthMessage = 'Moderate (crackable in hours or days)';
             } else {
                 strengthClass = 'very-strong';
-                strengthMessage = 'Molto forte (decifrabile in anni)';
+                strengthMessage = 'Very strong (crackable in years)';
             }
         }
     

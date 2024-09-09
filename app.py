@@ -1,5 +1,5 @@
 import bcrypt
-from flask import Flask,render_template, url_for, redirect, request, session, jsonify, flash, send_from_directory
+from flask import Flask, render_template, url_for, redirect, request, session, jsonify, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from requests import Session
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
@@ -7,6 +7,7 @@ from datetime import timedelta, datetime, timezone
 import os
 from sqlalchemy.types import Date
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy import CheckConstraint
 from flask_dance.contrib.github import make_github_blueprint, github
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.facebook import make_facebook_blueprint, facebook
@@ -22,6 +23,7 @@ import pyotp
 import chiavi
 from flask import jsonify
 from flask import current_app
+
 
 #CONFIGURAZIONE APP FLASK, DB E MAIL
 app = Flask(__name__)
@@ -182,7 +184,14 @@ def reset_password():
     return redirect(url_for('login'))
 
 
+def validate_comment_length(comment_text):
+    if len(comment_text) < 10:
+        raise ValueError("Commento deve essere lungo almeno 10 caratteri.")
 
+def validate_rating(rating_value):
+    if not (1 <= rating_value <= 5):
+        raise ValueError("Rating deve essere tra 1 e 5.")
+    
 class Comments(db.Model):
     __tablename__ = 'comments'
     comment_id = db.Column(db.Integer, primary_key=True)
@@ -193,6 +202,11 @@ class Comments(db.Model):
     rating = db.Column(db.Integer, nullable=False)  
     timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     segnalazione = db.Column(db.Integer, default=0)
+
+    _table_args_ = (
+        CheckConstraint('length(comment) >= 10', name='check_comment_length'),
+        CheckConstraint('rating BETWEEN 1 AND 5', name='check_rating_range'),
+    )
 
     def __init__(self, recipe_id, email, username, comment, rating):
         self.recipe_id = recipe_id
@@ -228,13 +242,17 @@ class ShoppingList(db.Model):
         self.ingredient=ingredient
 
 
+_table_args_ = (
+        CheckConstraint('length(comment) >= 10', name='check_comment_length'),
+        CheckConstraint('rating BETWEEN 1 AND 5', name='check_rating_range'),
+    )
 
 class Users(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), nullable=False, unique=True)
     username = db.Column(db.String(30), nullable=False, unique=True)    
-    _password = db.Column('password', db.String(250), nullable=False) # rinominato in _password
+    password = db.Column(db.String(250), nullable=False) # rinominato in _password
     data_di_nascita = db.Column(Date, nullable=True)
     diete = db.Column(JSON, nullable=True)
     intolleranze = db.Column(JSON, nullable=True)
@@ -247,7 +265,11 @@ class Users(UserMixin, db.Model):
     favourites = db.relationship('Favourite', backref='user', lazy=True, cascade="all, delete", foreign_keys='Favourite.email')
     shoppinglist = db.relationship('ShoppingList', backref='user', lazy=True, cascade="all, delete", foreign_keys='ShoppingList.email')
     # richieste_sblocco = db.relationship('RichiestaSblocco', backref='user', lazy=True, cascade="all, delete", foreign_keys='RichiestaSblocco.email')
-
+    
+    _table_args_ = (
+            db.CheckConstraint('ruolo BETWEEN 1 AND 3', name='check_ruolo_range'),
+    )
+    
     def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, attivazione_2fa=False, segreto_otp=None, tentativi_login=0, ruolo=1):
         self.username = username
         self.password = password
@@ -259,14 +281,6 @@ class Users(UserMixin, db.Model):
         self.segreto_otp = segreto_otp
         self.tentativi_login = tentativi_login
         self.ruolo = ruolo
-
-    @property
-    def password(self):
-        return self._password
-
-    @password.setter
-    def password(self, plaintext):
-        self._password = bcrypt.generate_password_hash(plaintext).decode('utf-8')
 
 
 class ruoli(db.Model):
@@ -379,10 +393,10 @@ def registrazione():
         m = Users.query.filter_by(email=email).first()
 
         if user or m:
-            flash('Utente già registrato.', 'error')
+            flash('User already registered.', 'error')
             return render_template("registrazione.html")
         if  not password_ok:
-            flash('Password troppo semplice', 'error')
+            flash('Password is too weak.', 'error')
             return render_template("registrazione.html")
         if password == password_verify:
 
@@ -398,7 +412,7 @@ def registrazione():
 
             return redirect(url_for("main_route"))
         else:
-            flash('Le due password non combaciano', 'error')
+            flash('Passwords do not match.', 'error')
             return render_template("registrazione.html")
     
     elif 'username' in session and 'password' in session:
