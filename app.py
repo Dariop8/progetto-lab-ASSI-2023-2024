@@ -15,7 +15,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 import secrets
 import string
-from utils import generate_reset_token, verify_reset_token, send_reset_email, is_valid_password, generate_password
+from utils import generate_reset_token, verify_reset_token, send_reset_email, is_valid_password, generate_password, validate_comment_length, validate_rating,validate_ruolo
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_mail import Mail, Message
@@ -32,7 +32,7 @@ bcrypt = Bcrypt(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
 app.config["SECRET_KEY"] = chiavi.config_secret_key
 
-# configuro flask mail
+#configuro flask mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com' 
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -86,111 +86,6 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
 
-# def generate_reset_token(email):
-#     return s.dumps(email, salt='password-reset-salt')
-
-# def verify_reset_token(token, expiration=3600):
-#     try:
-#         email = s.loads(token, salt='password-reset-salt', max_age=expiration)
-#     except (SignatureExpired, BadSignature):
-#         return None
-#     return email
-
-# def send_reset_email(to_email, token):
-#     with app.app_context():
-#         msg = Message(
-#             'Reset Your Password',
-#             sender=chiavi.email_gmail,
-#             recipients=[to_email]
-#         )
-#         msg.body = f'''Per resettare la tua password, usa il seguente token:
-# {token}
-
-# Se non hai richiesto il reset della password, ignora questa email.
-# '''
-#         mail.send(msg)
-
-
-@app.route('/recupero_password_request', methods=['POST'])
-def recupero_password_request():
-    email = request.form.get('email_input')
-
-    user = Users.query.filter_by(email=email).first()
-    if user:
-        try:
-            token = generate_reset_token(email)
-            send_reset_email(email, token)
-
-            return redirect(url_for('recupera_psw', token_sended=True))
-        except Exception as e:
-            print(f"Errore durante il reset della password: {str(e)}")
-            return jsonify({'success': False, 'message': 'Errore durante l\'invio dell\'email.'}), 500
-    else:
-        redirect(url_for('recupera_psw'))
-        return jsonify({'success': False, 'message': 'Utente non trovato.'}), 404
-
-
-
-@app.route('/reset_password_request', methods=['POST'])
-def reset_password_request():
-    if 'id' in session:
-        user_id = session['id']
-        user = db.session.get(Users, user_id)
-        if user:
-            try:
-                token = generate_reset_token(user.email)
-                send_reset_email(user.email, token)
-
-                return jsonify({'success': True, 'message': 'Un token (con validità di 10 minuti) per il reset della password è stato inviato al tuo indirizzo email.'})
-            except Exception as e:
-                print(f"Errore durante il reset della password: {str(e)}")
-                return jsonify({'success': False, 'message': 'Errore durante l\'invio dell\'email.'}), 500
-        else:
-            return jsonify({'success': False, 'message': 'Utente non trovato.'}), 404
-    else:
-        return jsonify({'success': False, 'message': 'Non sei autenticato.'}), 403
-
-
-@app.route('/reset_password', methods=['POST'])
-def reset_password():
-    token = request.form.get('token')
-    new_password = request.form.get('new_password')
-    confirm_new_password = request.form.get('confirm_new_password')
-
-    email = verify_reset_token(token)
-    if email is None:
-        flash('Token non valido o scaduto.', 'error')
-        return redirect(url_for('login'))
-
-    user = Users.query.filter_by(email=email).first()
-    if user:
-        if new_password == confirm_new_password:
-            if is_valid_password(new_password):
-                hashed_password = bcrypt.generate_password_hash(new_password)
-                user.password = hashed_password
-                db.session.commit()
-                print(f"DAJEE")
-                flash('La tua password è stata aggiornata con successo.', 'success')
-                return redirect(url_for('account'))
-            else:
-                print(f"NON VALIDE")
-                flash('Le password non coincidono o non sono valide.', 'error')
-        else:
-            print(f"NON COINCIDONO")
-            flash('Le password non coincidono o non sono valide.', 'error')
-    else:
-        flash('Errore utente.', 'error')
-
-    return redirect(url_for('login'))
-
-
-def validate_comment_length(comment_text):
-    if len(comment_text) < 10:
-        raise ValueError("Commento deve essere lungo almeno 10 caratteri.")
-
-def validate_rating(rating_value):
-    if not (1 <= rating_value <= 5):
-        raise ValueError("Rating deve essere tra 1 e 5.")
     
 class Comments(db.Model):
     __tablename__ = 'comments'
@@ -251,9 +146,6 @@ class ShoppingList(db.Model):
         self.ingredient=ingredient
 
 
-def validate_ruolo(ruolo_value):
-    if not (1 <= ruolo_value <= 3):
-        raise ValueError("Il ruolo deve essere compreso tra 1 e 3.")
 
 class Users(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -297,11 +189,6 @@ class Users(UserMixin, db.Model):
         self.ruolo = ruolo
 
 
-class ruoli(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.Text, unique=True, nullable=False)
-    descrizione = db.Column(db.Text)
-
 class UtentiBloccati(db.Model):
     __tablename__ = 'utenti_bloccati'
 
@@ -330,10 +217,10 @@ class UtentiBloccati(db.Model):
 class RichiestaSblocco(db.Model):
     __tablename__ = 'richieste_sblocco'
     
-    # id_utente = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), unique=True, nullable=False)
-    # email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), primary_key=True)   
-    id_utente = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False)
-    email = db.Column(db.String(120), db.ForeignKey('users.email'), primary_key=True)  
+    id_utente = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), unique=True, nullable=False)
+    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), primary_key=True)   
+    # id_utente = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False)
+    # email = db.Column(db.String(120), db.ForeignKey('users.email'), primary_key=True)  
     commento_offensivo = db.Column(db.Text, nullable=False)
     ricetta_interessata = db.Column(db.Integer, nullable=False)
     data_blocco = db.Column(db.String, nullable=False)  
@@ -360,9 +247,6 @@ with app.app_context():
 @login_manager.user_loader
 def loader_user(user_id):
     return db.session.get(Users, user_id)
-# def loader_user(user_id):
-#     # return Session.get(user_id) 
-#     Users.query.get(user_id)
 
 
 #HOMEPAGE
@@ -518,7 +402,7 @@ def google_login():
     try:
         profile = service.people().get(resourceName='people/me', personFields='names,emailAddresses').execute()
     except Exception as e:
-        print(f'An error occurred: {e}')
+        # print(f'An error occurred: {e}')
         return redirect(url_for("login"))
 
     email = None
@@ -741,6 +625,84 @@ def verify_otp():
     
     return render_template('verify_otp.html')
 
+
+#RECUPERO PSW
+@app.route('/recupero_password_request', methods=['POST'])
+def recupero_password_request():
+    email = request.form.get('email_input')
+
+    user = Users.query.filter_by(email=email).first()
+    if user:
+        try:
+            token = generate_reset_token(email)
+            send_reset_email(email, token)
+
+            return redirect(url_for('recupera_psw', token_sended=True))
+        except Exception as e:
+            # print(f"Errore durante il reset della password: {str(e)}")
+            return jsonify({'success': False, 'message': 'Errore durante l\'invio dell\'email.'}), 500
+    else:
+        redirect(url_for('recupera_psw'))
+        return jsonify({'success': False, 'message': 'Utente non trovato.'}), 404
+
+
+
+@app.route('/reset_password_request', methods=['POST'])
+def reset_password_request():
+    if 'id' in session:
+        user_id = session['id']
+        user = db.session.get(Users, user_id)
+        if user:
+            try:
+                token = generate_reset_token(user.email)
+                send_reset_email(user.email, token)
+
+                return jsonify({'success': True, 'message': 'Un token (con validità di 10 minuti) per il reset della password è stato inviato al tuo indirizzo email.'})
+            except Exception as e:
+                # print(f"Errore durante il reset della password: {str(e)}")
+                return jsonify({'success': False, 'message': 'Errore durante l\'invio dell\'email.'}), 500
+        else:
+            return jsonify({'success': False, 'message': 'Utente non trovato.'}), 404
+    else:
+        return jsonify({'success': False, 'message': 'Non sei autenticato.'}), 403
+
+
+@app.route('/reset_password', methods=['POST'])
+def reset_password():
+    token = request.form.get('token')
+    new_password = request.form.get('new_password')
+    confirm_new_password = request.form.get('confirm_new_password')
+
+    email = verify_reset_token(token)
+    if email is None:
+        flash('Token not valid or expired.', 'error')
+        if 'id' in session:
+            return redirect(url_for('account'))
+        return redirect(url_for('recupera_psw', token_sended=True))
+
+    user = Users.query.filter_by(email=email).first()
+    if user:
+        if not is_valid_password(new_password):
+            flash('The password is not strong enough.', 'error')
+            if 'id' in session:
+                return redirect(url_for('account'))
+            return redirect(url_for('recupera_psw', token_sended=True))
+        if new_password != confirm_new_password:
+            flash('The passwords do not match.', 'error')
+            if 'id' in session:
+                return redirect(url_for('account'))
+            return redirect(url_for('recupera_psw', token_sended=True))
+        hashed_password = bcrypt.generate_password_hash(new_password)
+        user.password = hashed_password
+        db.session.commit()
+        flash('Password successfully updated.', 'success')
+        return redirect(url_for('account'))
+    else:
+        flash('User error.', 'error')
+
+    return redirect(url_for('login'))
+
+
 #IMPOSTAZIONI E MODIFICA ACCOUNT
 
 @app.route('/account', methods=['GET', 'POST'])
@@ -791,14 +753,15 @@ def update_password():
         if not bcrypt.check_password_hash(user.password, old_password):
             flash('Old password is incorrect', 'error')
             return redirect(url_for('account'))
+        
+        if not is_valid_password(new_password):
+            flash('New password is too simple', 'error')
+            return redirect(url_for('account'))
 
         if new_password != confirm_new_password:
             flash('New passwords do not match', 'error')
             return redirect(url_for('account'))
 
-        if not is_valid_password(new_password):
-            flash('New password is too simple', 'error')
-            return redirect(url_for('account'))
 
         hashed_new_password = bcrypt.generate_password_hash(new_password)
         user.password = hashed_new_password
@@ -1288,7 +1251,7 @@ def blocked():
             richiesta_effettuata = 0
         else:
             richiesta_effettuata = 1
-        print(richiesta_effettuata)
+        # print(richiesta_effettuata)
 
         if request.method == 'POST':
 
@@ -1359,9 +1322,7 @@ def admin():
         num_users = db.session.query(func.count(Users.id)).scalar()
         num_banned = db.session.query(func.count(UtentiBloccati.email)).scalar()
         
-        avg_comments = db.session.query(func.avg(db.session.query(func.count(Comments.comment_id))
-                                                 .filter(Comments.email == Users.email)
-                                                 .group_by(Users.email))).scalar()
+        avg_comments = db.session.query(func.round(func.count(Comments.comment_id) / func.count(func.distinct(Users.email)), 3)).join(Users, Comments.email == Users.email).scalar()
 
         
         users = db.session.query(Users, UtentiBloccati.email.label('banned'))\

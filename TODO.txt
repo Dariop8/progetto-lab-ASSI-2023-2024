@@ -4,8 +4,6 @@
 [x] dice in real time se la psw è debole, ottima ecc
 [x] possibilità di modificare la psw
 [x] come gestiamo la modifica di password dopo l'accesso con google/github?
-[ ] sarebbe bene cifrare anche la data di nascita (è PII) - andrebbe fatta con una chiave (perche poi devo rimetterla in chiaro e non solo vedere se è uguale a una che inserisce l'utente)
-    quindi o ce ne sbattiamo oppure facciamo qualcosa con Fernet
 [x] quando faccio login con Google o GitHub voglio che la password generata automaticamente rispetti i parametri (10 caratteri, maiuscolo, numero...)
 [x] far funzionare i commenti
 [x] parlare di quali e come gestire i ruoli (MAC, DAC, RBAC ecc)
@@ -15,7 +13,5 @@
 [x] aggiungere immagine stilizzata in homepage
 [x] cambiare password reset salt
 [x] impostare step quando ti dice se la psw è sicura o debole
-[ ] blocco footer come fatto per header
-[ ] mettere i ruoli 1, 2, 3 in un database a parte del tipo (username, ruolo)
 [x] inserire i messaggi di errore per i diversi casi
 [x] aggiustare la pagina della ricetta che presenta la sezione commenti separata e ha due scrollbar

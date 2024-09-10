@@ -8,12 +8,6 @@ from datetime import timedelta, datetime
 import os
 
 
-# La password deve contenere almeno 10 caratteri.
-# Deve contenere almeno una lettera maiuscola.
-# Deve contenere almeno una lettera minuscola.
-# Deve contenere almeno un numero.
-# Deve contenere almeno un carattere speciale.
-
 
 
 pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}:;<>,.?/~])[A-Za-z\d!@#$%^&*()_+{}:;<>,.?/~]{10,}$'
@@ -23,9 +17,19 @@ def is_valid_password(password):
         return True
     return False
 
-#si puo aggiungere un suggeritore di password random
-#e che le password siano aggiornate e modificate ogni tot tempo
-#cost factor indica la sicurezza. se le macchine sono piu potenti allora lo aumento
+
+
+def validate_comment_length(comment_text):
+    if len(comment_text) < 10:
+        raise ValueError("Commento deve essere lungo almeno 10 caratteri.")
+
+def validate_rating(rating_value):
+    if not (1 <= rating_value <= 5):
+        raise ValueError("Rating deve essere tra 1 e 5.")
+    
+def validate_ruolo(ruolo_value):
+    if not (1 <= ruolo_value <= 3):
+        raise ValueError("Il ruolo deve essere compreso tra 1 e 3.")
 
 def generate_password():
     while True:
@@ -43,7 +47,6 @@ def generate_password():
         #shuffle senno i primi 4 caratteri sono quelli che ho messo in password=[...]
         secrets.SystemRandom().shuffle(password)
         password = ''.join(password)
-        # Verifichiamo che la password rispetti il pattern
         pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}:;<>,.?/~])[A-Za-z\d!@#$%^&*()_+{}:;<>,.?/~]{10,}$'
         if re.match(pattern, password):
             return password
@@ -90,7 +93,7 @@ def verify_reset_token(token, expiration=600):
         print(current_app.config['CURRENT_SALT'])
         return email
     except SignatureExpired:
-        return "Error: The token has expired."
+        return 
     except BadSignature:
         # se il token non è valido con il salt attuale, tento con il salt precedente
         if previous_salt:
@@ -99,11 +102,11 @@ def verify_reset_token(token, expiration=600):
                 print(current_app.config['PREVIOUS_SALT'])
                 return email
             except SignatureExpired:
-                return "Error: The token has expired."
+                return 
             except BadSignature:
-                return "Error: The token is invalid."
+                return 
         else:
-            return "Error: The token is invalid."
+            return 
 
 
 
@@ -124,3 +127,5 @@ def send_reset_email(to_email, token):
 Se non hai richiesto il reset della password, ignora questa email.
 '''
         mail.send(msg)
+
+

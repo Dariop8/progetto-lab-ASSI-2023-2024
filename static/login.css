@@ -102,6 +102,3 @@ button[type="submit"]:hover {
     border: none; 
 }
 
-.flashes .errore {
-    color: red;
-}
