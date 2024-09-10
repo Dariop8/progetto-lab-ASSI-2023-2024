@@ -20,10 +20,10 @@ Feature: Pubblicazione commento e valutazione (user story 31)
     And chiudo il browser
 
     Examples:
-      | commento                 | valutazione | errore                                                         |
-      |                          |             | È necessario scrivere un commento ed esprimere una valutazione |
-      | Ricetta facile e gustosa |             | È necessario esprimere una valutazione                         |
-      |                          | 4           | È necessario scrivere un commento                              |
-      | aaaaaaaaaa               | 4           | Inserire un commento valido                                    |
+      | commento                 | valutazione | errore                                      |
+      |                          |             | Please write a comment and provide a rating |
+      | Ricetta facile e gustosa |             | Please make sure to provide a rating        |
+      |                          | 4           | Please make sure to write a comment         |
+      | aaaaaaaaaa               | 4           | Please enter a valid comment                |
 
 

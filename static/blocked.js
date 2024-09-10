@@ -7,21 +7,21 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('info').innerHTML = `
                 <p><strong>Email:</strong> ${data.email}</p>
                 <p><strong>Username:</strong> ${data.username}</p>
-                <p><strong>Commento Offensivo:</strong> ${data.commento_offensivo}</p>
-                <p><strong>Ricetta Interessata:</strong> ${data.ricetta_interessata}</p>
-                <p><strong>Data di Blocco:</strong> ${data.data_blocco}</p>
+                <p><strong>Offensive Comment:</strong> ${data.commento_offensivo}</p>
+                <p><strong>Recipe Affected:</strong> ${data.ricetta_interessata}</p>
+                <p><strong>Block Date:</strong> ${data.data_blocco}</p>
             `;
 
             if (!data.richiesta_effettuata) {
                 document.getElementById('richiesta-container').innerHTML = `
                     <form id="richiestaForm" action="/blocked?email=${data.email}" method="post">
-                        <label for="testo_richiesta">Motivo della Richiesta di Sblocco:</label>
-                        <textarea id="testo_richiesta" name="testo_richiesta" placeholder="Scrivi qui la tua richiesta" minlength="10" maxlength="400" required></textarea>
-                        <button type="submit">Invia Richiesta</button>
+                        <label for="testo_richiesta">Argument for Unlock Request:</label>
+                        <textarea id="testo_richiesta" name="testo_richiesta" placeholder="Write your request here" minlength="10" maxlength="400" required></textarea>
+                        <button type="submit">Submit Request</button>
                     </form>
                 `;
             } else {
-                document.getElementById('richiesta-container').innerHTML = '<p>Hai già inviato una richiesta di sblocco. Ti preghiamo di attendere che venga esaminata.</p>';
+                document.getElementById('richiesta-container').innerHTML = '<p>You have already submitted an unlock request. Please wait for it to be reviewed.</p>';
             }
         })
         .catch(error => {

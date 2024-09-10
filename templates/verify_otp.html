@@ -15,11 +15,11 @@
     {% endblock %}
     {% block contentdown %}
     <div class="container">
-        <h2>Verifica il tuo OTP</h2>
+        <h2>Verify your OTP</h2>
         <form action="{{ url_for('verify_otp') }}" method="post">
-            <label for="otp">Inserisci il codice OTP:</label>
+            <label for="otp">Enter OTP code:</label>
             <input type="text" id="otp" name="otp" required>
-            <button type="submit">Verifica</button>
+            <button type="submit">Verify</button>
         </form>
         {% with messages = get_flashed_messages(with_categories=True) %}
             {% if messages %}

@@ -81,11 +81,11 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-image: url(/static/images/piatto.jpg);
+    background-image: url(/static/images/sfondo.heic);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 70%;
+    background-size: 40%;
 }
 
 .message {
@@ -99,6 +99,13 @@ main {
 .large-text {
     font-size: x-large;
     font-weight: bold;
+    color: #5cb85c;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.or-text {
+    color: #5cb85c;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .search-ideas {

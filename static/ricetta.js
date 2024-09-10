@@ -197,12 +197,12 @@ document.addEventListener('DOMContentLoaded', function() {
         //Caricamento form commento e rating
         const formcommenti = document.querySelector('.comment-form')
         formcommenti.innerHTML = `
-            <h3>Aggiungi un commento:</h3>
+            <h3>Add a comment:</h3>
             <form id="commentForm" action="/submit-comment" method="post">
                 <input type="hidden" name="recipe_id" value="${recipeId}">
-                <textarea id="comment" name="comment" rows="4" minlength="10" maxlength="400" placeholder="Fai sapere agli altri cosa ne pensi..."></textarea>
+                <textarea id="comment" name="comment" rows="4" minlength="10" maxlength="400" placeholder="Let others know what you think..."></textarea>
                 <div class="rating-container">
-                    <p>Il tuo voto: </p>
+                    <p>Your Rating: </p>
                     <div class="rating">
                         <input type="radio" id="star5" name="rating" value="5" /><label id="s5" for="star5">★</label>
                         <input type="radio" id="star4" name="rating" value="4" /><label id="s4" for="star4">★</label>
@@ -211,11 +211,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <input type="radio" id="star1" name="rating" value="1" /><label id="s1" for="star1">★</label>
                     </div>
                 </div>
-                <p class="error-message both-error" id="errore1">È necessario scrivere un commento ed esprimere una valutazione</p>
-                <p class="error-message comment-error" id="errore2">È necessario scrivere un commento</p>
-                <p class="error-message rating-error" id="errore3">È necessario esprimere una valutazione</p>
-                <p class="error-message char-error" id="errore4">Inserire un commento valido</p>
-                <button type="submit" id='submit_button'>Invia</button>
+                <p class="error-message both-error" id="errore1">Please write a comment and provide a rating</p>
+                <p class="error-message comment-error" id="errore2">Please make sure to write a comment</p>
+                <p class="error-message rating-error" id="errore3">Please make sure to provide a rating</p>
+                <p class="error-message char-error" id="errore4">Please enter a valid comment</p>
+                <button type="submit" id='submit_button'>Enter</button>
             </form>`;
 
         const form = document.getElementById('commentForm');
@@ -394,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     await navigator.share({
                         title: `Link alla ricetta:${recipe.title}`,
-                        text: `Link alla ricetta:${recipe.title} sul sito Spoonacular, link destinato alla condivisione`,
+                        text: `Link alla ricetta:${recipe.title} sul sito Spoonacular, link per la condivisione`,
                         url: recipeLink, 
                     });
                     console.log('Link condiviso con successo');

@@ -199,8 +199,8 @@ def login():
                 user.tentativi_login = 0
                 db.session.commit()
 
-                msg = Message('Il tuo OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
-                msg.body = f'Il tuo codice otp è {otp}. Sarà valido per 60 secondi.'
+                msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+                msg.body = f'Your OTP Code is {otp}. It will be valid for 60 seconds.'
                 mail.send(msg)
                 return redirect(url_for('verify_otp'))
             else:
@@ -293,8 +293,8 @@ def google_login():
         user.tentativi_login = 0
         db.session.commit()
 
-        msg = Message('Il tuo OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
-        msg.body = f'Il tuo codice otp è {otp}. Sarà valido per 60 secondi.'
+        msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+        msg.body = f'Your OTP Code is {otp}. It will be valid for 60 seconds.'
         mail.send(msg)
         return redirect(url_for("verify_otp"))
     
@@ -370,8 +370,8 @@ def github_login():
         user.tentativi_login = 0
         db.session.commit()
 
-        msg = Message('Il tuo OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
-        msg.body = f'Il tuo codice otp è {otp}. Sarà valido per 60 secondi.'
+        msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+        msg.body = f'Your OTP Code is {otp}. It will be valid for 60 seconds.'
         mail.send(msg)
         return redirect(url_for("verify_otp"))
     
@@ -429,8 +429,8 @@ def facebook_login():
         user.tentativi_login = 0
         db.session.commit()
 
-        msg = Message('Il tuo OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
-        msg.body = f'Il tuo codice otp è {otp}. Sarà valido per 60 secondi.'
+        msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
+        msg.body = f'Your OTP Code is {otp}. It will be valid for 60 seconds.'
         mail.send(msg)
         return redirect(url_for("verify_otp"))
     
@@ -448,7 +448,7 @@ def verify_otp():
     if request.method == 'POST':
         otp = request.form['otp']
         totp = pyotp.TOTP(user.segreto_otp)
-        # Verify OTP and check expiry
+        # Verifica OTP e controllo scadenza
         if totp.verify(otp, valid_window=1): #1 minuto finestra
             user.tentativi_login = 0
             db.session.commit()
@@ -461,11 +461,11 @@ def verify_otp():
             user.tentativi_login += 1
             db.session.commit()
             if user.tentativi_login > 3:
-                flash('Troppi tentativi falliti. Prova a rieseguire il login.', 'errore')
+                flash('Too many failed attempts. Please try to log in again.', 'errore')
                 user.tentativi_login = 0
                 db.session.commit()
                 return redirect(url_for('login'))
-            flash('OTP invalido o scaduto, per favore riprova.', 'errore')
+            flash('Invalid or expired OTP, please try again.', 'errore')
     
     return render_template('verify_otp.html')
 
@@ -947,7 +947,7 @@ def submit_comment():
         
         db.session.add(new_comment)
         db.session.commit()
-        flash('Commento aggiunto con successo.', 'riuscito')
+        flash('Comment successfully posted.', 'riuscito')
         return redirect(url_for('ricetta', id=recipe_id))
     
     else:
@@ -984,11 +984,11 @@ def elimina_commento(comment_id):
             
             db.session.delete(comment)
             db.session.commit()
-            flash('Commento eliminato con successo.', 'riuscito')
+            flash('Comment successfully deleted.', 'riuscito')
             return redirect(url_for('ricetta', id=recipe_id))
         
         else:
-            flash('Commento non più presente.', 'errore')
+            flash('Comment no longer available.', 'errore')
             return redirect(url_for('ricetta', id=recipe_id))
         
     return redirect(url_for('login'))
@@ -1043,10 +1043,10 @@ def blocca_utente(comment_id):
 
                             id_utente = autore_commento.id
                             # Invio notifica
-                            msg = Message('Account TastyClick bloccato', sender=app.config['MAIL_USERNAME'], recipients=[email])
-                            msg.body = f"Ciao {comment.username},\nti comunichiamo che il tuo account è stato bloccato per aver "\
-                                       "violato la policy della piattaforma.\nPuoi visualizzare i dettagli del blocco ed inviare una richiesta "\
-                                       "di riammissione nella pagina che ti sarà mostrata al prossimo login.\n\nIl team di TastyClick"
+                            msg = Message('TastyClick Account blocked', sender=app.config['MAIL_USERNAME'], recipients=[email])
+                            msg.body = f"Hello {comment.username},\nWe inform you that your account has been blocked for "\
+                                       "violating the platform's policy. You can view the details of the block and submit a reactivation "\
+                                       "request on the page that will be shown to you at your next login.\n\nTastyClick Team"
                             mail.send(msg)
                         
                         else:
@@ -1065,15 +1065,15 @@ def blocca_utente(comment_id):
 
                         db.session.add(utente_bloccato)
                         db.session.commit()
-                        flash('Utente bloccato con successo.', 'riuscito')
+                        flash('The user has been successfully blocked.', 'riuscito')
                     else:
-                        flash('L\'utente è già bloccato. Commento eliminato con successo.', 'riuscito')
+                        flash('The user is already blocked. Comment successfully deleted.', 'riuscito')
                     return redirect(url_for('ricetta', id=recipe_id))
                     
                 else:
                     return redirect(url_for('ricetta', id=recipe_id))
             else:
-                flash('Commento non più presente.', 'errore')
+                flash('Comment no longer available.', 'errore')
                 return redirect(url_for('ricetta', id=recipe_id))  
 
     return redirect(url_for('login'))  
@@ -1189,13 +1189,13 @@ def change_role():
     user = Users.query.filter_by(email=email).first()
     if user:
         if user.ruolo == 3 and int(new_role) < 3: 
-            flash(f"Non puoi retrocedere un altro amministratore.", 'error')
+            flash(f"You cannot demote another administrator.", 'error')
         else:
             user.ruolo = int(new_role)
             db.session.commit()
-            flash(f"Ruolo per {email} cambiato con successo.", 'success')
+            flash(f"Role for {email} changed successfully.", 'success')
     else:
-        flash(f"Utente con email {email} non trovato.", 'error')
+        flash(f"User with email {email} not found.", 'error')
 
     return redirect(url_for('admin'))
 
@@ -1229,18 +1229,18 @@ def sban():
             utente_bannato = Users.query.filter_by(email=email).first()
             if not utente_bannato:
 
-                flash("L'account di questo utente è stato eliminato e non è più presente nel database. La richiesta è stata comunque cancellata.", 'errore')
+                flash("This user's account has been deleted and is no longer present in the database. The request has still been canceled.", 'errore')
                 return redirect(url_for('sban'))
             
             else:
 
                 # Invio notifica
-                msg = Message('Sblocco Account TastyClick', sender=app.config['MAIL_USERNAME'], recipients=[email])
-                msg.body = f"Ciao {utente_bannato.username},\nti comunichiamo che la tua richiesta di riammissione è stata accolta "\
-                           "e il tuo account di TastyClick è stato sbloccato con successo!!\n Puoi ora accedere di nuovo alla piattaforma."\
-                           "\n\nA presto,\nIl team di TastyClick"
+                msg = Message('TastyClick Account Reactivation', sender=app.config['MAIL_USERNAME'], recipients=[email])
+                msg.body = f"Hello {utente_bannato.username},\nWe inform you that your reactivation request has been accepted "\
+                           "and your TastyClick account has been successfully reactivated!!\n You can now access the platform again."\
+                           "\n\nSee you soon,\nTastyClick Team"
                 mail.send(msg)
-                flash(f"L'Utente con email {email} è stato sbloccato con successo ed una notifica è stata inviata al suo indirizzo.", 'riuscito')
+                flash(f"The User with email {email} has been successfully unlocked and a notification has been sent to his address.", 'riuscito')
                 return redirect(url_for('sban'))
 
         return render_template('sban.html')
@@ -1285,7 +1285,7 @@ def invia_segnalazione(comment_id):
 
         comment = Comments.query.filter_by(comment_id=comment_id).first()
         if not comment:
-            flash('Commento non più presente.', 'errore')
+            flash('Comment no longer available.', 'errore')
             return redirect(url_for('ricetta', id=recipe_id))
         
         autore_commento = Users.query.filter_by(email=comment.email).first()
@@ -1301,20 +1301,20 @@ def invia_segnalazione(comment_id):
         if comment.segnalazione == 1:
             return redirect(url_for('ricetta', id=recipe_id))
 
-        msg = Message('Segnalazione comportamento inappropriato', sender=app.config['MAIL_USERNAME'], recipients=[comment.email])
-        msg.body = f"Ciao {comment.username},\nUn moderatore ha notato che uno dei tuoi commenti potrebbe essere offensivo o inappropriato per la piattaforma."\
-                   "Ti invitiamo a fare più attenzione e a moderare il linguaggio in futuro.\n\n"\
-                    f"Dettagli del commento:\n"\
-                    f"Commento: {comment.comment}\n"\
+        msg = Message('Report of inappropriate behavior', sender=app.config['MAIL_USERNAME'], recipients=[comment.email])
+        msg.body = f"Hello {comment.username},\nA moderator has noticed that one of your comments may be offensive or inappropriate for the platform."\
+                   "We encourage you to be more careful and to moderate your language in the future.\n\n"\
+                    f"Comment details:\n"\
+                    f"Comment: {comment.comment}\n"\
                     f"Rating: {comment.rating}\n"\
-                    f"Id ricetta: {comment.recipe_id}\n"\
-                    f"Data: {comment.timestamp}\n"\
-                    "\nGrazie per la comprensione,\nIl Team di TastyClick"
+                    f"Id recipe: {comment.recipe_id}\n"\
+                    f"Date: {comment.timestamp}\n"\
+                    "\nThank you for your understanding,\nTastyClick Team"
                    
         mail.send(msg)
         comment.segnalazione = 1
         db.session.commit()
-        flash('Segnalazione inviata con successo.', 'riuscito')
+        flash('Report successfully sent.', 'riuscito')
         return redirect(url_for('ricetta', id=recipe_id))
     
     else:

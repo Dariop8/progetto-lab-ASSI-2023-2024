@@ -26,7 +26,7 @@ function populateRecipesList(recipeIds) {
             if (recipe.dishTypes.length > 3) {
                 typesString = recipe.dishTypes.slice(0, 3).join(', ') + ', ...';
             } else if (recipe.dishTypes.length === 0) {
-                typesString = 'non specificato';
+                typesString = 'Not specified';
             }
 
             const recipeElement = document.createElement('div');

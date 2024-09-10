@@ -96,13 +96,13 @@ def step_then_verify_comment(context, commento, valutazione, username):
 def step_then_error_message(context, errore):
     wait = WebDriverWait(context.browser, 15)
 
-    if errore == 'È necessario scrivere un commento ed esprimere una valutazione':
+    if errore == 'Please write a comment and provide a rating':
         error_message = wait.until(EC.presence_of_element_located((By.ID, 'errore1')))
-    elif errore == 'È necessario scrivere un commento':
+    elif errore == 'Please make sure to write a comment':
         error_message = wait.until(EC.presence_of_element_located((By.ID, 'errore2')))
-    elif errore == 'È necessario esprimere una valutazione':
+    elif errore == 'Please make sure to provide a rating':
         error_message = wait.until(EC.presence_of_element_located((By.ID, 'errore3')))
-    elif errore == 'Inserire un commento valido':
+    elif errore == 'Please enter a valid comment':
         error_message = wait.until(EC.presence_of_element_located((By.ID, 'errore4')))
     else:
         assert False, f"Errore non riconosciuto: {errore}"
@@ -126,11 +126,3 @@ def step_then_close_browser(context):
     except Exception as e:
         print(f"Errore durante la chiusura del browser: {e}")
         context.browser.quit()
-
-
-
-
-
-
-
-

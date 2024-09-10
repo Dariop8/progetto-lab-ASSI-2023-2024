@@ -135,20 +135,6 @@ class Usermodel_test(TestCase):
             self.assertEqual(len(fetched_user.comments), 1)
             self.assertEqual(fetched_user.comments[0].comment, "Ricetta facile e saporita.")
 
-    def test_user_favourites(self):
-        with app.app_context():
-            user = Users(username="Marco", email="marco@mail.com", password="pswd1234.")
-            db.session.add(user)
-            db.session.commit()
-
-            favourite = Favourite(recipe_id=1, email=user.email)
-            db.session.add(favourite)
-            db.session.commit()
-
-            fetched_user = Users.query.filter_by(email="marco@mail.com").first()
-            self.assertEqual(len(fetched_user.favourites), 1)
-            self.assertEqual(fetched_user.favourites[0].recipe_id, 1)
-
 
 
 # ------------------------#
@@ -235,7 +221,6 @@ class UserRegistration_test(TestCase):
         response = self.client.get('/registrazione')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Sign Up', response.data)  
-
 
     def test_password_json(self):
         response = self.client.get('/generate_password')

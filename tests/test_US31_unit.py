@@ -126,8 +126,9 @@ class CommentModel_test(TestCase):
         with app.app_context():
             missing_fields_comments = [
                 Comments(recipe_id=1, email="marco@mail.com", username="Marco", comment=None, rating=5),  # Commento mancante
-                Comments(recipe_id=1, email="marco@mail.com", username="Marco", comment="Adatta a tutti.", rating=None),  # rating mancante
-                Comments(recipe_id=1, email=None, username="Marco", comment="Adatta a tutti.", rating=5)  # Email mancante
+                Comments(recipe_id=1, email="marco@mail.com", username="Marco", comment="Adatta a tutti.", rating=None),  # Rating mancante
+                Comments(recipe_id=1, email=None, username="Marco", comment="Adatta a tutti.", rating=5),  # Email mancante
+                Comments(recipe_id=1, email="marco@mail.com", username=None, comment="Adatta a tutti.", rating=5)  # Username mancante
             ]
 
             for comment in missing_fields_comments:
@@ -308,7 +309,7 @@ class Integration_test(TestCase):
             db.session.remove()
             db.drop_all()
 
-    def test_submit_and_retrieve_comment(self):
+    def test_submit_and_get_comment(self):
         with self.client.session_transaction() as sess:
             sess['id'] = 1
 

@@ -17,8 +17,6 @@ def is_valid_password(password):
         return True
     return False
 
-
-
 def validate_comment_length(comment_text):
     if len(comment_text) < 10:
         raise ValueError("Commento deve essere lungo almeno 10 caratteri.")
@@ -51,20 +49,7 @@ def generate_password():
         if re.match(pattern, password):
             return password
 
-
-# def generate_reset_token(email):
-#     s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-#     return s.dumps(email, salt='password-reset-salt')
-
-# def verify_reset_token(token, expiration=3600):
-#     s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-#     try:
-#         email = s.loads(token, salt='password-reset-salt', max_age=expiration)
-#     except (SignatureExpired, BadSignature):
-#         return None
-#     return email
-
-# per ruotare i salti ogni 6 ore
+# per cambiare i salts ogni 6 ore
 def rotate_salts():
     now = datetime.now()
     last_rotation = current_app.config.get('SALT_LAST_ROTATION')
@@ -108,8 +93,6 @@ def verify_reset_token(token, expiration=600):
         else:
             return 
 
-
-
 def send_reset_email(to_email, token):
     with current_app.app_context():
         mail = current_app.extensions.get('mail')
@@ -121,10 +104,10 @@ def send_reset_email(to_email, token):
             sender=current_app.config['MAIL_USERNAME'],
             recipients=[to_email]
         )
-        msg.body = f'''Per resettare la tua password, usa il seguente token (durata 10min):
+        msg.body = f'''To reset your password, use the following token (valid for 10 minutes):
 {token}
 
-Se non hai richiesto il reset della password, ignora questa email.
+If you did not request a password reset, please ignore this email.
 '''
         mail.send(msg)
 
