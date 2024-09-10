@@ -15,13 +15,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!data.richiesta_effettuata) {
                 document.getElementById('richiesta-container').innerHTML = `
                     <form id="richiestaForm" action="/blocked?email=${data.email}" method="post">
-                        <label for="testo_richiesta">Argument for Unlock Request:</label>
-                        <textarea id="testo_richiesta" name="testo_richiesta" placeholder="Write your request here" minlength="10" maxlength="400" required></textarea>
+                        <label for="testo_richiesta" class="label_richiesta">Unlock Request:</label>
+                        <textarea id="testo_richiesta" name="testo_richiesta" placeholder="Write your request here..." minlength="10" maxlength="400" required></textarea>
                         <button type="submit">Submit Request</button>
                     </form>
                 `;
             } else {
-                document.getElementById('richiesta-container').innerHTML = '<p>You have already submitted an unlock request. Please wait for it to be reviewed.</p>';
+                document.getElementById('richiesta-container').innerHTML = '<p style="font-size: 18px;">You have already submitted an unlock request. Please wait for it to be reviewed.</p>';
             }
         })
         .catch(error => {

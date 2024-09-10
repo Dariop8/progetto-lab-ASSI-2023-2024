@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.length === 0) {
-                requestsContainer.innerHTML = '<p>No unlock requests found.</p>';
+                requestsContainer.innerHTML = '<p style="margin-bottom: 8px;">No unlock requests found.</p>';
             } else {
                 let content = '';
                 data.forEach(request => {

@@ -1,24 +1,23 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
+    background-color:#f3eded;
 }
 
 .container {
     width: 80%;
     max-width: 900px;
-    margin: 20px auto;
+    margin: 30px auto;
     padding: 20px;
     background: white;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
     border-radius: 8px;
 }
 
 h1 {
-    color: #333;
+    color: #cc1922;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
+    margin-top: 10px;
 }
 
 #info {
@@ -27,12 +26,12 @@ h1 {
 
 #info p {
     font-size: 16px;
-    color: #666;
-    margin: 5px 0;
+    color: #585555;
+    margin: 10px 0;
 }
 
 #info strong {
-    color: #333;
+    color:#4caa43;
 }
 
 #richiesta-container {
@@ -46,13 +45,14 @@ textarea {
     border: 1px solid #ccc;
     border-radius: 5px;
     margin-bottom: 10px;
+    margin-top: 10px;
     resize: vertical;
     font-size: 16px;
     line-height: 1.5;
 }
 
 button {
-    background-color: #007bff;
+    background-color: #4caa43;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -62,11 +62,12 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color:#970d14;
 }
 
-.info {
-    color: #007bff;
-    font-size: 14px;
-    margin-top: 10px;
+.label_richiesta {
+    margin-top: 20px;
+    margin-bottom: 50px;
+    font-weight: bold;
+    color:#1f1f1f;
 }
