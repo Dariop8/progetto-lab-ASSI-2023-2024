@@ -1,13 +1,7 @@
-import bcrypt
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify, flash, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
-from requests import Session
-from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-from datetime import timedelta, datetime, timezone
+from flask_login import LoginManager, login_user, logout_user
+from datetime import timedelta, datetime
 import os
-from sqlalchemy.types import Date
-from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy import CheckConstraint
 from flask_dance.contrib.github import make_github_blueprint, github
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.facebook import make_facebook_blueprint, facebook
@@ -15,19 +9,22 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 import secrets
 import string
-from utils import generate_reset_token, verify_reset_token, send_reset_email, is_valid_password, generate_password, validate_comment_length, validate_rating,validate_ruolo
+from utils import generate_reset_token, verify_reset_token, send_reset_email, is_valid_password, generate_password
 from flask_bcrypt import Bcrypt
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
 import pyotp
 import chiavi
 from flask import jsonify
 from flask import current_app
+from models import db, Users, Comments, Favourite, ShoppingIngredient, UtentiBloccati, RichiestaSblocco, configure_bcrypt
 
 
 #CONFIGURAZIONE APP FLASK, DB E MAIL
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
+configure_bcrypt(bcrypt)
+
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
 app.config["SECRET_KEY"] = chiavi.config_secret_key
@@ -49,7 +46,7 @@ s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 app.permanent_session_lifetime = timedelta(minutes=20) #dopo 20 minuti fa automaticamente logout
 
-db = SQLAlchemy()
+# db = SQLAlchemy()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -84,160 +81,7 @@ app.register_blueprint(facebook_blueprint, url_prefix="/facebook_login")
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1" 
 
-
-
-    
-class Comments(db.Model):
-    __tablename__ = 'comments'
-    comment_id = db.Column(db.Integer, primary_key=True)
-    recipe_id = db.Column(db.Integer, nullable=False)
-    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), nullable=False)
-    username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), nullable=False)
-    comment = db.Column(db.Text, nullable=False)
-    rating = db.Column(db.Integer, nullable=False)  
-    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    segnalazione = db.Column(db.Integer, default=0)
-
-    __table_args__ = (
-        CheckConstraint('length(comment) >= 10', name='check_comment_length'),
-        CheckConstraint('rating BETWEEN 1 AND 5', name='check_rating_range'),
-    )
-
-    def __init__(self, recipe_id, email, username, comment, rating):
-        if comment:
-            validate_comment_length(comment)
-        if rating:
-            validate_rating(rating)
-
-        self.recipe_id = recipe_id
-        self.email = email
-        self.username = username
-        self.comment = comment
-        self.rating = rating
-
-
-
-class Favourite(db.Model):
-    __tablename__ = 'favourite'
-
-    id = db.Column(db.Integer, primary_key=True)
-    recipe_id = db.Column(db.Integer, nullable=False)
-    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), nullable=False)
-    username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), nullable=False)
-    note = db.Column(db.String(300), nullable=False, default="")
-
-    def __init__(self, username=None, recipe_id=None, email=None):
-        self.recipe_id = recipe_id
-        self.username = username
-        self.email = email
-        self.note=""
-
-class ShoppingList(db.Model):
-    __tablename__ = 'shopping_list'
-
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), nullable=False)
-    username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), nullable=False)
-    ingredient = db.Column(db.String(300), nullable=False, default="")
-
-    def __init__(self, username=None, email=None, ingredient=None):
-        self.email = email
-        self.username = username
-        self.ingredient=ingredient
-
-
-
-class Users(UserMixin, db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), nullable=False, unique=True)
-    username = db.Column(db.String(30), nullable=False, unique=True)    
-    password = db.Column(db.String(250), nullable=False) # rinominato in _password
-    data_di_nascita = db.Column(Date, nullable=True)
-    diete = db.Column(JSON, nullable=True)
-    intolleranze = db.Column(JSON, nullable=True)
-    attivazione_2fa = db.Column(db.String(250), nullable=True)
-    segreto_otp = db.Column(db.String(16), nullable=True) 
-    tentativi_login = db.Column(db.Integer, default=0)  
-    ruolo = db.Column(db.Integer, default=1)
-
-    comments = db.relationship('Comments', backref='user', lazy=True, cascade="all, delete", foreign_keys='Comments.email')
-    favourites = db.relationship('Favourite', backref='user', lazy=True, cascade="all, delete", foreign_keys='Favourite.email')
-    shoppinglist = db.relationship('ShoppingList', backref='user', lazy=True, cascade="all, delete", foreign_keys='ShoppingList.email')
-    richieste_sblocco = db.relationship('RichiestaSblocco', backref='user', lazy=True, cascade="all, delete", foreign_keys='RichiestaSblocco.email')
-    utenti_bloccati = db.relationship('UtentiBloccati', foreign_keys='UtentiBloccati.id_utente', backref='utente_bloccato', lazy=True, cascade="all, delete")
-    moderazioni_blocchi = db.relationship('UtentiBloccati', foreign_keys='UtentiBloccati.id_moderatore', backref='moderatore', lazy=True, cascade="all, delete")
-
-    
-    __table_args__ = (
-        db.CheckConstraint('ruolo BETWEEN 1 AND 3', name='check_ruolo_range'),
-    )
-    
-    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, attivazione_2fa=False, segreto_otp=None, tentativi_login=0, ruolo=1):
-        if ruolo:
-            validate_ruolo(ruolo)
-        
-        self.username = username
-        self.password = password
-        self.email = email
-        self.data_di_nascita = data_di_nascita
-        self.diete = diete if diete is not None else []
-        self.intolleranze = intolleranze if intolleranze is not None else []
-        self.attivazione_2fa = bcrypt.generate_password_hash('1' if attivazione_2fa else '0').decode('utf-8')
-        self.segreto_otp = segreto_otp
-        self.tentativi_login = tentativi_login
-        self.ruolo = ruolo
-
-
-class UtentiBloccati(db.Model):
-    __tablename__ = 'utenti_bloccati'
-
-    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), primary_key=True)
-    username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), unique=True, nullable=False)
-    id_utente = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), unique=True, nullable=True)
-    id_moderatore = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    commento_offensivo = db.Column(db.Text, nullable=True)
-    ricetta_interessata = db.Column(db.Integer, nullable=True)
-    data_blocco = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-
-    __table_args__ = (
-        db.CheckConstraint('id_utente != id_moderatore', name='check_moderatore_diverso'),
-    )
-
-    def __init__(self, email, username, id_utente=None, id_moderatore=None, commento_offensivo=None, ricetta_interessata=None):
-        self.email = email
-        self.username = username
-        self.id_utente = id_utente
-        self.id_moderatore = id_moderatore
-        self.commento_offensivo = commento_offensivo
-        self.ricetta_interessata = ricetta_interessata
-
-
-
-class RichiestaSblocco(db.Model):
-    __tablename__ = 'richieste_sblocco'
-    
-    id_utente = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), unique=True, nullable=False)
-    email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), primary_key=True)   
-    # id_utente = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False)
-    # email = db.Column(db.String(120), db.ForeignKey('users.email'), primary_key=True)  
-    commento_offensivo = db.Column(db.Text, nullable=False)
-    ricetta_interessata = db.Column(db.Integer, nullable=False)
-    data_blocco = db.Column(db.String, nullable=False)  
-    testo_richiesta = db.Column(db.Text, nullable=False)
-    data_richiesta = db.Column(db.DateTime, default=datetime.now(timezone.utc))  
-
-    def __init__(self, id_utente, email, commento_offensivo, ricetta_interessata, data_blocco, testo_richiesta):
-        self.id_utente = id_utente
-        self.email = email
-        self.commento_offensivo = commento_offensivo
-        self.ricetta_interessata = ricetta_interessata
-        self.data_blocco = data_blocco
-        self.testo_richiesta = testo_richiesta
-        self.data_richiesta = datetime.now(timezone.utc) 
- 
-
-    
+   
 db.init_app(app)
 
 with app.app_context():
@@ -963,7 +807,7 @@ def lista_spesa():
             return blocked
         
         user = db.session.get(Users, user_id)
-        items = ShoppingList.query.filter_by(email=user.email).all()
+        items = ShoppingIngredient.query.filter_by(email=user.email).all()
         lista_spesa = [item.ingredient for item in items]
 
         return render_template("lista_spesa.html", lista=lista_spesa)
@@ -979,9 +823,9 @@ def update_shopping_list():
         ingredient = request.form.get('ingredient')
 
         if ingredient:
-            existing_item = ShoppingList.query.filter_by(email=user.email, ingredient=ingredient).first()
+            existing_item = ShoppingIngredient.query.filter_by(email=user.email, ingredient=ingredient).first()
             if not existing_item:
-                new_item = ShoppingList(username=user.username, email=user.email, ingredient=ingredient)
+                new_item = ShoppingIngredient(username=user.username, email=user.email, ingredient=ingredient)
                 db.session.add(new_item)
                 db.session.commit()
 
@@ -996,7 +840,7 @@ def get_shopping_list():
         user_id = session['id']
         user = db.session.get(Users, user_id)
         if user:
-            items = ShoppingList.query.filter_by(email=user.email).all()
+            items = ShoppingIngredient.query.filter_by(email=user.email).all()
             lista_spesa = [item.ingredient for item in items]
             return jsonify({'lista_spesa': lista_spesa}), 200
     return redirect(url_for('login'))
@@ -1011,7 +855,7 @@ def remove_from_shopping_list():
         ingredient = data.get('ingredient')
 
         if ingredient:
-            item_to_remove = ShoppingList.query.filter_by(email=user.email, ingredient=ingredient).first()
+            item_to_remove = ShoppingIngredient.query.filter_by(email=user.email, ingredient=ingredient).first()
             if item_to_remove:
                 db.session.delete(item_to_remove)
                 db.session.commit()
@@ -1030,7 +874,7 @@ def check_lista():
         if not ingredient:
             return jsonify({'error': 'Missing ingredient'}), 400
 
-        is_in_list = ShoppingList.query.filter_by(email=user.email, ingredient=ingredient).first() is not None
+        is_in_list = ShoppingIngredient.query.filter_by(email=user.email, ingredient=ingredient).first() is not None
         return jsonify({'in_in_list': is_in_list}), 200
 
     return jsonify({'in_in_list': False})
