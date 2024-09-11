@@ -611,13 +611,15 @@ li p {
     display: block; 
 }
 
-
 /* Stile per il container del timer */
 .timer-container {
-    position: fixed;
+    position: absolute;
     text-align: center;
     bottom: 45%;
     right: 2%;
+    scale: 0.9;
+    top: 158%;
+    right: 5px;
 }
 
 #timer-screen {

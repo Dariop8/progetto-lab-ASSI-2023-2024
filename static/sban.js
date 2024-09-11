@@ -4,11 +4,13 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('/get-requests')
         .then(response => response.json())
         .then(data => {
+
             if (data.length === 0) {
                 requestsContainer.innerHTML = '<p style="margin-bottom: 8px;">No unlock requests found.</p>';
             } else {
+
                 let content = '';
-                data.forEach(request => {
+                data.forEach((request, index) => {
                     content += `
                         <div class="request-item">
                             <p><strong>ID Utente:</strong> ${request.id_utente}</p>
@@ -18,8 +20,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             <p><strong>Blocking Date:</strong> ${request.data_blocco}</p>
                             <p><strong>Request Text:</strong> ${request.testo_richiesta}</p>
                         </div>
-                        <hr>
                     `;
+
+                    if (index < data.length - 1) {
+                        content += '<hr>';
+                    }
+                    
                 });
                 requestsContainer.innerHTML = content;
             }

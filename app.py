@@ -1234,7 +1234,7 @@ def sban():
             utente_bannato = Users.query.filter_by(email=email).first()
             if not utente_bannato:
 
-                flash("This user's account could not be found in the database. The request has been canceled.", 'errore')
+                flash("This user's account could not be found in the database.", 'errore')
                 return redirect(url_for('sban'))
             
             else:

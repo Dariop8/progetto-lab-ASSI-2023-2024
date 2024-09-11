@@ -27,9 +27,7 @@
           {% endif %}
         {% endwith %}
 
-        <div id="requests-container">
-            <p>Loading requests...</p>
-        </div>
+        <div id="requests-container"></div>
         <form action="{{ url_for('sban') }}" method="POST">
             <label for="email">Enter the email of the user to unblock:</label>
             <input type="email" id="email" name="email" maxlength="50" placeholder="Email" required>
