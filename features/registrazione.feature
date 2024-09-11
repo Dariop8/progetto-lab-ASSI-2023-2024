@@ -2,7 +2,7 @@ Feature: Registrazione dell'utente (user story 1)
 
   Scenario: Registrazione con successo
     Given sono nella pagina di registrazione
-    When mi registro con email "giaco.barcellonanew@gmail.com", username "JackNew", password "MicroDario24." e password di conferma "MicroDario24."
+    When mi registro con email "giaco.barcellonanew@gmail.com", username "JackNew", password "JackTest2002." e password di conferma "JackTest2002."
     And clicco su Sign Up
     Then dovrei essere nella pagina principale
     And dovrei vedere il mio username "JackNew" nell header
@@ -10,7 +10,7 @@ Feature: Registrazione dell'utente (user story 1)
 
   Scenario: Email già utilizzata
     Given sono nella pagina di registrazione
-    When mi registro con email "giaco.barcellona@gmail.com", username "Jack", password "MicroDario24." e password di conferma "MicroDario24."
+    When mi registro con email "giaco.barcellona@gmail.com", username "Jack", password "JackTest2002." e password di conferma "JackTest2002."
     And clicco su Sign Up
     Then dovrei vedere un messaggio di errore "User already registered."
     And chiudo il browser

@@ -1,7 +1,7 @@
 Feature: Pubblicazione commento e valutazione (user story 31)
 
   Background: utente registrato in pagina ricetta
-    Given che mi sono precedentemente registrato, sono un utente con username "Jack", email "giaco.barcellona@gmail.com", password "MicroDario24." ed ho eseguito l’accesso come user
+    Given che mi sono precedentemente registrato, sono un utente con username "Jack", email "giaco.barcellona@gmail.com", password "JackTest2002." ed ho eseguito l’accesso come user
     And sono sulla pagina della ricetta con id="634141"
 
   Scenario: Successo
@@ -23,7 +23,7 @@ Feature: Pubblicazione commento e valutazione (user story 31)
       | commento                 | valutazione | errore                                      |
       |                          |             | Please write a comment and provide a rating |
       | Ricetta facile e gustosa |             | Please make sure to provide a rating        |
-      |                          | 4           | Please make sure to write a comment         |
+      |                          | 4           | Please make sure to write a comment         |
       | aaaaaaaaaa               | 4           | Please enter a valid comment                |
 
 

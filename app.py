@@ -444,30 +444,35 @@ def facebook_login():
 @app.route('/verify_otp', methods=['GET', 'POST'])
 def verify_otp():
 
-    user = Users.query.filter_by(email=session['email']).first()
-    if request.method == 'POST':
-        otp = request.form['otp']
-        totp = pyotp.TOTP(user.segreto_otp)
-        # Verifica OTP e controllo scadenza
-        if totp.verify(otp, valid_window=1): #1 minuto finestra
-            user.tentativi_login = 0
-            db.session.commit()
-            login_user(user)
-            session.permanent = True
-            session['username'] = user.username
-            session['id'] = user.id
-            return redirect(url_for('main_route'))
-        else:
-            user.tentativi_login += 1
-            db.session.commit()
-            if user.tentativi_login > 3:
-                flash('Too many failed attempts. Please try to log in again.', 'errore')
+    if 'email' in session:
+
+        user = Users.query.filter_by(email=session['email']).first()
+        if request.method == 'POST':
+            otp = request.form['otp']
+            totp = pyotp.TOTP(user.segreto_otp)
+            # Verifica OTP e controllo scadenza
+            if totp.verify(otp, valid_window=1): #1 minuto finestra
                 user.tentativi_login = 0
                 db.session.commit()
-                return redirect(url_for('login'))
-            flash('Invalid or expired OTP, please try again.', 'errore')
+                login_user(user)
+                session.permanent = True
+                session['username'] = user.username
+                session['id'] = user.id
+                return redirect(url_for('main_route'))
+            else:
+                user.tentativi_login += 1
+                db.session.commit()
+                if user.tentativi_login > 3:
+                    flash('Too many failed attempts. Please try to log in again.', 'errore')
+                    user.tentativi_login = 0
+                    db.session.commit()
+                    return redirect(url_for('login'))
+                flash('Invalid or expired OTP, please try again.', 'errore')
+        
+        return render_template('verify_otp.html')
     
-    return render_template('verify_otp.html')
+    else:
+        return redirect(url_for('login')) # In caso l'utente rimanga sulla pagina e la sessione scada
 
 
 #RECUPERO PSW

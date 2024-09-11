@@ -637,7 +637,7 @@ li p {
     font-size: 1em;
     border: none;
     border-radius: 5px;
-    background-color: #5cb85c;
+    background-color: #4caa43;
     color: white;
     cursor: pointer;
 }
@@ -656,8 +656,8 @@ li p {
 }
 
 .flash-message.riuscito {
-    color: rgb(7, 111, 172);
-    border-color: rgb(7, 111, 172);
+    color: #3c763d;
+    border-color: #3c763d;
     background-color: #e6ffe6;
 }
 
