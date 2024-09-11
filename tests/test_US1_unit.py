@@ -223,4 +223,137 @@ class Usermodel_test(TestCase):
             db.session.commit()
 
             banned_user = UtentiBloccati(email=user.email, username=user.username, id_utente=user.id, id_moderatore=1, commento_offensivo="Commento offensivo", ricetta_interessata=1)
-            db.session.add(ba
+            db.session.add(banned_user)
+            db.session.commit()
+
+            unlock_request = RichiestaSblocco(id_utente=user.id, email=user.email, commento_offensivo="Commento offensivo", ricetta_interessata=1, data_blocco=banned_user.data_blocco, testo_richiesta="Vorrei essere sbloccato")
+            db.session.add(unlock_request)
+            db.session.commit()
+
+            fetched_user = Users.query.filter_by(email="marco@mail.com").first()
+            self.assertEqual(len(fetched_user.effettua), 1)
+            self.assertEqual(fetched_user.effettua[0].testo_richiesta, "Vorrei essere sbloccato")
+
+
+# ------------------------#
+
+
+class UserRegistration_test(TestCase):
+    def create_app(self):
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+        return app
+
+    def setUp(self):
+        with app.app_context():
+            db.create_all()
+            db.session.query(Users).delete()  # reset del database di test
+            db.session.commit()
+
+    def tearDown(self):
+        with app.app_context():
+            db.session.remove()
+            db.drop_all()
+
+    def test_registration_successful(self):
+        response = self.client.post('/registrazione', data = {
+            'email': 'marco@mail.com',
+            'username': 'Marco',
+            'password': 'a1c12DEF#GHIJ.',
+            'password_conf': 'a1c12DEF#GHIJ.',
+            'birthdate': '1997-10-01',
+            'diet': [],
+            'allergies': [],
+            'attiva-2fa': 'on'})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, '/')
+        user = Users.query.filter_by(email='marco@mail.com').first()
+        self.assertIsNotNone(user)
+        self.assertEqual(user.username, 'Marco')
+
+    def test_existing_user_error(self):
+        user = Users(username='DiegoBc', email='diego@mail.com', password='123')
+        db.session.add(user)
+        db.session.commit()
+
+        response = self.client.post('/registrazione', data = {
+            'email': 'diego@mail.com',
+            'username': 'DiegoBc',
+            'password': 'a1c12DEF#GHIJ.',
+            'password_conf': 'a1c12DEF#GHIJ.',
+            'birthdate': '1997-10-01',
+            'diet': [],
+            'allergies': []})
+
+        self.assertEqual(response.status_code, 200)  # resto sulla pagina di registrazione
+        self.assertIn(b'User already registered.', response.data)
+
+    def test_password_mismatch(self):
+        response = self.client.post('/registrazione', data = {
+            'email': 'dario@mail.com',
+            'username': 'Dario',
+            'password': 'a1c12DEF#GHIJ.',
+            'password_conf': '1234',
+            'birthdate': '1997-10-01',
+            'diet': [],
+            'allergies': []})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Passwords do not match.', response.data)
+
+    def test_weak_password(self):
+        response = self.client.post('/registrazione', data = {
+            'email': 'red@mail.com',
+            'username': 'Red24',
+            'password': '123',
+            'password_conf': '123',
+            'birthdate': '1997-10-01',
+            'diet': [],
+            'allergies': []})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Password is too weak.', response.data)
+
+    def test_registration_get(self):
+        response = self.client.get('/registrazione')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Sign Up', response.data)  
+
+    def test_password_json(self):
+        response = self.client.get('/generate_password')
+        self.assertEqual(response.status_code, 200)
+        
+        self.assertEqual(response.content_type, 'application/json')
+
+        data = json.loads(response.data)
+        self.assertIn('password', data)
+
+    def test_generate_password(self):
+        response = self.client.get('/generate_password')
+        self.assertEqual(response.status_code, 200)
+        
+        data = json.loads(response.data)
+        password = data['password']
+
+        self.assertGreaterEqual(len(password), 8)
+
+        self.assertRegex(password, r'[A-Z]')
+
+        self.assertRegex(password, r'[a-z]')
+
+        self.assertRegex(password, r'[0-9]')
+
+        self.assertRegex(password, r'[!@#$%^&*(),.?":{}|<>]')
+
+    def test_generate_uniquepassword(self):
+        response1 = self.client.get('/generate_password')
+        response2 = self.client.get('/generate_password')
+
+        self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response2.status_code, 200)
+
+        data1 = json.loads(response1.data)
+        data2 = json.loads(response2.data)
+
+        self.assertNotEqual(data1['password'], data2['password'])

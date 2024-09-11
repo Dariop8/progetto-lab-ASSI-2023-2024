@@ -174,4 +174,8 @@ class RichiestaSblocco(db.Model):
         self.id_utente = id_utente
         self.email = email
         self.commento_offensivo = commento_offensivo
-        self.ricetta_int
+        self.ricetta_interessata = ricetta_interessata
+        self.data_blocco = data_blocco
+        self.testo_richiesta = testo_richiesta
+        self.data_richiesta = datetime.now(timezone.utc) 
+ 
