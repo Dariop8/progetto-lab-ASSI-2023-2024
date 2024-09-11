@@ -132,8 +132,8 @@ class Usermodel_test(TestCase):
             db.session.commit()
 
             fetched_user = Users.query.filter_by(email="marco@mail.com").first()
-            self.assertEqual(len(fetched_user.comments), 1)
-            self.assertEqual(fetched_user.comments[0].comment, "Ricetta facile e saporita.")
+            self.assertEqual(len(fetched_user.posta), 1)
+            self.assertEqual(fetched_user.posta[0].comment, "Ricetta facile e saporita.")
 
 
 

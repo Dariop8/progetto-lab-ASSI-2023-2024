@@ -26,8 +26,8 @@ class Comments(db.Model):
     username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), nullable=False)
     comment = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer, nullable=False)  
-    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    segnalazione = db.Column(db.Integer, default=0)
+    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=False)
+    segnalazione = db.Column(db.Integer, default=0, nullable=False)
 
     __table_args__ = (
         CheckConstraint('length(comment) >= 10', name='check_comment_length'),
@@ -89,15 +89,14 @@ class Users(UserMixin, db.Model):
     intolleranze = db.Column(JSON, nullable=True)
     attivazione_2fa = db.Column(db.String(250), nullable=True)
     segreto_otp = db.Column(db.String(16), nullable=True) 
-    tentativi_login = db.Column(db.Integer, default=0)  
-    ruolo = db.Column(db.Integer, default=1)
+    tentativi_login = db.Column(db.Integer, default=0, nullable=False)  
+    ruolo = db.Column(db.Integer, default=1, nullable=False)
 
-    comments = db.relationship('Comments', backref='user', lazy=True, cascade="all, delete", foreign_keys='Comments.email')
-    favourites = db.relationship('Favourite', backref='user', lazy=True, cascade="all, delete", foreign_keys='Favourite.email')
-    shoppingingredient = db.relationship('ShoppingIngredient', backref='user', lazy=True, cascade="all, delete", foreign_keys='ShoppingIngredient.email')
-    richieste_sblocco = db.relationship('RichiestaSblocco', backref='user', lazy=True, cascade="all, delete", foreign_keys='RichiestaSblocco.email')
-    utenti_bloccati = db.relationship('UtentiBloccati', foreign_keys='UtentiBloccati.id_utente', backref='utente_bloccato', lazy=True, cascade="all, delete")
-    moderazioni_blocchi = db.relationship('UtentiBloccati', foreign_keys='UtentiBloccati.id_moderatore', backref='moderatore', lazy=True, cascade="all, delete")
+    posta = db.relationship('Comments', backref='user', lazy=True, cascade="all, delete", foreign_keys='Comments.email')
+    fav = db.relationship('Favourite', backref='user', lazy=True, cascade="all, delete", foreign_keys='Favourite.email')
+    agg = db.relationship('ShoppingIngredient', backref='user', lazy=True, cascade="all, delete", foreign_keys='ShoppingIngredient.email')
+    effettua = db.relationship('RichiestaSblocco', backref='user', lazy=True, cascade="all, delete", foreign_keys='RichiestaSblocco.email')
+    ban = db.relationship('UtentiBloccati', foreign_keys='UtentiBloccati.id_utente', backref='utente_bloccato', lazy=True, cascade="all, delete")
 
     
     __table_args__ = (
@@ -125,15 +124,19 @@ class UtentiBloccati(db.Model):
 
     email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), primary_key=True)
     username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), unique=True, nullable=False)
-    id_utente = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), unique=True, nullable=True)
+    id_utente = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), unique=True, nullable=False)
     id_moderatore = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     commento_offensivo = db.Column(db.Text, nullable=True)
     ricetta_interessata = db.Column(db.Integer, nullable=True)
-    data_blocco = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    data_blocco = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=True)
 
     __table_args__ = (
+        db.UniqueConstraint('commento_offensivo', 'ricetta_interessata', 'data_blocco', name='uq_blocco'),
         db.CheckConstraint('id_utente != id_moderatore', name='check_moderatore_diverso'),
     )
+
+    effettua = db.relationship('RichiestaSblocco', backref='utente_bloccato', cascade="all, delete-orphan")
+
 
     def __init__(self, email, username, id_utente=None, id_moderatore=None, commento_offensivo=None, ricetta_interessata=None):
         self.email = email
@@ -150,13 +153,21 @@ class RichiestaSblocco(db.Model):
     
     id_utente = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), unique=True, nullable=False)
     email = db.Column(db.String(120), db.ForeignKey('users.email', ondelete="CASCADE"), primary_key=True)   
-    # id_utente = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False)
-    # email = db.Column(db.String(120), db.ForeignKey('users.email'), primary_key=True)  
-    commento_offensivo = db.Column(db.Text, nullable=False)
-    ricetta_interessata = db.Column(db.Integer, nullable=False)
-    data_blocco = db.Column(db.String, nullable=False)  
+    commento_offensivo = db.Column(db.Text, nullable=True)
+    ricetta_interessata = db.Column(db.Integer, nullable=True)
+    data_blocco = db.Column(db.DateTime, nullable=True)  
     testo_richiesta = db.Column(db.Text, nullable=False)
-    data_richiesta = db.Column(db.DateTime, default=datetime.now(timezone.utc))  
+    data_richiesta = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=True)  
+
+
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['commento_offensivo', 'ricetta_interessata', 'data_blocco'],
+            ['utenti_bloccati.commento_offensivo', 'utenti_bloccati.ricetta_interessata', 'utenti_bloccati.data_blocco'],
+            name='fk_richiesta_blocco'
+        ),
+    )
+
 
     def __init__(self, id_utente, email, commento_offensivo, ricetta_interessata, data_blocco, testo_richiesta):
         self.id_utente = id_utente
