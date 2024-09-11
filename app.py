@@ -1342,6 +1342,11 @@ def user_blocked():
     return None  
 
 
+@app.route('/api/keys', methods=['GET'])
+def get_keys():
+    return jsonify({'rapid_api_key': chiavi.rapid_api_key, 'rapid_api_host': chiavi.rapid_api_host})
+
+
 @app.route('/<something>')
 def goto(something):
     return redirect(url_for('main_route'))
