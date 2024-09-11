@@ -16,4 +16,5 @@
 [x] inserire i messaggi di errore per i diversi casi
 [x] aggiustare la pagina della ricetta che presenta la sezione commenti separata e ha due scrollbar
 [ ] criptare i ruoli o compunque cambiare come vengono salvati nel database per la sicurezza
+[ ] criptare segreto OTP
 [ ] nella richiesta di sban dove si specifica la ricetta non so se ha senso mettere l'id, l'utente che ne sa che ricetta è

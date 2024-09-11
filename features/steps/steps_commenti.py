@@ -12,7 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 def step_given_user_logged_in(context, username, email, password):
     context.browser = webdriver.Chrome()
     context.browser.get('http://localhost:5000/login')
-
+    wait = WebDriverWait(context.browser, 15)
     context.browser.find_element(By.ID, 'username_input').send_keys(username)
     context.browser.find_element(By.ID, 'password_input').send_keys(password)
     context.browser.find_element(By.ID, 'login-button').click()
@@ -120,9 +120,5 @@ def step_impl(context):
 
 @then('chiudo il browser')
 def step_then_close_browser(context):
-    try:
-        if hasattr(context, 'browser'):
-            context.browser.close()
-    except Exception as e:
-        print(f"Errore durante la chiusura del browser: {e}")
+    if hasattr(context, 'browser'):
         context.browser.quit()
