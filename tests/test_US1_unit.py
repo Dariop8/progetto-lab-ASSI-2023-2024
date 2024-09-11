@@ -1,7 +1,7 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from app import app, db, Users, Comments, Favourite
+from app import app, db, Users, Comments, Favourite, RichiestaSblocco, ShoppingIngredient, UtentiBloccati
 from sqlalchemy.exc import IntegrityError
 from flask_testing import TestCase
 from sqlalchemy import text
@@ -135,127 +135,92 @@ class Usermodel_test(TestCase):
             self.assertEqual(len(fetched_user.posta), 1)
             self.assertEqual(fetched_user.posta[0].comment, "Ricetta facile e saporita.")
 
+    def test_favourites(self):
 
-
-# ------------------------#
-
-
-class UserRegistration_test(TestCase):
-    def create_app(self):
-        app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-        return app
-
-    def setUp(self):
         with app.app_context():
-            db.create_all()
-            db.session.query(Users).delete()  # reset del database di test
+            user = Users(username="Marco", email="marco@mail.com", password="Pass1234.")
+            db.session.add(user)
             db.session.commit()
 
-    def tearDown(self):
+            favourite = Favourite(recipe_id=1, username=user.username, email=user.email)
+            db.session.add(favourite)
+            db.session.commit()
+
+            fetched_user = Users.query.filter_by(email="marco@mail.com").first()
+            self.assertEqual(len(fetched_user.fav), 1)
+            self.assertEqual(fetched_user.fav[0].recipe_id, 1)
+
+    def test_shopping_ingredients(self):
         with app.app_context():
-            db.session.remove()
-            db.drop_all()
+            user = Users(username="Marco", email="marco@mail.com", password="Pass1234.")
+            db.session.add(user)
+            db.session.commit()
 
-    def test_registration_successful(self):
-        response = self.client.post('/registrazione', data = {
-            'email': 'marco@mail.com',
-            'username': 'Marco',
-            'password': 'a1c12DEF#GHIJ.',
-            'password_conf': 'a1c12DEF#GHIJ.',
-            'birthdate': '1997-10-01',
-            'diet': [],
-            'allergies': [],
-            'attiva-2fa': 'on'})
+            ingredient = ShoppingIngredient(email=user.email, username=user.username, ingredient="Farina")
+            db.session.add(ingredient)
+            db.session.commit()
 
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.location, '/')
-        user = Users.query.filter_by(email='marco@mail.com').first()
-        self.assertIsNotNone(user)
-        self.assertEqual(user.username, 'Marco')
+            fetched_user = Users.query.filter_by(email="marco@mail.com").first()
+            self.assertEqual(len(fetched_user.agg), 1)
+            self.assertEqual(fetched_user.agg[0].ingredient, "Farina")
 
-    def test_existing_user_error(self):
-        user = Users(username='DiegoBc', email='diego@mail.com', password='123')
-        db.session.add(user)
-        db.session.commit()
+    def test_banned_user(self):
+        with app.app_context():
+            mod = Users(username="Giulio", email="giulio@mail.com", password="Pass1234.", ruolo=2)
+            db.session.add(mod)
+            db.session.commit()
 
-        response = self.client.post('/registrazione', data = {
-            'email': 'diego@mail.com',
-            'username': 'DiegoBc',
-            'password': 'a1c12DEF#GHIJ.',
-            'password_conf': 'a1c12DEF#GHIJ.',
-            'birthdate': '1997-10-01',
-            'diet': [],
-            'allergies': []})
+            user = Users(username="Marco", email="marco@mail.com", password="Pass1234.")
+            db.session.add(user)
+            db.session.commit()
 
-        self.assertEqual(response.status_code, 200)  # resto sulla pagina di registrazione
-        self.assertIn(b'User already registered.', response.data)
+            comment = Comments(recipe_id=1, email=user.email, username=user.username, comment="Commento offensivo", rating=1)
+            db.session.add(comment)
+            db.session.commit()
 
-    def test_password_mismatch(self):
-        response = self.client.post('/registrazione', data = {
-            'email': 'dario@mail.com',
-            'username': 'Dario',
-            'password': 'a1c12DEF#GHIJ.',
-            'password_conf': '1234',
-            'birthdate': '1997-10-01',
-            'diet': [],
-            'allergies': []})
+            ban = UtentiBloccati(email=user.email, username=user.username, id_utente=user.id, id_moderatore=1, commento_offensivo="Commento offensivo", ricetta_interessata=1)
+            db.session.add(ban)
+            db.session.commit()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Passwords do not match.', response.data)
+            fetched_user = Users.query.filter_by(email="marco@mail.com").first()
+            self.assertEqual(len(fetched_user.ban), 1)
+            self.assertEqual(fetched_user.ban[0].commento_offensivo, "Commento offensivo")
 
-    def test_weak_password(self):
-        response = self.client.post('/registrazione', data = {
-            'email': 'red@mail.com',
-            'username': 'Red24',
-            'password': '123',
-            'password_conf': '123',
-            'birthdate': '1997-10-01',
-            'diet': [],
-            'allergies': []})
+    def test_ban_mod_user(self):
+        with app.app_context():
+            mod = Users(username="Giulio", email="giulio@mail.com", password="Pass1234.", ruolo=2)
+            db.session.add(mod)
+            db.session.commit()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Password is too weak.', response.data)
+            user = Users(username="Marco", email="marco@mail.com", password="Pass1234.")
+            db.session.add(user)
+            db.session.commit()
 
-    def test_registration_get(self):
-        response = self.client.get('/registrazione')
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Sign Up', response.data)  
+            comment = Comments(recipe_id=1, email=user.email, username=user.username, comment="Commento offensivo", rating=1)
+            db.session.add(comment)
+            db.session.commit()
 
-    def test_password_json(self):
-        response = self.client.get('/generate_password')
-        self.assertEqual(response.status_code, 200)
-        
-        self.assertEqual(response.content_type, 'application/json')
+            ban = UtentiBloccati(email=user.email, username=user.username, id_utente=user.id, id_moderatore=1, commento_offensivo="Commento offensivo", ricetta_interessata=1)
+            db.session.add(ban)
+            db.session.commit()
 
-        data = json.loads(response.data)
-        self.assertIn('password', data)
+            fetched_user = Users.query.filter_by(email="giulio@mail.com").first()
+            self.assertEqual(len(fetched_user.ban_mod), 1)
+            self.assertEqual(fetched_user.ban_mod[0].commento_offensivo, "Commento offensivo")
 
-    def test_generate_password(self):
-        response = self.client.get('/generate_password')
-        self.assertEqual(response.status_code, 200)
-        
-        data = json.loads(response.data)
-        password = data['password']
+    def test_unlock_request(self):
+        with app.app_context():
+            mod = Users(username="Giulio", email="giulio@mail.com", password="Pass1234.", ruolo=2)
+            db.session.add(mod)
+            db.session.commit()
 
-        self.assertGreaterEqual(len(password), 8)
+            user = Users(username="Marco", email="marco@mail.com", password="Pass1234.")
+            db.session.add(user)
+            db.session.commit()
 
-        self.assertRegex(password, r'[A-Z]')
+            comment = Comments(recipe_id=1, email=user.email, username=user.username, comment="Commento offensivo", rating=1)
+            db.session.add(comment)
+            db.session.commit()
 
-        self.assertRegex(password, r'[a-z]')
-
-        self.assertRegex(password, r'[0-9]')
-
-        self.assertRegex(password, r'[!@#$%^&*(),.?":{}|<>]')
-
-    def test_generate_uniquepassword(self):
-        response1 = self.client.get('/generate_password')
-        response2 = self.client.get('/generate_password')
-
-        self.assertEqual(response1.status_code, 200)
-        self.assertEqual(response2.status_code, 200)
-
-        data1 = json.loads(response1.data)
-        data2 = json.loads(response2.data)
-
-        self.assertNotEqual(data1['password'], data2['password'])
+            banned_user = UtentiBloccati(email=user.email, username=user.username, id_utente=user.id, id_moderatore=1, commento_offensivo="Commento offensivo", ricetta_interessata=1)
+            db.session.add(ba

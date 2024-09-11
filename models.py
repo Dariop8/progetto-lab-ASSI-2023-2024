@@ -26,7 +26,7 @@ class Comments(db.Model):
     username = db.Column(db.String(30), db.ForeignKey('users.username', ondelete="CASCADE"), nullable=False)
     comment = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer, nullable=False)  
-    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=False)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     segnalazione = db.Column(db.Integer, default=0, nullable=False)
 
     __table_args__ = (
@@ -97,13 +97,14 @@ class Users(UserMixin, db.Model):
     agg = db.relationship('ShoppingIngredient', backref='user', lazy=True, cascade="all, delete", foreign_keys='ShoppingIngredient.email')
     effettua = db.relationship('RichiestaSblocco', backref='user', lazy=True, cascade="all, delete", foreign_keys='RichiestaSblocco.email')
     ban = db.relationship('UtentiBloccati', foreign_keys='UtentiBloccati.id_utente', backref='utente_bloccato', lazy=True, cascade="all, delete")
+    ban_mod = db.relationship('UtentiBloccati', foreign_keys='UtentiBloccati.id_moderatore', backref='moderatore', lazy=True, cascade="all, delete")
 
     
     __table_args__ = (
         db.CheckConstraint('ruolo BETWEEN 1 AND 3', name='check_ruolo_range'),
     )
     
-    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, attivazione_2fa=False, segreto_otp=None, tentativi_login=0, ruolo=1):
+    def __init__(self, username=None, password=None, email=None, data_di_nascita=None, diete=None, intolleranze=None, attivazione_2fa=False, segreto_otp=None, tentativi_login=0, ruolo=None):
         if ruolo:
             validate_ruolo(ruolo)
         
@@ -128,7 +129,7 @@ class UtentiBloccati(db.Model):
     id_moderatore = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     commento_offensivo = db.Column(db.Text, nullable=True)
     ricetta_interessata = db.Column(db.Integer, nullable=True)
-    data_blocco = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=True)
+    data_blocco = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=True)
 
     __table_args__ = (
         db.UniqueConstraint('commento_offensivo', 'ricetta_interessata', 'data_blocco', name='uq_blocco'),
@@ -157,7 +158,7 @@ class RichiestaSblocco(db.Model):
     ricetta_interessata = db.Column(db.Integer, nullable=True)
     data_blocco = db.Column(db.DateTime, nullable=True)  
     testo_richiesta = db.Column(db.Text, nullable=False)
-    data_richiesta = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=True)  
+    data_richiesta = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=True)  
 
 
     __table_args__ = (
@@ -173,8 +174,4 @@ class RichiestaSblocco(db.Model):
         self.id_utente = id_utente
         self.email = email
         self.commento_offensivo = commento_offensivo
-        self.ricetta_interessata = ricetta_interessata
-        self.data_blocco = data_blocco
-        self.testo_richiesta = testo_richiesta
-        self.data_richiesta = datetime.now(timezone.utc) 
- 
+        self.ricetta_int
