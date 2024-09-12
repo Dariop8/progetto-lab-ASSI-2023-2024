@@ -17,8 +17,8 @@ import pyotp
 import chiavi
 from flask import jsonify
 from flask import current_app
+from cryptography.fernet import Fernet
 from models import db, Users, Comments, Favourite, ShoppingIngredient, UtentiBloccati, RichiestaSblocco, configure_bcrypt
-
 
 #CONFIGURAZIONE APP FLASK, DB E MAIL
 app = Flask(__name__)
@@ -45,6 +45,9 @@ mail = Mail(app)
 s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 app.permanent_session_lifetime = timedelta(minutes=20) #dopo 20 minuti fa automaticamente logout
+
+# configuro fernet
+cipher_suite = Fernet(chiavi.key_fernet)
 
 # db = SQLAlchemy()
 
@@ -190,11 +193,14 @@ def login():
             
             if bcrypt.check_password_hash(user.attivazione_2fa, '1'):
                 if user.segreto_otp is None:
-                    user.segreto_otp = pyotp.random_base32()  # Genero segreto e inserisco nel db
+                    segreto_otp = pyotp.random_base32()  # Genero segreto e inserisco nel db
+                    segreto_criptato = cipher_suite.encrypt(segreto_otp.encode())
+                    user.segreto_otp = segreto_criptato.decode()
                     db.session.commit()
 
+                segreto_decifrato = cipher_suite.decrypt(user.segreto_otp.encode()).decode()
                 # Genero otp e invio mail - pyotp gestisce finestra di validità otp
-                totp = pyotp.TOTP(user.segreto_otp)
+                totp = pyotp.TOTP(segreto_decifrato)
                 otp = totp.now()
                 user.tentativi_login = 0
                 db.session.commit()
@@ -284,12 +290,15 @@ def google_login():
 
     if bcrypt.check_password_hash(user.attivazione_2fa, '1'):
         if user.segreto_otp is None:
-            user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
+            segreto_otp = pyotp.random_base32()  # Genero segreto e inserisco nel db
+            segreto_criptato = cipher_suite.encrypt(segreto_otp.encode())
+            user.segreto_otp = segreto_criptato.decode()
             db.session.commit()
-        # Generate OTP and send via email
-        totp = pyotp.TOTP(user.segreto_otp)
+
+        segreto_decifrato = cipher_suite.decrypt(user.segreto_otp.encode()).decode()
+        # Genero otp e invio mail - pyotp gestisce finestra di validità otp
+        totp = pyotp.TOTP(segreto_decifrato)
         otp = totp.now()
-        # user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
         user.tentativi_login = 0
         db.session.commit()
 
@@ -361,12 +370,15 @@ def github_login():
 
     if bcrypt.check_password_hash(user.attivazione_2fa, '1'):
         if user.segreto_otp is None:
-            user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
+            segreto_otp = pyotp.random_base32()  # Genero segreto e inserisco nel db
+            segreto_criptato = cipher_suite.encrypt(segreto_otp.encode())
+            user.segreto_otp = segreto_criptato.decode()
             db.session.commit()
-        # Generate OTP and send via email
-        totp = pyotp.TOTP(user.segreto_otp)
+
+        segreto_decifrato = cipher_suite.decrypt(user.segreto_otp.encode()).decode()
+        # Genero otp e invio mail - pyotp gestisce finestra di validità otp
+        totp = pyotp.TOTP(segreto_decifrato)
         otp = totp.now()
-        # user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
         user.tentativi_login = 0
         db.session.commit()
 
@@ -447,9 +459,11 @@ def verify_otp():
     if 'email' in session:
 
         user = Users.query.filter_by(email=session['email']).first()
+
         if request.method == 'POST':
             otp = request.form['otp']
-            totp = pyotp.TOTP(user.segreto_otp)
+            segreto_decifrato = cipher_suite.decrypt(user.segreto_otp.encode()).decode()
+            totp = pyotp.TOTP(segreto_decifrato)
             # Verifica OTP e controllo scadenza
             if totp.verify(otp, valid_window=1): #1 minuto finestra
                 user.tentativi_login = 0
