@@ -185,13 +185,14 @@ def login():
             
             if bcrypt.check_password_hash(user.attivazione_2fa, '1'):
                 if user.segreto_otp is None:
-                    segreto_otp = pyotp.random_base32()  # Genero segreto e inserisco nel db
+                    # Genero segreto, cripto e inserisco nel db
+                    segreto_otp = pyotp.random_base32()  
                     segreto_criptato = cipher_suite.encrypt(segreto_otp.encode())
-                    user.segreto_otp = segreto_criptato.decode()
+                    user.segreto_otp = segreto_criptato.decode() # byte a stringa per db
                     db.session.commit()
 
-                segreto_decifrato = cipher_suite.decrypt(user.segreto_otp.encode()).decode()
-                # Genero otp e invio mail - pyotp gestisce finestra di validità otp
+                segreto_decifrato = cipher_suite.decrypt(user.segreto_otp.encode()).decode() 
+                # pyotp gestisce finestra validità otp
                 totp = pyotp.TOTP(segreto_decifrato)
                 otp = totp.now()
                 user.tentativi_login = 0
@@ -244,7 +245,6 @@ def google_login():
     try:
         profile = service.people().get(resourceName='people/me', personFields='names,emailAddresses').execute()
     except Exception as e:
-        # print(f'An error occurred: {e}')
         return redirect(url_for("login"))
 
     email = None
@@ -261,12 +261,7 @@ def google_login():
     user = Users.query.filter_by(email=email).first()
 
     if user is None:
-        #password casuale come per github
-        # alphabet = string.ascii_letters + string.digits
-        # password = ''.join(secrets.choice(alphabet) for i in range(12))
-
         password = generate_password()
-        # print(password)
 
         hashed_password = bcrypt.generate_password_hash(password)
 
@@ -282,13 +277,12 @@ def google_login():
 
     if bcrypt.check_password_hash(user.attivazione_2fa, '1'):
         if user.segreto_otp is None:
-            segreto_otp = pyotp.random_base32()  # Genero segreto e inserisco nel db
+            segreto_otp = pyotp.random_base32()
             segreto_criptato = cipher_suite.encrypt(segreto_otp.encode())
             user.segreto_otp = segreto_criptato.decode()
             db.session.commit()
 
         segreto_decifrato = cipher_suite.decrypt(user.segreto_otp.encode()).decode()
-        # Genero otp e invio mail - pyotp gestisce finestra di validità otp
         totp = pyotp.TOTP(segreto_decifrato)
         otp = totp.now()
         user.tentativi_login = 0
@@ -324,7 +318,6 @@ def github_login():
         # se il metodo precedente è fallito passiamo al secondo
         resp_email = github.get("/user/emails")
         if resp_email.status_code == 404:
-            print("problema con l'endpoint per l'email")
             return redirect(url_for("login"))
 
         assert resp_email.ok, resp_email.text
@@ -336,15 +329,10 @@ def github_login():
 
     if email is None:
         return redirect(url_for("login"))  
-    print("User:", username, "con email:", email)
     
     user = Users.query.filter_by(email=email).first()
     
     if user is None:
-        # genero una password casuale
-        # alphabet = string.ascii_letters + string.digits
-        # password = ''.join(secrets.choice(alphabet) for i in range(12))
-
         password = generate_password()
 
         hashed_password = bcrypt.generate_password_hash(password)
@@ -362,13 +350,12 @@ def github_login():
 
     if bcrypt.check_password_hash(user.attivazione_2fa, '1'):
         if user.segreto_otp is None:
-            segreto_otp = pyotp.random_base32()  # Genero segreto e inserisco nel db
+            segreto_otp = pyotp.random_base32()
             segreto_criptato = cipher_suite.encrypt(segreto_otp.encode())
             user.segreto_otp = segreto_criptato.decode()
             db.session.commit()
 
         segreto_decifrato = cipher_suite.decrypt(user.segreto_otp.encode()).decode()
-        # Genero otp e invio mail - pyotp gestisce finestra di validità otp
         totp = pyotp.TOTP(segreto_decifrato)
         otp = totp.now()
         user.tentativi_login = 0
@@ -435,7 +422,6 @@ def recupero_password_request():
 
             return redirect(url_for('recupera_psw', token_sended=True))
         except Exception as e:
-            # print(f"Errore durante il reset della password: {str(e)}")
             return jsonify({'success': False, 'message': 'Errore durante l\'invio dell\'email.'}), 500
     else:
         redirect(url_for('recupera_psw'))
@@ -455,7 +441,6 @@ def reset_password_request():
 
                 return jsonify({'success': True, 'message': 'Un token (con validità di 10 minuti) per il reset della password è stato inviato al tuo indirizzo email.'})
             except Exception as e:
-                # print(f"Errore durante il reset della password: {str(e)}")
                 return jsonify({'success': False, 'message': 'Errore durante l\'invio dell\'email.'}), 500
         else:
             return jsonify({'success': False, 'message': 'Utente non trovato.'}), 404
@@ -1070,7 +1055,6 @@ def blocked():
             richiesta_effettuata = 0
         else:
             richiesta_effettuata = 1
-        # print(richiesta_effettuata)
 
         if request.method == 'POST':
 

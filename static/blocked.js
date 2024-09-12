@@ -25,6 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            document.getElementById('info').innerHTML = `<p>Errore: ${error.message}</p>`;
+            console.error('Errore dati blocco', error);
         });
 });

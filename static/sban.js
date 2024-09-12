@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            console.error('Errore nel caricamento delle richieste:', error);
-            requestsContainer.innerHTML = '<p>Error loading requests.</p>';
+            console.error('Errore caricamento richieste:', error);
+            requestsContainer.innerHTML = '<p>Error.</p>';
         });
 });

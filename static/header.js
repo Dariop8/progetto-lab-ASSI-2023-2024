@@ -19,6 +19,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         })
         .catch(error => {
-            console.error('Errore durante il recupero delle informazioni utente:', error);
+            console.error('Errore recupero informazioni utente:', error);
         });
 });

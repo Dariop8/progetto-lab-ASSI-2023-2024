@@ -708,21 +708,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
-//fdjffffffffffffff
+
+
 function stampaStelle(rating) {
     let stars = '';
     for (let i = 1; i <= 5; i++) {

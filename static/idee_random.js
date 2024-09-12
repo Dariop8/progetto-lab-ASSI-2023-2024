@@ -100,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             $.ajax(settings).done(function (response) {
-                //console.log(response);
                 populateRecipesList(response.results); 
             }).fail(function (error) {
                 console.error('Error fetching recipes:', error);
@@ -119,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'GET',
                     success: function(response) {
                         let recipe_ids = response;  // Sostituisci le ricette con quelle ordinate
-                        console.log("DENTROO solo id appena entrato")
+                        console.log("solo id appena entrato")
                         console.log(recipe_ids)
         
                         // Trova le ricette presenti in "recipes" ma non in "response" (recipe_ids)
@@ -148,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // Mescola casualmente le ricette se l'ordinamento non è specificato
                 recipes = recipes.sort(() => Math.random() - 0.5);
-                console.log("DENTROOO 222")
+                console.log("DENTRO")
         
                 renderRecipes();
             }
