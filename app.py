@@ -211,10 +211,10 @@ def login():
                 return redirect(url_for("main_route"))
                 
         elif not user:
-            flash('Utente non registrato', 'errore')
+            flash('User not registered.', 'errore')
             return render_template("login.html")
         else:
-            flash('Password errata', 'errore')
+            flash('Wrong password.', 'errore')
             return render_template("login.html")
         
     elif 'username' in session and 'password' in session and 'id' in session:
@@ -566,13 +566,13 @@ def update_birthdate():
             new_birthdate = datetime.strptime(new_birthdate_str, '%Y-%m-%d').date()
             user.data_di_nascita = new_birthdate
             db.session.commit()
-            flash('Data di nascita aggiornata con successo', 'success')
+            flash('Birthdate succesfully update.', 'success')
         except ValueError:
-            flash('Formato data non valido', 'error')
+            flash('Format not valid.', 'error')
 
         return redirect(url_for('account'))
 
-    flash('Devi effettuare il login per aggiornare la data di nascita', 'error')
+    flash('Sign in first.', 'error')
     return redirect(url_for('login'))
 
 @app.route('/update_preferences', methods=['POST'])

@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
     
-        const header = "LA TUA LISTA DELLA SPESA:";
+        const header = "YOUR SHOPPING LIST:";
         const headerFontSize = 16;
         const normalFontSize = 14;
         
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             y += lineHeight;
         });
     
-        doc.save('lista_della_spesa.pdf');
+        doc.save('shopping_list.pdf');
     });
     
 });
