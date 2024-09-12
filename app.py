@@ -4,7 +4,6 @@ from datetime import timedelta, datetime
 import os
 from flask_dance.contrib.github import make_github_blueprint, github
 from flask_dance.contrib.google import make_google_blueprint, google
-from flask_dance.contrib.facebook import make_facebook_blueprint, facebook
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 import secrets
@@ -55,12 +54,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-facebook_blueprint = make_facebook_blueprint(
-    client_id='your_facebook_client_id',
-    client_secret='your_facebook_client_secret',
-    scope=['email', 'public_profile'],  
-    redirect_to="facebook_login"
-)
 
 google_blueprint = make_google_blueprint(
     client_id=chiavi.google_client_id,
@@ -80,7 +73,6 @@ github_blueprint = make_github_blueprint(
 #importo blueprint di google e metto il listener in login.js
 app.register_blueprint(github_blueprint, url_prefix="/github_login")
 app.register_blueprint(google_blueprint, url_prefix="/google_login")
-app.register_blueprint(facebook_blueprint, url_prefix="/facebook_login")
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1" 
 
@@ -379,65 +371,6 @@ def github_login():
         # Genero otp e invio mail - pyotp gestisce finestra di validità otp
         totp = pyotp.TOTP(segreto_decifrato)
         otp = totp.now()
-        user.tentativi_login = 0
-        db.session.commit()
-
-        msg = Message('Your OTP Code', sender=app.config['MAIL_USERNAME'], recipients=[session['email']])
-        msg.body = f'Your OTP Code is {otp}. It will be valid for 60 seconds.'
-        mail.send(msg)
-        return redirect(url_for("verify_otp"))
-    
-    session.permanent = True
-    session['username'] = user.username
-    session['password'] = user.password
-    session['id'] = user.id
-    return redirect(url_for("main_route"))
-
-@app.route("/facebook_login")
-def facebook_login():
-    if not facebook.authorized:
-        return redirect(url_for("facebook.login"))
-
-    resp = facebook.get("/me?fields=id,email,name")
-    assert resp.ok, resp.text
-    info = resp.json()
-
-    username = info.get("name")  
-    email = info.get("email")    
-
-    if email is None:
-        return redirect(url_for("login"))  
-    
-    print("User:", username, "con email:", email)
-    
-    user = Users.query.filter_by(email=email).first()
-    
-    if user is None:
-        # alphabet = string.ascii_letters + string.digits
-        # password = ''.join(secrets.choice(alphabet) for i in range(12))
-
-        password = generate_password()
-
-        hashed_password = bcrypt.generate_password_hash(password)
-
-        user = Users(username=username, password=hashed_password, email=email, 
-                     data_di_nascita=None, diete=None, intolleranze=None)
-        db.session.add(user)
-        db.session.commit()
-        
-    bloccato = db.session.get(UtentiBloccati, user.email)
-    session['email'] = user.email
-    if bloccato:
-        return redirect(url_for('blocked'))
- 
-    if bcrypt.check_password_hash(user.attivazione_2fa, '1'):
-        if user.segreto_otp is None:
-            user.segreto_otp = pyotp.random_base32()  # Generate OTP secret
-            db.session.commit()
-        # Generate OTP and send via email
-        totp = pyotp.TOTP(user.segreto_otp)
-        otp = totp.now()
-        # user.scad_otp = datetime.now() + timedelta(minutes=1)  # Set expiry time
         user.tentativi_login = 0
         db.session.commit()
 
