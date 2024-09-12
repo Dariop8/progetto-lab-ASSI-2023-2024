@@ -847,6 +847,29 @@ def idee_rand():
         intolerances = []
     return render_template("idee_rand.html", diet=diet, intolerances=intolerances)
 
+@app.route('/recipes', methods=['GET'])
+def recipes():
+    order_by = request.args.get('orderBy', '')
+    ids_arg = request.args.get('idsArg', '')
+
+    if ids_arg:
+        ids_list = [int(id) for id in ids_arg.split(';')]
+    else:
+        ids_list = []
+    
+    query = db.session.query(Favourite.recipe_id)
+    
+    if order_by == 'popularity':
+        query = query.group_by(Favourite.recipe_id).order_by(func.count(Favourite.id).desc())
+    elif order_by == 'rating':
+        query = db.session.query(Comments.recipe_id, func.avg(Comments.rating).label('avg_rating'))
+        query = query.group_by(Comments.recipe_id).order_by(func.avg(Comments.rating).desc())
+    
+    recipe_ids = [result[0] for result in query.all()]
+
+    f_recipe_ids = [id for id in recipe_ids if id in ids_list]
+    
+    return jsonify(f_recipe_ids)
 
 #SEZIONE COMMENTI
 

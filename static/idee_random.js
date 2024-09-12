@@ -25,10 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const dietString = dietArray.length ? `diet=${dietArray[0]}&` : '';
         const intolerancesString = intolerancesArray.length ? `intolerances=${intolerancesArray.join('%2C%20')}&` : '';
-        console.log("key---", apiKey)
 
-
-            console.log("key---", apiKey)
             const settings = {
                 async: true,
                 crossDomain: true,
@@ -111,73 +108,134 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         function populateRecipesList(recipes) {
-            recipes = recipes.sort(() => Math.random() - 0.5);
-
+            const orderBy = document.getElementById('orderBy').value;
             const recipeListDiv = document.querySelector('.recipes');
-
-            recipeListDiv.innerHTML=`
-                            <h1>RANDOM RECIPES</h1>
-                            <div class="error-message" id="errore-recipe">
-                                <p>Unfortunately your search returned no results.</p>
-                            </div>
-                            `;
-
-            if (recipes.length === 0) {
-                document.getElementById('errore-recipe').style.display = "block";
-            } else { 
-                document.getElementById('errore-recipe').style.display = "none";
-
-                recipes.forEach(recipe => {
-                    const settings = {
-                        async: true,
-                        crossDomain: true,
-                        url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/${recipe.id}/information?includeNutrition=true`,
-                        method: 'GET',
-                        headers: {
-                            'x-rapidapi-key': apiKey,
-                            'x-rapidapi-host': apiHost
-                        }
-                    };
-
-                    $.ajax(settings).done(function (response) {
-                        const recipe=response;
-                        let typesString = recipe.dishTypes.join(', ');
-                        if (recipe.dishTypes.length > 3) {
-                            typesString = recipe.dishTypes.slice(0, 3).join(', ') + ', ...';
-                        } else if (recipe.dishTypes.length === 0) {
-                            typesString = 'non specificato';
-                        }
-
-                        const recipeElement = document.createElement('div');
-                        recipeElement.classList.add('recipe');
-
-                        let recipeString = `
-                            <div class="recipe-info">
-                                <div id="recipe-${recipe.id}">
-                                    <span class="recipe-name">${recipe.title}</span>
-                                    <div class="recipe-details">
-                                        <span class="time">🕒 ${recipe.readyInMinutes}min</span>
-                                        <span class="type">Type: ${typesString}</span>
-                                        <span class="calories">Calories: ${recipe.nutrition.nutrients[0].amount}kcal</span>
-                                    </div>
-                                </div>
-                            </div> 
-                        `;
-
-                        if (recipe.image !== "") {
-                            recipeString += `<img src="${recipe.image}" alt="Img Recipe" class="recipe-image"></img> `;
-                        }
-                        recipeElement.innerHTML = recipeString;
-
-                        recipeListDiv.appendChild(recipeElement);
-
-                        recipeElement.addEventListener('click', function() {
-                            window.location.href = `/ricetta?id=${recipe.id}`;
+        
+            const idsArg = recipes.map(recipe => recipe.id).join(';');
+        
+            if (orderBy !== 'null') {
+                $.ajax({
+                    url: `/recipes?orderBy=${orderBy}&idsArg=${idsArg}`,
+                    method: 'GET',
+                    success: function(response) {
+                        let recipe_ids = response;  // Sostituisci le ricette con quelle ordinate
+                        console.log("DENTROO solo id appena entrato")
+                        console.log(recipe_ids)
+        
+                        // Trova le ricette presenti in "recipes" ma non in "response" (recipe_ids)
+                        const missingRecipes = recipes.filter(recipe => !recipe_ids.includes(recipe.id));
+                        
+                        // Aggiungi le ricette mancanti alla fine della variabile "response"
+                        recipe_ids = [...recipe_ids, ...missingRecipes.map(recipe => recipe.id)];
+                        
+                        console.log("Recipe IDs dopo aver aggiunto quelle mancanti:", recipe_ids);
+        
+                        // Filtra e ordina la variabile "recipes" in base agli "recipe_ids" ordinati
+                        const orderedRecipes = recipe_ids.map(id => {
+                            return recipes.find(recipe => recipe.id === id);
                         });
-                    }).fail(function (error) {
-                        console.error('Error fetching the recipe:', error);
-                    });
+                        console.log("ordered Repices")
+                        console.log(orderedRecipes);
+        
+                        // Sostituisci recipes con le ricette ordinate
+                        recipes = orderedRecipes.filter(recipe => recipe !== undefined); // Esclude eventuali undefined
+                        renderRecipes();
+                    },
+                    error: function(error) {
+                        console.error('Error fetching sorted recipes:', error);
+                    }
                 });
+            } else {
+                // Mescola casualmente le ricette se l'ordinamento non è specificato
+                recipes = recipes.sort(() => Math.random() - 0.5);
+                console.log("DENTROOO 222")
+        
+                renderRecipes();
+            }
+        
+            function renderRecipes() {
+        
+                recipeListDiv.innerHTML=`
+                                <h1>RANDOM RECIPES</h1>
+                                <div class="error-message" id="errore-recipe">
+                                    <p>Unfortunately your search returned no results.</p>
+                                </div>
+                                `;
+        
+                if (recipes.length === 0) {
+                    document.getElementById('errore-recipe').style.display = "block";
+                } else { 
+                    document.getElementById('errore-recipe').style.display = "none";
+                    
+                    console.log(recipes)
+        
+                    const ajaxCalls = recipes.map(recipe => {
+                        const settings = {
+                            async: true,
+                            crossDomain: true,
+                            url: `https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/${recipe.id}/information?includeNutrition=true`,
+                            method: 'GET',
+                            headers: {
+                                'x-rapidapi-key': apiKey,
+                                'x-rapidapi-host': apiHost
+                            }
+                        };
+                
+                        // Ritorna una Promise per ogni chiamata AJAX
+                        return $.ajax(settings).then(response => {
+                            return { recipe: response, id: recipe.id };
+                        });
+                    });
+                
+                    // Usa Promise.all per attendere tutte le chiamate AJAX
+                    Promise.all(ajaxCalls)
+                        .then(results => {
+                            // Ordina i risultati in base all'ordine degli ID delle ricette
+                            const orderedResults = results.sort((a, b) => {
+                                return recipes.findIndex(r => r.id === a.id) - recipes.findIndex(r => r.id === b.id);
+                            });
+                            console.log(orderedResults)
+                            // Ora puoi iterare sugli orderedResults in ordine e appendere gli elementi
+                            orderedResults.forEach(result => {
+                                const recipe = result.recipe;
+                                let typesString = recipe.dishTypes.join(', ');
+                                if (recipe.dishTypes.length > 3) {
+                                    typesString = recipe.dishTypes.slice(0, 3).join(', ') + ', ...';
+                                } else if (recipe.dishTypes.length === 0) {
+                                    typesString = 'non specificato';
+                                }
+        
+                                const recipeElement = document.createElement('div');
+                                recipeElement.classList.add('recipe');
+        
+                                let recipeString = `
+                                    <div class="recipe-info">
+                                        <div id="recipe-${recipe.id}">
+                                            <span class="recipe-name">${recipe.title}</span>
+                                            <div class="recipe-details">
+                                                <span class="time">🕒 ${recipe.readyInMinutes}min</span>
+                                                <span class="type">Type: ${typesString}</span>
+                                                <span class="calories">Calories: ${recipe.nutrition.nutrients[0].amount}kcal</span>
+                                            </div>
+                                        </div>
+                                    </div> 
+                                `;
+        
+                                if (recipe.image !== "") {
+                                    recipeString += `<img src="${recipe.image}" alt="Img Recipe" class="recipe-image"></img> `;
+                                }
+                                recipeElement.innerHTML = recipeString;
+        
+                                recipeListDiv.appendChild(recipeElement);
+        
+                                recipeElement.addEventListener('click', function() {
+                                    window.location.href = `/ricetta?id=${recipe.id}`;
+                                });
+                            }).catch(function (error) {
+                                console.error('Error fetching the recipe:', error);
+                            });
+                        });
+                }
             }
         }
     })
