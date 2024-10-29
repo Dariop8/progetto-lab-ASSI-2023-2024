@@ -2,4 +2,3 @@ chiavi.py
 __pycache__/
 client_secret.json
 __pycache__/utils.cpython-312.pyc
-instance/db.sqlite
